@@ -1,0 +1,51 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>사계몬스터</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Nanum+Gothic+Coding:wght@400;700&display=swap">
+<link rel="stylesheet" href="style.css">
+
+<div id="app">
+  <div id="console">
+    <div id="bezel">
+      <div id="screen">
+        <canvas id="cv" width="720" height="480"></canvas>
+        <div id="ui">
+          <div id="title">
+            <div class="logo">사계<span>몬스터</span></div>
+            <div class="sub">중학교 3학년 · 사계절 졸업 여행</div>
+            <div class="copy">ⓒ 2026 사계몬 연구소 · 중학교 수학 전 범위 · 체육관 8곳</div>
+          </div>
+          <div id="tb" class="box" hidden><span id="tbt"></span><span id="tbn" hidden>▼</span></div>
+        </div>
+      </div>
+      <div class="brand"><span><span class="led"></span>BATTERY</span><span>SAGYE MONSTER</span></div>
+    </div>
+    <div id="pad">
+      <div class="dpad">
+        <button class="u" data-k="up" aria-label="위">▲</button>
+        <button class="l" data-k="left" aria-label="왼쪽">◀</button>
+        <div class="c"></div>
+        <button class="r" data-k="right" aria-label="오른쪽">▶</button>
+        <button class="d" data-k="down" aria-label="아래">▼</button>
+      </div>
+      <div class="midbtns">
+        <div class="pill"><button data-k="b" aria-label="취소"></button>SELECT</div>
+        <div class="pill"><button data-k="start" aria-label="메뉴"></button>START</div>
+        <div class="pill" id="fsBtn"><button id="fsB" aria-label="전체 화면"></button>전체화면</div>
+      </div>
+      <div class="ab">
+        <div class="btn"><button data-k="b" aria-label="B 취소">B</button></div>
+        <div class="btn"><button data-k="a" aria-label="A 결정">A</button></div>
+      </div>
+    </div>
+  </div>
+  <p class="hint"><kbd>방향키</kbd> 이동 · <kbd>Z</kbd>/<kbd>Enter</kbd>/<kbd>Space</kbd> 결정 · <kbd>X</kbd>/<kbd>Esc</kbd> 취소 · <kbd>Shift</kbd>/<kbd>M</kbd> 메뉴 · <kbd>X</kbd>를 누른 채 이동하면 달리기 · 퀴즈는 <kbd>1</kbd>~<kbd>4</kbd> 숫자키나 클릭으로도 고를 수 있어요</p>
+</div>
+<script src="questions.js"></script>
+<script src="script.js"></script>
