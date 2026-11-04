@@ -292,9 +292,11 @@ const STARTERS = ['root', 'haerong', 'danpung', 'nunmung']; // 계절 순서. �
 const POW = [40, 50, 65, 80], UNLOCK = [1, 1, 9, 17];
 const spTypes = sp => [].concat(SP[sp].type);
 function moveType(sp, i) { const t = spTypes(sp); return i === 0 ? '노말' : t[i === 3 && t[1] ? 1 : 0]; }
-// 아이템은 4종만 쓴다 (기획서 4.6): 반창고, 구급상자, 응원 쪽지, 사계볼. 나머지는 예전 지도·저장과의 호환용으로만 남기고 ITEM_ALIAS로 바꿔 준다
+// 아이템 (기획서 4.6): 회복 4단계(반창고·큰 반창고·구급상자·특급 구급상자), 응원 쪽지, 사계볼. 나머지는 예전 지도·저장과의 호환용으로만 남기고 ITEM_ALIAS로 바꿔 준다
 const ITEMS = {
   potion: { name: '반창고', desc: 'HP를 30 회복한다', kind: 'heal', amt: 30, price: 300 },
+  mpotion: { name: '큰 반창고', desc: 'HP를 60 회복한다', kind: 'heal', amt: 60, price: 600 },
+  fpotion: { name: '특급 구급상자', desc: 'HP를 모두 회복한다', kind: 'heal', amt: 9999, price: 1800 },
   spotion: { name: '좋은상처약', desc: 'HP를 70 회복한다', kind: 'heal', amt: 70, price: 700 },
   hpotion: { name: '구급상자', desc: 'HP를 100 회복한다', kind: 'heal', amt: 100, price: 1000 },
   ball: { name: '사계볼', desc: '야생 사계몬을 잡는 볼. 문제를 맞히면 잘 잡힌다', kind: 'ball', mult: 1, price: 200 },
@@ -316,10 +318,10 @@ const ITEMS = {
   compass: { name: '컴퍼스', desc: '지니면 공격·방어가 5%씩 오른다', kind: 'held', boost: { atk: 1.05, def: 1.05 }, price: 3500 },
   protractor: { name: '각도기방패', desc: '지니면 최대 HP·방어가 5%씩 오른다', kind: 'held', boost: { hp: 1.05, def: 1.05 }, price: 3500 },
 };
-const ITEM_ORDER = ['potion', 'hpotion', 'revive', 'ball'];
+const ITEM_ORDER = ['potion', 'mpotion', 'hpotion', 'fpotion', 'revive', 'ball'];
 const HELD_ORDER = []; // 장착 아이템은 쓰지 않는다 (경험치 나눠 받기는 기본 기능)
 // 예전 아이템 → 지금 아이템 (줍기·선물·예전 저장을 불러올 때 바꿔 준다)
-const ITEM_ALIAS = { spotion: 'potion', sball: 'ball', hball: 'ball', mball: 'ball', awake: 'potion', parlyz: 'potion', burnh: 'potion', fullheal: 'potion', ether: 'potion', candy: 'potion', xshare: 'potion', pencil: 'potion', eraser: 'potion', ruler: 'potion', compass: 'potion', protractor: 'potion' };
+const ITEM_ALIAS = { spotion: 'mpotion', sball: 'ball', hball: 'ball', mball: 'ball', awake: 'potion', parlyz: 'potion', burnh: 'potion', fullheal: 'potion', ether: 'potion', candy: 'potion', xshare: 'potion', pencil: 'potion', eraser: 'potion', ruler: 'potion', compass: 'potion', protractor: 'potion' };
 const itemId = id => ITEM_ALIAS[id] || id;
 function normalizeBag(st) {
   for (const id of Object.keys(st.bag)) if (ITEM_ALIAS[id]) { st.bag[itemId(id)] = (st.bag[itemId(id)] || 0) + st.bag[id]; delete st.bag[id]; }
@@ -2042,7 +2044,7 @@ const GYMS = [
   // 체육관 1 (봄 · 수와 연산): 관원 = 중2(unit 1), 관장 = 중3(lunit 13)
   { label: '벚꽃', town: 'bunsu', floor: '#f6e2ea', name: '하람', badge: '벚꽃 배지', unit: 1, lunit: 13, team: [['bung', 5], ['daram', 6], ['napul', 7]], reward: [['ball', 3]], key: null,
     intro: ['벚꽃 체육관에 온 걸 환영해! 나는 관장 하람.', '소수부터 제곱근까지, 수의 기초를 보여 줘!'], win: '와, 꽃잎처럼 가볍게 이겼구나! 인정!', after: '북쪽 2번 도로 너머엔 꽃샘시티가 있어. 길이 열리면 가 보렴!',
-    tr: [T2('체육관 관원', '봄이', 't2', [['piyak', 4], ['bung', 5]], '관장님께 가려면 날 넘어라!', '꽃잎처럼 흩날렸다…'), T2('체육관 관원', '새싹', 't4', [['gaegul', 5]], '봄비처럼 쏟아지는 공격을 받아라!', '비가 그쳤다…')] },
+    tr: [T2('체육관 관원', '봄이', 't2', [['piyak', 4], ['bung', 5]], '관장님께 가려면 날 넘어라!', '꽃잎처럼 흩날렸다…'), T2('체육관 관원', '새싹', 't4', [['gaegul', 5]], '봄비처럼 쏟아지는 공격을 받아라!', '비가 그쳤다…'), T2('체육관 관원', '꽃잎', 't1', [['daram', 5], ['napul', 6]], '관장님 바로 앞이야. 여기서 멈춰!', '꽃잎이 다 떨어졌어…')] },
   { label: 'Ⅱ-1', town: 'expo', floor: '#eadcc4', name: '지수', badge: '지수 배지', unit: '2a', team: [['bat', 13], ['rock', 14], ['croc', 16]], reward: [['spotion', 2]], key: 'scissors',
     intro: ['찍기단을 쫓아내 줘서 고맙다. 하지만 승부는 승부!', '제곱, 세제곱… 내 힘은 지수적으로 커진다!'], win: '동류항 정리까지 완벽하다니… 인정!', after: '그 가위로 순환소수 숲의 작은 나무를 자를 수 있어. 숲을 지나면 부등호시티다!',
     tr: [T2('체육관 관원', '항이', 't3', [['rock', 12]], '동류항끼리만 더할 수 있다고!', '정리… 당했다.'), T2('체육관 관원', '식이', 't1', [['bat', 12], ['bird', 11]], 'x^2 × x^3 = x^5!', '지수끼리 더하는 건 맞았는데…'), T2('체육관 관원', '곱이', 't4', [['croc', 13]], '분배법칙으로 괄호를 풀어라!', '괄호에 갇혔다…')] },
@@ -4417,7 +4419,8 @@ async function fieldBag() {
 function shopStock(kind) {
   const b = S.badges.filter(Boolean).length;
   const list = ['potion', 'ball'];
-  if (b >= 1 || kind === 'dept') list.push('revive'); if (b >= 2 || kind === 'dept') list.push('hpotion');
+  // 회복 아이템은 배지가 늘수록 한 단계씩 (레벨이 올라 HP가 커지는 만큼)
+  if (b >= 1 || kind === 'dept') list.push('mpotion', 'revive'); if (b >= 3 || kind === 'dept') list.push('hpotion'); if (b >= 5 || kind === 'dept') list.push('fpotion');
   return ITEM_ORDER.filter(id => list.includes(id));
 }
 async function shop(kind = 'basic') {
