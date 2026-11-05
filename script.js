@@ -453,7 +453,12 @@ Object.assign(SP, {
   napul: { name: '나풀이', art: 'gen', gs: { body: 'flyer', c1: '#f4a0c0', c2: '#fff0f6', glyph: '', k: 3 }, type: '봄', hp: 40, atk: 42, def: 40, moves: ['몸통박치기', '꽃잎 날리기', '봄바람', '나풀나풀 춤'], dex: ['꽃나비몬', 0.5, 2.2, '벚꽃잎과 똑같은 날개를 가졌다. 꽃잎 사이에 숨으면 찾기 어렵다.'] },
   gaegul: { name: '개굴링', art: 'gen', gs: { body: 'frog', form: 'toad', c1: '#7ad070', c2: '#e8f8d0', glyph: '', k: 4 }, type: '봄', hp: 46, atk: 40, def: 44, moves: ['몸통박치기', '혀 내밀기', '봄비 부르기', '개굴 점프'], dex: ['개구리몬', 0.4, 5.5, '봄비가 오면 연못가에 모여 노래한다. 등의 점무늬가 개구리마다 다르다.'] },
   kkotsaem: { name: '꽃샘이', art: 'gen', gs: { body: 'biped', form: 'fairy', c1: '#a8d0f0', c2: '#ffffff', glyph: '', k: 5 }, type: ['봄', '겨울'], hp: 44, atk: 48, def: 42, moves: ['몸통박치기', '꽃샘바람', '꽃잎 회오리', '꽃샘추위'], dex: ['바람몬', 0.5, 1.5, '봄이 왔는데도 찬바람을 몰고 다니는 장난꾸러기. 꽃샘추위의 정체다.'] },
+  // 진화형 (미리보기 ⑥, Q38): 지방마다 2~3종만 진화
+  kkokko: { name: '꼬꼬솜', art: 'gen', gs: { body: 'bird', form: 'chick', c1: '#f8e070', c2: '#fff8d8', glyph: '', k: 0 }, v: 'warm', add: 'crest', big: 1.12, type: '노말', hp: 52, atk: 52, def: 50, moves: ['몸통박치기', '솜털 공격', '꼬꼬 돌진', '솜털 회오리'], dex: ['아기새몬', 0.6, 4.5, '솜털이 자라 볏이 생겼다. 아침마다 꼬꼬 울어 친구들을 깨운다.'] },
+  queenbung: { name: '여왕붕붕', art: 'gen', gs: { body: 'flyer', form: 'bee', c1: '#f0c030', c2: '#6a4020', glyph: '', k: 1 }, v: 'gold', add: 'crown', big: 1.12, type: '봄', hp: 50, atk: 60, def: 48, moves: ['몸통박치기', '침 쏘기', '꿀 폭탄', '여왕의 침'], dex: ['꿀벌몬', 0.6, 3.2, '붕붕이 무리를 이끄는 여왕. 왕관 모양 더듬이로 꽃밭을 찾아낸다.'] },
+  wanggaegul: { name: '왕개굴', art: 'gen', gs: { body: 'frog', form: 'toad', c1: '#7ad070', c2: '#e8f8d0', glyph: '', k: 4 }, v: 'deep', add: 'crown', big: 1.18, type: '봄', hp: 60, atk: 52, def: 58, moves: ['몸통박치기', '혀 내밀기', '봄비 부르기', '왕개굴 점프'], dex: ['개구리몬', 1.0, 18, '연못의 왕. 한 번 울면 온 마을에 봄비가 내린다고 한다.'] },
 });
+SP.piyak.evo = [12, 'kkokko']; SP.bung.evo = [14, 'queenbung']; SP.gaegul.evo = [15, 'wanggaegul'];
 // 도감 순서: 계열끼리 붙여서 정렬 (전설은 맨 뒤)
 const LEGENDS = ['beastO', 'beastI', 'beastG', 'dragon', 'whale', 'phi', 'euler', 'zeroking'];
 function evolveFor(sp, lv) { let s = sp, g = 0; while (SP[s].evo && lv >= SP[s].evo[0] && g++ < 3) s = SP[s].evo[1]; return s; }
@@ -2042,12 +2047,13 @@ function gymRoom(n, G) {
 const T2 = (title, name, pal, team, line, lose) => ({ title, name, pal, team, line, lose });
 const GYMS = [
   // 체육관 1 (봄 · 수와 연산): 관원 = 중2(unit 1), 관장 = 중3(lunit 13)
-  { label: '벚꽃', town: 'bunsu', floor: '#f6e2ea', name: '하람', badge: '벚꽃 배지', unit: 1, lunit: 13, team: [['bung', 5], ['daram', 6], ['napul', 7]], reward: [['ball', 3]], key: null,
-    intro: ['벚꽃 체육관에 온 걸 환영해! 나는 관장 하람.', '소수부터 제곱근까지, 수의 기초를 보여 줘!'], win: '와, 꽃잎처럼 가볍게 이겼구나! 인정!', after: '북쪽 2번 도로 너머엔 꽃샘시티가 있어. 길이 열리면 가 보렴!',
-    tr: [T2('체육관 관원', '봄이', 't2', [['piyak', 4], ['bung', 5]], '관장님께 가려면 날 넘어라!', '꽃잎처럼 흩날렸다…'), T2('체육관 관원', '새싹', 't4', [['gaegul', 5]], '봄비처럼 쏟아지는 공격을 받아라!', '비가 그쳤다…'), T2('체육관 관원', '꽃잎', 't1', [['daram', 5], ['napul', 6]], '관장님 바로 앞이야. 여기서 멈춰!', '꽃잎이 다 떨어졌어…')] },
-  { label: 'Ⅱ-1', town: 'expo', floor: '#eadcc4', name: '지수', badge: '지수 배지', unit: '2a', team: [['bat', 13], ['rock', 14], ['croc', 16]], reward: [['spotion', 2]], key: 'scissors',
-    intro: ['찍기단을 쫓아내 줘서 고맙다. 하지만 승부는 승부!', '제곱, 세제곱… 내 힘은 지수적으로 커진다!'], win: '동류항 정리까지 완벽하다니… 인정!', after: '그 가위로 순환소수 숲의 작은 나무를 자를 수 있어. 숲을 지나면 부등호시티다!',
-    tr: [T2('체육관 관원', '항이', 't3', [['rock', 12]], '동류항끼리만 더할 수 있다고!', '정리… 당했다.'), T2('체육관 관원', '식이', 't1', [['bat', 12], ['bird', 11]], 'x^2 × x^3 = x^5!', '지수끼리 더하는 건 맞았는데…'), T2('체육관 관원', '곱이', 't4', [['croc', 13]], '분배법칙으로 괄호를 풀어라!', '괄호에 갇혔다…')] },
+  { label: '벚꽃', town: 'bunsu', floor: '#f6e2ea', name: '하람', badge: '벚꽃 배지', unit: 1, lunit: 13, team: [['bung', 10], ['daram', 11], ['napul', 12]], // 2026-11-05 Lv 5~7 → 10~12 (충분히 레벨업하고 도전) reward: [['ball', 3]], key: null,
+    intro: ['벚꽃 체육관에 온 걸 환영해! 나는 관장 하람.', '소수부터 제곱근까지, 수의 기초를 보여 줘!'], win: '와, 꽃잎처럼 가볍게 이겼구나! 인정!', after: '북쪽 2번 도로 너머엔 꽃샘시티가 있어. 이제 경비원이 길을 비켜 줄 거야!',
+    tr: [T2('체육관 관원', '봄이', 't2', [['piyak', 7], ['bung', 8]], '관장님께 가려면 날 넘어라!', '꽃잎처럼 흩날렸다…'), T2('체육관 관원', '새싹', 't4', [['gaegul', 9]], '봄비처럼 쏟아지는 공격을 받아라!', '비가 그쳤다…'), T2('체육관 관원', '꽃잎', 't1', [['daram', 8], ['napul', 9]], '관장님 바로 앞이야. 여기서 멈춰!', '꽃잎이 다 떨어졌어…')] },
+  // 체육관 2 (봄 · 문자와 식 Ⅰ 식의 계산): 관원 = 중2(unit '2a'), 관장 = 중3(lunit 23). 레벨은 선생님 요청으로 관장 약 20 (2026-11-05)
+  { label: '꽃샘', town: 'cycle', floor: '#e6eef8', name: '나린', badge: '꽃샘 배지', unit: '2a', lunit: 23, team: [['kkokko', 18], ['wanggaegul', 19], ['kkotsaem', 20]], reward: [['ball', 5]], key: null,
+    intro: ['꽃샘 체육관에 온 걸 환영해. 나는 관장 나린.', '곱셈공식과 인수분해로 식을 깔끔하게 정리해 봐!'], win: '봄바람처럼 따뜻한 승부였어. 네가 이겼어!', after: '동쪽 여름 지방으로 가는 길은 아직 준비 중이래. 그동안 오답노트를 다시 풀어 보렴!',
+    tr: [T2('체육관 관원', '시린', 't3', [['daram', 14], ['kkokko', 15]], '꽃샘바람처럼 차갑게 상대해 주지!', '바람이 잦아들었다…'), T2('체육관 관원', '솔솔', 't1', [['queenbung', 16]], '여왕붕붕의 침을 피할 수 있을까?', '꿀이 다 떨어졌다…'), T2('체육관 관원', '서리', 't4', [['wanggaegul', 16], ['kkotsaem', 17]], '관장님께 가려면 나부터 넘어라!', '서리가 녹아 버렸다…')] },
   { label: 'Ⅱ-2', town: 'ineq', floor: '#f0e4d0', name: '이항', badge: '부등호 배지', unit: '2b', team: [['croc', 17], ['fighter', 18], ['bird', 19], ['cat2', 20]], reward: [['xshare', 1], ['hpotion', 2]], key: null,
     intro: ['부등호시티 체육관에 온 걸 환영해! 나는 관장 이항.', '음수를 곱하면 뒤집히는 부등호처럼, 승부도 뒤집어 주지!'], win: '연립방정식처럼 딱 하나의 해… 너의 승리였어!', after: '꽃집에 가 보렴. 남쪽 길을 막은 흔들리는 나무에 물을 뿌릴 수 있을 거야.',
     tr: [T2('체육관 관원', '부등', 't2', [['croc', 15]], '부등식의 해를 수직선에 그려 봐!', '방향을 반대로 그렸다…'), T2('체육관 관원', '연립', 't3', [['fighter', 16]], '가감법이냐 대입법이냐!', '둘 다 졌다…'), T2('체육관 관원', '해야', 't1', [['bird', 16], ['mouse', 16]], '닭과 토끼의 다리를 세어 봐!', '토끼가 더 많았어…')] },
@@ -2187,7 +2193,7 @@ API.hide1.m.warps[API.hide1.get(14, 1)].x = 13; API.hide1.m.warps[API.hide1.get(
 }
 // 1번 도로 / 벚꽃마을(지도 id는 bunsu 그대로) / 2번 도로
 XW.route1 = []; // 봄 지방: 예전 추가 계열은 나오지 않게
-routeGen('route1', { name: '1번 도로', theme: 'town', unit: 11, w: 24, h: 30, cx: 0, secret: 0, wild: ['piyak', 'piyak', 'bung', 'daram', 'daram', 'napul', 'gaegul', 'kkotsaem'], lv: [3, 5], ends: [['S', 10], ['N', 9], ['W', 15]], trainers: 3, items: [['potion', 2], ['ball', 2], ['potion', 1]], hidden: [['potion', 1]], flowers: 6, seed: 11 });
+routeGen('route1', { name: '1번 도로', theme: 'town', unit: 11, w: 24, h: 30, cx: 0, secret: 0, wild: ['piyak', 'piyak', 'bung', 'daram', 'daram', 'napul', 'gaegul', 'kkotsaem'], lv: [3, 6], ends: [['S', 10], ['N', 9], ['W', 15]], trainers: 3, items: [['potion', 2], ['ball', 2], ['potion', 1]], hidden: [['potion', 1]], flowers: 6, seed: 11 });
 blossom(API.route1.m, 7, .35);
 // 시범판: 서쪽 샛길(새싹 들판, 예전 몬스터가 나오는 곳)은 아직 닫아 둔다
 { const [, , wx, wy] = API.route1.m.exits.W; gateGuard(API.route1, wx, wy, wx, wy - 1, () => false, '경비원: 이 샛길은 아직 정비 중이야!\n북쪽으로 쭉 가면 벚꽃마을이 나와.', '', 'guard', 'r1W'); }
@@ -2197,25 +2203,34 @@ townGen('bunsu', { name: '벚꽃마을', theme: 'town', unit: 11, w: 22, h: 18, 
 blossom(API.bunsu.m, 3, .8);
 API.bunsu.sign(12, 10, '벚꽃마을\n꽃잎이 흩날리는 마을');
 API.bunsu.ev(API.bunsu.cx, 12, 'rival1', () => rivalBattle(1)); // 마을에 들어와 큰길을 오르다 라이벌을 만난다
-// 시범판: 북쪽 2번 도로(꽃샘시티 방향)는 아직 닫아 둔다
-gateGuard(API.bunsu, API.bunsu.cx, 1, API.bunsu.cx + 1, 1, () => false, '경비원: 이 길 너머 꽃샘시티는 아직 준비 중이야!\n벚꽃 체육관에 먼저 도전해 보렴.', '', 'guard', 'beotN');
+// 북쪽 2번 도로(꽃샘시티 방향)는 벚꽃 배지를 따면 열린다
+gateGuard(API.bunsu, API.bunsu.cx, 1, API.bunsu.cx + 1, 1, () => S.badges[0], '경비원: 북쪽 2번 도로부터는 사계몬이 훨씬 강해져.\n먼저 벚꽃 체육관에서 벚꽃 배지를 따 와!', '경비원: 벚꽃 배지! 북쪽 2번 도로로 가도 좋아.\n북쪽으로 갈수록 사계몬이 강해지니 조심해!', 'guard', 'beotN');
 API.bunsu.ent({ id: 'beotk', kind: 'npc', x: 8, y: 14, dir: 'down', pal: 't2', wander: true, lines: ['벚꽃 체육관 관장 하람은 봄꽃을 정말 좋아해!', '풀숲에서 사계몬을 만나면 문제를 맞혀야 기술을 쓸 수 있어.', '회복소에서 쉬면 사계몬이 모두 건강해져!'] });
 // 벚꽃마을 입구: 길잡이 할아버지가 지도를 준다
 for (let x = 2; x <= API.bunsu.m.w - 3; x++) if (['.', '=', '*', ','].includes(API.bunsu.get(x, API.bunsu.m.h - 3))) API.bunsu.ev(x, API.bunsu.m.h - 3, 'mapGift', () => H.mapGift());
-routeGen('route2', { name: '2번 도로', theme: 'forest', unit: 1, w: 26, h: 36, cx: 1, pond: 1, wild: ['bug', 'cat', 'mouse', 'snake', 'bug2'], lv: [4, 7], ends: [['S', 10], ['N', 11], ['E', 18]], trainers: 4, items: [['ball', 3], ['potion', 1]], hidden: [['spotion', 1]], flowers: 4, seed: 23 });
-// 순환시티
-townGen('cycle', { name: '순환시티', theme: 'forest', unit: 1, w: 24, h: 20, exits: ['S', 'E'], blds: [
-  { x: 15, y: 2, w: 6, roof: 'B', d: 3, to: 'mt1', emblem: '탑' }, // 체육관 1은 벚꽃마을로 옮김
-  { x: 2, y: 12, w: 4, roof: 'C', d: 2, to: 'center', ret: 1 }, { x: 15, y: 12, w: 4, roof: 'M', d: 2, to: 'mart', ret: 1, arrive: [4, 6] }, { x: 7, y: 12, w: 4, roof: 'H', d: 1, to: 'cycleH' }] });
-gateGuard(API.cycle, 22, 10, 21, 9, () => S.badges[0], '경비원: 동쪽 3번 도로부터는 사계몬이 강해져.\n먼저 순환시티 체육관에서 순환 배지를 따 와!', '경비원: 순환 배지! 동쪽으로 가도 좋아. 연결동굴은 어두우니 조심해!', 'guard', 'cycleE');
-API.cycle.sign(9, 5, '순환시티 체육관\n관장: 무한').sign(19, 9, '명상의 탑\n수도승들이 수행하는 곳');
-API.cycle.ent({ id: 'cyn', kind: 'npc', x: 14, y: 16, dir: 'down', pal: 't1', wander: true, lines: ['0.333…은 분수로 3분의 1이야. 신기하지?', '동쪽 연결동굴은 너무 어두워. 명상의 탑 장로님이 손전등을 갖고 계시대.', '2번 도로 동쪽 숲길 끝에 약수 숲이 있어. 깊이 들어가면 강한 사계몬도 나온대.', '길가의 작은 나무는 가지치기 가위로 자를 수 있어. 그 뒤엔 대개 좋은 물건이 있지!'] });
+// 2번 도로: 봄 지방. 북쪽(꽃샘시티 쪽)으로 갈수록 야생 몬스터 레벨이 오른다 (wild.grad)
+XW.route2 = [];
+routeGen('route2', { name: '2번 도로', theme: 'town', unit: 21, w: 26, h: 36, cx: 1, pond: 1, wild: ['piyak', 'bung', 'daram', 'daram', 'napul', 'gaegul', 'gaegul', 'kkotsaem'], lv: [10, 15], ends: [['S', 10], ['N', 11], ['E', 18]], trainers: 4, items: [['ball', 3], ['potion', 2]], hidden: [['mpotion', 1]], flowers: 4, seed: 23 });
+API.route2.m.wild.grad = 'N';
+blossom(API.route2.m, 9, .35);
+// 동쪽 샛길(약수 숲, 예전 몬스터가 나오는 곳)은 닫아 둔다
+{ const [, , ex, ey] = API.route2.m.exits.E; gateGuard(API.route2, ex, ey, ex, ey - 1, () => false, '경비원: 이 샛길은 아직 정비 중이야!\n북쪽으로 가면 꽃샘시티가 나와.', '', 'guard', 'r2E'); }
+// 꽃샘시티 (지도 id는 cycle 그대로): 체육관 2
+house('kkotH', '꽃샘시티 민가', [{ id: 'kkotg', kind: 'npc', x: 7, y: 4, dir: 'left', pal: 'elder', lines: ['꽃샘추위가 오면 꽃샘이가 마을에 내려온단다.', '체육관 관장 나린은 꽃샘이를 아주 아낀다지.', '여름 지방으로 가는 동쪽 길은 아직 닫혀 있어.'] }]);
+townGen('cycle', { name: '꽃샘시티', theme: 'town', unit: 21, w: 24, h: 20, seed: 777, exits: ['S', 'E'], blds: [
+  { x: 2, y: 2, w: 6, roof: 'G', d: 3, to: 'gym1', emblem: '2' }, { x: 16, y: 2, w: 4, roof: 'C', d: 2, to: 'center', ret: 1 },
+  { x: 16, y: 12, w: 4, roof: 'M', d: 2, to: 'mart', ret: 1, arrive: [4, 6] }, { x: 3, y: 12, w: 4, roof: 'H', d: 1, to: 'kkotH' }] });
+blossom(API.cycle.m, 5, .5);
+// 동쪽 여름 지방(3번 도로)은 아직 닫아 둔다
+gateGuard(API.cycle, API.cycle.m.w - 2, API.cycle.cy, API.cycle.m.w - 2, API.cycle.cy - 1, () => false, '경비원: 이 길 너머 여름 지방은 아직 준비 중이야!\n꽃샘 체육관에 먼저 도전해 보렴.', '', 'guard', 'cycleE');
+API.cycle.sign(14, 7, '꽃샘시티\n봄과 겨울이 잠깐 만나는 마을');
+API.cycle.ent({ id: 'cyn', kind: 'npc', x: 9, y: 15, dir: 'down', pal: 'kid', wander: true, lines: ['2번 도로는 북쪽으로 갈수록 강한 사계몬이 나와!', '꽃샘 체육관 관장 나린은 진짜 강해. 충분히 키우고 도전해!', '보건실에서 오답노트를 다시 풀면 힌트 카드를 받을 수 있대.'] });
 routeGen('route3', { name: '3번 도로', theme: 'town', unit: '2a', w: 42, h: 21, cx: 1, pond: 1, wild: ['bird', 'bat', 'rock', 'mouse'], lv: [6, 9], ends: [['W', 10], ['E', 6]], trainers: 4, items: [['spotion', 1], ['sball', 1]], hidden: [['ether', 1]], flowers: 5, seed: 37 });
 routeGen('cave1', { name: '연결동굴', theme: 'cave', unit: '2a', w: 36, h: 21, fill: .65, cave: true, dark: true, wild: ['bat', 'rock', 'croc', 'bat'], lv: [7, 10], ends: [['W', 8], ['E', 9]], trainers: 3, items: [['potion', 2], ['revive', 1], ['ball', 3]], seed: 43 });
 { const a = API.cave1; a.rect(15, 1, 15, 13, '.'); a.rect(12, 14, 18, 16, '~'); a.rect(12, 13, 18, 13, '.'); a.ent({ id: 'turtleF', kind: 'friday', x: 15, y: 15, dir: 'up' }); a.sign(11, 13, '물가 안내판\n"금요일에만 이상한 그림자가 보인다"'); }
 // 지수마을
 townGen('expo', { name: '지수마을', theme: 'town', unit: '2a', w: 22, h: 18, exits: ['W', 'S'], blds: [
-  { x: 2, y: 2, w: 6, roof: 'G', d: 3, to: 'gym1', emblem: 'Ⅱ' }, { x: 14, y: 2, w: 4, roof: 'C', d: 2, to: 'center', ret: 1 },
+  { x: 14, y: 2, w: 4, roof: 'C', d: 2, to: 'center', ret: 1 }, // 체육관 2는 꽃샘시티로 옮김
   { x: 2, y: 11, w: 4, roof: 'M', d: 2, to: 'mart', ret: 1, arrive: [4, 6] }, { x: 13, y: 11, w: 4, roof: 'H', d: 1, to: 'expoH' }, { x: 7, y: 12, w: 3, roof: 'B', d: 1, to: 'well', emblem: '井' }] });
 gateGuard(API.expo, 5, 6, 4, 6, () => S.flags.wellClear, '찍기단 조무래기: 체육관 관장? 지금 우물에서 우리 일을 막으러 갔다가 혼쭐났지~\n덤비려면 우물로 와라! 히히!', '관장 지수가 체육관으로 돌아왔다!', 'grunt', 'expogrunt');
 gateGuard(API.expo, 11, 16, 12, 16, () => S.badges[1], '경비원: 남쪽 순환소수 숲은 길이 험해. 지수 배지가 있어야 지나갈 수 있어!', '경비원: 지수 배지 확인! 숲의 작은 나무는 가위로 자르면 돼.', 'guard', 'expoS');
@@ -2600,9 +2615,11 @@ function stageMul(sp) { // 진화한 상대일수록 경험치를 더 준다
   return depth === 0 ? 1.25 : depth === 1 ? 1.4 : 1.5;
 }
 // 받는 사계몬의 레벨(Lp) 기준: 같은 레벨이면 위 마리 수, 낮은 레벨 상대는 조금 덜(√(L/Lp)), 높은 레벨 상대는 조금 더(최대 1.5배)
+// 첫 배지를 딴 뒤(2번째 지방부터)는 경험치를 줄여 레벨업을 어렵게 한다 (2026-11-05 선생님 요청: 체육관 1은 1차시, 2부터는 한 차시에 못 끝내는 학생도 있게)
+const XP_LATE = 0.6;
 function xpYield(sp, L, trainer, Lp = L) {
-  const ref = (totalXP(Lp + 1) - totalXP(Lp)) / battlesPerLv(Lp);
-  return Math.max(1, Math.round(ref * Math.min(1.5, Math.sqrt(L / Lp)) * stageMul(sp) * (trainer ? 1.5 : 1)));
+  const ref = (totalXP(Lp + 1) - totalXP(Lp)) / battlesPerLv(Lp), late = S && S.badges[0] ? XP_LATE : 1;
+  return Math.max(1, Math.round(ref * Math.min(1.5, Math.sqrt(L / Lp)) * stageMul(sp) * (trainer ? 1.5 : 1) * late));
 }
 function calcStats(m) {
   const b = SP[m.sp], old = m.maxhp;
@@ -2718,10 +2735,14 @@ function monRow(m, extra = '') { return `<img src="${icon(m.sp)}" alt=""><span c
 
 // ---------- 퀴즈 ----------
 let lastQ = null;
+// 복습 (기획서 Q1-1): 지금 영역보다 앞서 지나온 영역의 문제를 25% 섞는다. 체육관을 하나 만들 때마다 한 줄씩 더한다
+const REVIEW_DOMAINS = [[11, 1, 13], [21, '2a', 23]];
 function pickUnit() {
   if (B && B.o.units) return pick(B.o.units);
   const u = B && B.o.unit !== undefined ? B.o.unit : CUR.unit;
   if (!u) return 0;
+  const di = REVIEW_DOMAINS.findIndex(d => d.includes(u));
+  if (di > 0) return Math.random() < .25 ? pick(REVIEW_DOMAINS.slice(0, di).flat()) : u;
   const ui2 = UORDER.indexOf(u);
   if (ui2 > 0 && Math.random() < .25) return UORDER[R(0, ui2 - 1)];
   return u;
@@ -3820,7 +3841,9 @@ async function wildBattle(w) {
     await battle({ kind: 'roam', team: [m] });
     return;
   }
-  const lv = R(w.lv[0], w.lv[1]); let sp = pick(w.list);
+  let lv = R(w.lv[0], w.lv[1]); let sp = pick(w.list);
+  // grad 'N': 남쪽 입구는 낮은 레벨, 북쪽 끝으로 갈수록 높은 레벨 (±1)
+  if (w.grad === 'N') { const k = 1 - P.y / (CUR.h - 1); lv = clamp(w.lv[0] + Math.round((w.lv[1] - w.lv[0]) * k) + R(-1, 1), w.lv[0], w.lv[1]); }
   if (SP[sp].evo && lv >= SP[sp].evo[0] && Math.random() < .4) sp = evolveFor(sp, lv);
   await battle({ kind: 'wild', team: [mkMon(sp, lv, false, HPMUL.wild)] });
 }
@@ -4462,7 +4485,7 @@ function trainerCard() {
 // ---------- 성적표 (기획서 8장, 미리보기 ⑤): 학생이 캡처해서 제출한다 ----------
 const REPORT_ROWS = ['수와 연산', '문자와 식', '함수', '기하', '확률과 통계'];
 // 문제 단원 번호 → [영역 줄, 학년]. 새 단원을 만들면 여기에 더한다
-const REPORT_MAP = { 11: [0, 1], 1: [0, 2], 13: [0, 3], 2: [1, 2], 3: [2, 2], 4: [3, 2], 5: [3, 2], 6: [4, 2] };
+const REPORT_MAP = { 11: [0, 1], 1: [0, 2], 13: [0, 3], 21: [1, 1], 2: [1, 2], 23: [1, 3], 3: [2, 2], 4: [3, 2], 5: [3, 2], 6: [4, 2] };
 async function askSid() {
   while (true) {
     const v = await nameInput('학번을 입력해 주세요 (숫자 5자리)', '30215', 5, '');
