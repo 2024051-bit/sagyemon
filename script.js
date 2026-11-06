@@ -471,6 +471,10 @@ Object.assign(SP, {
   subak: { name: '수박거북', art: 'gen', gs: { body: 'turtle', c1: '#3a9a3a', c2: '#f05a5a', glyph: '', k: 5 }, type: '여름', hp: 58, atk: 46, def: 60, moves: ['몸통박치기', '수박씨 쏘기', '등껍질 들이받기', '수박 굴리기'], dex: ['거북몬', 0.6, 15, '등껍질이 수박처럼 생겼다. 한여름에는 시원한 그늘에서 꼼짝도 안 한다.'] },
   // 파도동굴 전용 (미리보기 ⑨)
   eodug: { name: '어둑이', art: 'bat', v: 'cool', type: '비행', hp: 48, atk: 56, def: 42, moves: ['날개치기', '초음파', '어둠 속 급습', '동굴 회오리'], dex: ['박쥐몬', 0.7, 6, '빛이 들지 않는 동굴 천장에 거꾸로 매달려 잔다. 날개 소리만 들리고 모습은 잘 안 보인다.'] },
+  // 매미숲 (미리보기 ⑩, Q45)
+  ppul: { name: '뿔뿔이', art: 'gen', gs: { body: 'bug', form: 'beetle', c1: '#5a3a1e', c2: '#d8a850', glyph: '', k: 15 }, type: '여름', hp: 54, atk: 60, def: 56, moves: ['몸통박치기', '뿔 찌르기', '단단해지기', '뿔 들어올리기'], evo: [28, 'wangppul'], dex: ['풍뎅이몬', 0.5, 4, '참나무 수액을 좋아한다. 작은 뿔로 친구와 힘겨루기를 한다.'] },
+  wangppul: { name: '왕뿔이', art: 'gen', gs: { body: 'bug', form: 'beetle', c1: '#5a3a1e', c2: '#d8a850', glyph: '', k: 15 }, v: 'deep', add: 'horns', big: 1.15, type: '여름', hp: 68, atk: 78, def: 70, moves: ['몸통박치기', '왕뿔 찌르기', '단단해지기', '통나무 던지기'], dex: ['풍뎅이몬', 1.2, 30, '커다란 뿔로 통나무도 들어 올린다. 숲의 힘센 대장.'] },
+  neurit: { name: '느릿이', art: 'gen', gs: { body: 'biped', form: 'sloth', c1: '#a08a6a', c2: '#e8dcc0', glyph: '', k: 16 }, type: '노말', hp: 66, atk: 58, def: 58, moves: ['할퀴기', '하품', '나뭇가지 휘두르기', '느릿느릿 박치기'], dex: ['나무늘보몬', 0.9, 20, '나뭇가지에 매달려 하루 종일 꾸벅꾸벅 존다. 화가 나면 의외로 빠르다.'] },
   doldeong: { name: '돌덩이', art: 'gen', gs: { body: 'biped', form: 'golem', c1: '#9a8a70', c2: '#d8c8a0', glyph: '', k: 12 }, type: '바위', hp: 58, atk: 52, def: 66, moves: ['몸통박치기', '돌 던지기', '단단해지기', '바위 굴리기'], dex: ['바위몬', 1.0, 90, '동굴 벽에서 굴러 나온 돌이 모여 생겼다. 가만히 있으면 진짜 바위와 구별이 안 된다.'] },
 });
 // 도감 순서: 계열끼리 붙여서 정렬 (전설은 맨 뒤)
@@ -1957,18 +1961,18 @@ wwwwwwwMMwwwwwww`,
 wwwwwwwwwwwwwwww
 wqffffffZfffffqw
 wffffffffffffffw
-wqiiiiiiiiiiiiqw
-wiiqiiiiiiiiqiiw
-wiiiiiiiqiiiiiiw
-wqiiiiiiiiiiiqiw
-wiiiiqiiiiiiiiiw
-wiiiiiiiiiiqiiiw
-wfffiiiiiiiiifCw
-wffqiiiiqiiiiffw
-wfBfiiiiiiiiiiiw
-wffiiiiiiiqiiiiw
-wiiiiiiiiiiiiiiw
-wqiiiiiiiiiiiiiw
+wqffffffffffffqw
+wffqffffffffqffw
+wfffffffqffffffw
+wqfffffffffffqfw
+wffffqfffffffffw
+wffffffffffqfffw
+wfffffffffffffCw
+wffqffffqffffffw
+wfBffffffffffffw
+wfffffffffqffffw
+wffffffffffffffw
+wqfffffffffffffw
 wffffAffffffffqw
 wffffffffffffffw
 wwwwwwwMMwwwwwww`,
@@ -2084,11 +2088,12 @@ const GYMS = [
     tr: [T2('체육관 관원', '시린', 't3', [['daram', 14], ['kkokko', 15]], '꽃샘바람처럼 차갑게 상대해 주지!', '바람이 잦아들었다…'), T2('체육관 관원', '솔솔', 't1', [['queenbung', 16]], '여왕붕붕의 침을 피할 수 있을까?', '꿀이 다 떨어졌다…'), T2('체육관 관원', '서리', 't4', [['wanggaegul', 16], ['kkotsaem', 17]], '관장님께 가려면 나부터 넘어라!', '서리가 녹아 버렸다…')] },
   // 체육관 3 (여름 · 문자와 식 Ⅱ 방정식과 부등식): 관원 = 중2(unit '2b'), 관장 = 중3(lunit 33)
   { label: '소나기', town: 'expo', floor: '#dcecf6', name: '여울', badge: '소나기 배지', unit: '2b', lunit: 33, team: [['keunjip', 24], ['mallang', 25], ['sonak', 26]], reward: [['ball', 5]], key: null,
-    intro: ['소나기 체육관에 온 걸 환영해. 나는 관장 여울.', '방정식의 해처럼, 이 승부의 답도 하나뿐이야!'], win: '소나기가 그치고 무지개가 떴네. 네가 이겼어!', after: '북쪽 매미숲마을로 가는 길은 아직 준비 중이래. 그동안 실력을 더 키워 두렴!',
+    intro: ['소나기 체육관에 온 걸 환영해. 나는 관장 여울.', '방정식의 해처럼, 이 승부의 답도 하나뿐이야!'], win: '소나기가 그치고 무지개가 떴네. 네가 이겼어!', after: '이제 북쪽 길이 열릴 거야. 4번 도로와 매미숲을 지나면 매미숲마을이 나온단다!',
     tr: [T2('체육관 관원', '파도', 't2', [['kkiruk', 20], ['mallang', 21]], '파도처럼 밀려오는 공격을 받아라!', '파도가 잠잠해졌다…'), T2('체육관 관원', '모래', 't4', [['wangmae', 22]], '왕매미의 합창을 들어 봐!', '매미 소리가 멎었다…'), T2('체육관 관원', '물결', 't3', [['subak', 22], ['sonak', 23]], '관장님께 가려면 나부터 넘어라!', '소나기가 그쳤다…')] },
-  { label: 'Ⅲ단원', town: 'func', floor: '#eef2c8', name: '한결', badge: '기울기 배지', unit: 3, team: [['sheep', 21], ['dog', 22], ['bird2', 24]], reward: [['pencil', 1], ['hball', 3]], key: 'tube',
-    intro: ['함수시티의 관장 한결이다.', '기울기는 한결같지! 일차함수처럼 말이야.'], win: '너의 실력 그래프는 오른쪽 위로 쭉 올라가는구나!', after: '수영 튜브를 줬으니 서쪽 닮음항구 너머 바다도 건널 수 있을 거야.',
-    tr: [T2('체육관 관원', '기울', 't4', [['dog', 19]], 'y절편은 x = 0일 때 y값!', '0점이다…'), T2('체육관 관원', '절편', 't2', [['sheep', 19], ['bird', 19]], '평행한 직선은 기울기가 같아!', '만나지 못하고 졌다…'), T2('체육관 관원', '교점', 't3', [['dog', 20]], '교점은 연립방정식의 해!', '해를 놓쳤다…')] },
+  // 체육관 4 (여름 · 함수): 관원 = 중2(unit 3 일차함수), 관장 = 중3(lunit 43 이차함수) (미리보기 ⑩, Q44)
+  { label: '한여름', town: 'maemi', floor: '#e2f0d0', name: '한솔', badge: '한여름 배지', unit: 3, lunit: 43, team: [['neurit', 30], ['wangmae', 31], ['wangppul', 32]], reward: [['ball', 5]], key: null,
+    intro: ['한여름 체육관에 온 걸 환영해. 나는 관장 한솔.', 'x가 하나 정해지면 y도 하나! 이 승부의 결과도 이미 정해져 있지.'], win: '숲이 조용해졌네… 네가 이겼어!', after: '북쪽 가을 지방으로 가는 길은 아직 준비 중이래. 그동안 실력을 더 키워 두렴!',
+    tr: [T2('체육관 관원', '나무', 't4', [['ppul', 26], ['neurit', 27]], '숲속에서는 내가 최고야!', '나뭇잎이 다 떨어졌다…'), T2('체육관 관원', '그늘', 't2', [['wangmae', 28]], '한여름 매미 소리를 들어 봐!', '매미 소리가 그쳤다…'), T2('체육관 관원', '수풀', 't3', [['neurit', 28], ['wangppul', 29]], '관장님께 가려면 나부터 넘어라!', '수풀이 잠잠해졌다…')] },
   { label: 'Ⅳ단원', town: 'island', floor: '#e2e2f2', name: '세모', badge: '합동 배지', unit: 4, team: [['tri', 25], ['spider2', 26], ['fighter', 27], ['owl', 28]], reward: [['eraser', 1], ['revive', 2]], key: 'plane',
     intro: ['합동섬 체육관 관장 세모!', '외심은 꼭짓점에서, 내심은 변에서 같은 거리! 외워 왔겠지?'], win: '완벽한 증명이었다… RHS 합동만큼 확실해!', after: '약국에 가 보렴. 등대의 아픈 사계몬을 낫게 할 약이 있을 거야.',
     tr: [T2('체육관 관원', '외심', 't3', [['owl', 23]], '직각삼각형의 외심은 빗변의 중점!', '중심을 잃었다…'), T2('체육관 관원', '내심', 't1', [['spider', 23], ['tri', 23]], '평행사변형은 대각이 같아!', '대각선으로 무너졌다…'), T2('체육관 관원', '합동', 't4', [['fighter', 24]], 'RHA! RHS! 합동!', '합동이 아니었어…')] },
@@ -2267,16 +2272,34 @@ API.tidecave.m.wild.grad = 'E';
 routeGen('cave1', { name: '연결동굴', theme: 'cave', unit: '2a', w: 36, h: 21, fill: .65, cave: true, dark: true, wild: ['bat', 'rock', 'croc', 'bat'], lv: [7, 10], ends: [['W', 8], ['E', 9]], trainers: 3, items: [['potion', 2], ['revive', 1], ['ball', 3]], seed: 43 });
 { const a = API.cave1; a.rect(15, 1, 15, 13, '.'); a.rect(12, 14, 18, 16, '~'); a.rect(12, 13, 18, 13, '.'); a.ent({ id: 'turtleF', kind: 'friday', x: 15, y: 15, dir: 'up' }); a.sign(11, 13, '물가 안내판\n"금요일에만 이상한 그림자가 보인다"'); }
 // 소나기항구 (지도 id는 expo 그대로): 체육관 3. 남쪽은 바다와 부두
-house('sonagiH', '소나기항구 민가', [{ id: 'sonag', kind: 'npc', x: 7, y: 4, dir: 'left', pal: 'swim', lines: ['소나기가 오면 소낙이들이 항구 위를 떠다닌단다.', '체육관 관장 여울은 바다처럼 시원시원한 사람이야.', '북쪽 매미숲마을로 가는 길은 아직 닫혀 있어.'] }]);
+house('sonagiH', '소나기항구 민가', [{ id: 'sonag', kind: 'npc', x: 7, y: 4, dir: 'left', pal: 'swim', lines: ['소나기가 오면 소낙이들이 항구 위를 떠다닌단다.', '체육관 관장 여울은 바다처럼 시원시원한 사람이야.', '북쪽 4번 도로를 지나면 매미숲이 나와. 숲속은 길이 복잡하니 조심하렴.'] }]);
 townGen('expo', { name: '소나기항구', theme: 'summer', unit: 31, w: 24, h: 22, seed: 909, exits: ['W', 'N'], blds: [
   { x: 2, y: 2, w: 6, roof: 'G', d: 3, to: 'gym2', emblem: '3' }, { x: 16, y: 2, w: 4, roof: 'C', d: 2, to: 'center', ret: 1 },
   { x: 16, y: 12, w: 4, roof: 'M', d: 2, to: 'mart', ret: 1, arrive: [4, 6] }, { x: 3, y: 12, w: 4, roof: 'H', d: 1, to: 'sonagiH' }] });
 blossom(API.expo.m, 4, .5);
 { const a = API.expo, m = a.m; for (let y = m.h - 5; y <= m.h - 2; y++) for (let x = 2; x <= m.w - 3; x++) if (x !== a.cx) a.set(x, y, '~'); }
-// 북쪽 매미숲마을(체육관 4)은 아직 닫아 둔다
-gateGuard(API.expo, API.expo.cx, 1, API.expo.cx + 1, 1, () => false, '경비원: 이 길 너머 매미숲마을은 아직 준비 중이야!\n소나기 체육관에 먼저 도전해 보렴.', '', 'guard', 'expoN');
+// 북쪽 4번 도로 → 매미숲 → 매미숲마을(체육관 4): 소나기 배지로 열림
+gateGuard(API.expo, API.expo.cx, 1, API.expo.cx + 1, 1, () => S.badges[2], '경비원: 북쪽은 매미숲으로 가는 4번 도로야.\n소나기 배지가 있어야 지나갈 수 있어!', '경비원: 소나기 배지! 북쪽 4번 도로로 가도 좋아.\n북쪽으로 갈수록 사계몬이 강해지니 조심해!', 'guard', 'expoN');
 API.expo.sign(API.expo.cx + 2, 7, '소나기항구\n소나기가 지나가면 무지개가 뜨는 항구');
 API.expo.ent({ id: 'sonak1', kind: 'npc', x: 10, y: 15, dir: 'down', pal: 'swim', wander: true, lines: ['3번 도로는 동쪽으로 갈수록 강한 사계몬이 나와!', '여름 사계몬은 가을 사계몬에게 약해. 상성을 잘 생각해 봐!', '부두 끝에서 바다를 보면 마음이 시원해져.'] });
+// 4번 도로 (여름): 소나기항구 북쪽. 북쪽(매미숲 쪽)으로 갈수록 야생 레벨이 오른다 (미리보기 ⑩)
+routeGen('route4s', { name: '4번 도로', theme: 'summer', unit: 41, w: 24, h: 36, cx: 1, pond: 1, wild: ['maem', 'maem', 'subak', 'kkiruk', 'ppul', 'neurit'], lv: [22, 25], ends: [['S', 11], ['N', 12]], trainers: 4, items: [['mpotion', 2], ['ball', 2]], hidden: [['hpotion', 1]], flowers: 5, seed: 61 });
+API.route4s.m.wild.grad = 'N';
+blossom(API.route4s.m, 21, .3);
+API.route4s.set(8, 30, '.').set(11, 18, '.'); // 숨긴 아이템으로 가는 길 (가위 없음 · 연못 섬)
+// 매미숲: 나무가 빽빽한 미로 숲 (밝은 맵)
+routeGen('maemforest', { name: '매미숲', theme: 'summer', unit: 41, w: 32, h: 34, cell: 4, maze: 1, fill: .7, ledges: 0, wild: ['ppul', 'ppul', 'neurit', 'neurit', 'maem', 'wangmae'], lv: [25, 28], ends: [['S', 12], ['N', 18]], trainers: 3, items: [['mpotion', 2], ['ball', 2]], hidden: [['hpotion', 1]], trees: 90, seed: 67 });
+API.maemforest.m.wild.grad = 'N';
+blossom(API.maemforest.m, 22, .35);
+API.maemforest.set(10, 4, '.'); // 숨긴 아이템으로 가는 길 (가위 없음)
+// 매미숲마을: 체육관 4 (함수). 북쪽 가을 지방은 아직 닫아 둔다
+house('maemiH', '매미숲마을 민가', [{ id: 'maemh', kind: 'npc', x: 7, y: 4, dir: 'left', pal: 't4', lines: ['여름 밤에는 매미숲에서 맴맴이들이 합창을 한단다.', '체육관 관장 한솔은 숲을 누구보다 아끼는 사람이야.', '북쪽은 가을 지방으로 가는 길인데, 아직 닫혀 있어.'] }]);
+townGen('maemi', { name: '매미숲마을', theme: 'summer', unit: 41, w: 24, h: 20, seed: 1013, exits: ['S', 'N'], blds: [
+  { x: 2, y: 2, w: 6, roof: 'G', d: 3, to: 'gym3', emblem: '4' }, { x: 16, y: 2, w: 4, roof: 'C', d: 2, to: 'center', ret: 1 },
+  { x: 16, y: 12, w: 4, roof: 'M', d: 2, to: 'mart', ret: 1, arrive: [4, 6] }, { x: 3, y: 12, w: 4, roof: 'H', d: 1, to: 'maemiH' }] });
+blossom(API.maemi.m, 7, .5);
+gateGuard(API.maemi, API.maemi.cx, 1, API.maemi.cx + 1, 1, () => false, '경비원: 이 길 너머 가을 지방은 아직 준비 중이야!\n한솔 관장에게 먼저 도전해 보렴.', '', 'guard', 'maemiN');
+API.maemi.sign(API.maemi.cx + 2, 7, '매미숲마을\n한여름 매미 소리가 끊이지 않는 숲속 마을');
 // 순환소수 숲
 routeGen('forest', { name: '순환소수 숲', theme: 'forest', unit: '2b', w: 32, h: 36, cell: 4, maze: 1, fill: .7, ledges: 0, wild: ['bug2', 'cat', 'bird', 'catpsy', 'snake', 'bug3'], lv: [10, 13], ends: [['N', 11], ['S', 14], ['E', 8]], trainers: 4, items: [['spotion', 2], ['candy', 1], ['sball', 2]], hidden: [['revive', 1]], trees: 90, seed: 59 });
 { const a = API.forest, h = a.m.h; a.rect(2, h - 3, a.m.w - 3, h - 2, 'T'); a.set(14, h - 2, '='); a.set(14, h - 3, 'x'); a.set(14, h - 4, '='); a.set(13, h - 4, '.'); a.set(15, h - 4, '.'); relocate(a, 1); }
@@ -2291,7 +2314,7 @@ routeGen('route5', { name: '5번 도로', theme: 'plain', unit: 3, w: 26, h: 36,
 { const a = API.route5, W = a.m.w; a.rect(2, 1, W - 3, 2, 'T'); a.set(15, 1, '=').set(15, 2, '=').set(15, 3, '='); a.ent({ id: 'fakeTree', kind: 'faketree', x: 15, y: 2, dir: 'down' }); relocate(a, 4); }
 // 함수시티
 townGen('func', { name: '함수시티', theme: 'plain', unit: 3, w: 26, h: 20, exits: ['N', 'W', 'E'], blds: [
-  { x: 2, y: 2, w: 6, roof: 'G', d: 3, to: 'gym3', emblem: 'Ⅲ' }, { x: 8, y: 2, w: 4, roof: 'M', d: 2, to: 'mart', ret: 1, arrive: [4, 6] }, { x: 16, y: 2, w: 4, roof: 'C', d: 2, to: 'center', ret: 1 },
+  { x: 8, y: 2, w: 4, roof: 'M', d: 2, to: 'mart', ret: 1, arrive: [4, 6] }, { x: 16, y: 2, w: 4, roof: 'C', d: 2, to: 'center', ret: 1 },
   { x: 2, y: 12, w: 6, roof: 'B', d: 3, to: 'burn1', emblem: '탑' }, { x: 8, y: 12, w: 4, roof: 'H', d: 1, to: 'funcH' }, { x: 16, y: 12, w: 6, roof: 'B', d: 3, to: 'gold1', emblem: '金' }] });
 API.func.sign(14, 9, '함수시티\n모든 것이 대응하는 도시').sign(10, 16, '불탄 탑\n오래전 화재로 불탄 탑');
 gateGuard(API.func, 19, 16, 20, 16, () => S.keys.gfeather, '수행자: 이 황금탑은 황금 깃털을 가진 자만 오를 수 있다.', '수행자: 황금 깃털…! 올라가거라.', 'monk', 'goldguard');
@@ -2352,7 +2375,7 @@ routeGen('silver', { name: '은빛산', theme: 'cave', unit: 0, w: 32, h: 31, ca
   s.rect(2, 3, 13, 9, '~').rect(6, 5, 9, 7, '.'); mat(s, 7, 'sea', 16, 24);
   s.ent({ id: 'whaleL', kind: 'legend', sp: 'whale', lv: 50, x: 8, y: 6, dir: 'down', flag: 'whale' });
 }
-for (const id2 of ['bunsu', 'cycle', 'expo', 'ineq', 'func', 'harbor', 'island', 'pita', 'prob']) relocate(API[id2], 1);
+for (const id2 of ['bunsu', 'cycle', 'expo', 'maemi', 'ineq', 'func', 'harbor', 'island', 'pita', 'prob']) relocate(API[id2], 1);
 // ---------- 곁길 지역 (선택 탐험) ----------
 routeGen('meadow', { name: '새싹 들판', theme: 'town', unit: 1, w: 30, h: 21, wild: ['bug', 'cat', 'mouse', 'snake'], lv: [3, 6], ends: [['E', 10]], trainers: 2, items: [['potion', 2], ['ball', 3], ['spotion', 1]], hidden: [['ball', 2], ['potion', 1]], cx: 0, pond: 1, seed: 601, signText: '새싹 들판\n막다른 길 끝에는 보물이 숨어 있대요!', secretItem: [['hball', 1], ['sball', 2]] });
 routeGen('grove', { name: '약수 숲', theme: 'forest', unit: 1, w: 30, h: 26, wild: ['bug2', 'cat', 'mouse', 'snake', 'bird'], lv: [6, 9], ends: [['W', 12]], trainers: 3, items: [['spotion', 2], ['sball', 2], ['revive', 1]], hidden: [['ether', 1]], cx: 1, seed: 613, signText: '약수 숲\n숲 깊은 곳까지 탐험해 보자!', secretItem: [['hball', 1], ['pencil', 1]] });
@@ -2379,6 +2402,7 @@ ELITES.forEach((E, i) => {
 // ================= 연결 =================
 link('town', 'N', 'route1', 'S'); link('route1', 'N', 'bunsu', 'S'); link('bunsu', 'N', 'route2', 'S'); link('route2', 'N', 'cycle', 'S');
 link('cycle', 'E', 'route3', 'W'); link('route3', 'E', 'tidecave', 'W'); link('tidecave', 'E', 'expo', 'W'); // 3번 도로 → 파도동굴 → 소나기항구 (예전 연결동굴·순환소수 숲은 지나지 않음)
+link('expo', 'N', 'route4s', 'S'); link('route4s', 'N', 'maemforest', 'S'); link('maemforest', 'N', 'maemi', 'S'); // 소나기항구 → 4번 도로 → 매미숲 → 매미숲마을
 link('forest', 'S', 'route4', 'N'); link('route4', 'S', 'ineq', 'N'); link('ineq', 'S', 'route5', 'N'); link('route5', 'S', 'func', 'N');
 link('func', 'W', 'route6', 'E'); link('route6', 'W', 'harbor', 'E'); link('harbor', 'S', 'sea', 'N'); link('sea', 'S', 'island', 'N');
 link('func', 'E', 'route7', 'W'); link('route7', 'E', 'pita', 'W'); link('pita', 'N', 'lake', 'S'); link('pita', 'E', 'ice1', 'W'); link('ice1', 'N', 'ice2', 'S'); link('ice2', 'N', 'prob', 'W');
@@ -2776,7 +2800,7 @@ function monRow(m, extra = '') { return `<img src="${icon(m.sp)}" alt=""><span c
 // ---------- 퀴즈 ----------
 let lastQ = null;
 // 복습 (기획서 Q1-1): 지금 영역보다 앞서 지나온 영역의 문제를 25% 섞는다. 체육관을 하나 만들 때마다 한 줄씩 더한다
-const REVIEW_DOMAINS = [[11, 1, 13], [21, '2a', 23], [31, '2b', 33]];
+const REVIEW_DOMAINS = [[11, 1, 13], [21, '2a', 23], [31, '2b', 33], [41, 3, 43]];
 function pickUnit() {
   if (B && B.o.units) return pick(B.o.units);
   const u = B && B.o.unit !== undefined ? B.o.unit : CUR.unit;
@@ -4524,7 +4548,7 @@ function trainerCard() {
 // ---------- 성적표 (기획서 8장, 미리보기 ⑤): 학생이 캡처해서 제출한다 ----------
 const REPORT_ROWS = ['수와 연산', '문자와 식', '함수', '기하', '확률과 통계'];
 // 문제 단원 번호 → [영역 줄, 학년]. 새 단원을 만들면 여기에 더한다
-const REPORT_MAP = { 11: [0, 1], 1: [0, 2], 13: [0, 3], 21: [1, 1], 2: [1, 2], 23: [1, 3], 31: [1, 1], 33: [1, 3], 3: [2, 2], 4: [3, 2], 5: [3, 2], 6: [4, 2] };
+const REPORT_MAP = { 11: [0, 1], 1: [0, 2], 13: [0, 3], 21: [1, 1], 2: [1, 2], 23: [1, 3], 31: [1, 1], 33: [1, 3], 41: [2, 1], 43: [2, 3], 3: [2, 2], 4: [3, 2], 5: [3, 2], 6: [4, 2] };
 async function askSid() {
   while (true) {
     const v = await nameInput('학번을 입력해 주세요 (숫자 5자리)', '30215', 5, '');
