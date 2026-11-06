@@ -459,6 +459,20 @@ Object.assign(SP, {
   wanggaegul: { name: '왕개굴', art: 'gen', gs: { body: 'frog', form: 'toad', c1: '#7ad070', c2: '#e8f8d0', glyph: '', k: 4 }, v: 'deep', add: 'crown', big: 1.18, type: '봄', hp: 60, atk: 52, def: 58, moves: ['몸통박치기', '혀 내밀기', '봄비 부르기', '왕개굴 점프'], dex: ['개구리몬', 1.0, 18, '연못의 왕. 한 번 울면 온 마을에 봄비가 내린다고 한다.'] },
 });
 SP.piyak.evo = [12, 'kkokko']; SP.bung.evo = [14, 'queenbung']; SP.gaegul.evo = [15, 'wanggaegul'];
+// 여름 지방 야생 몬스터 (미리보기 ⑦, Q41: 진화형 2종)
+Object.assign(SP, {
+  maem: { name: '맴맴이', art: 'gen', gs: { body: 'flyer', form: 'firefly', c1: '#6a7a2a', c2: '#d8f0a0', glyph: '', k: 0 }, type: '여름', hp: 46, atk: 54, def: 42, moves: ['몸통박치기', '맴맴 울음', '뜨거운 바람', '한여름 합창'], evo: [22, 'wangmae'], dex: ['매미몬', 0.4, 1.2, '한여름 나무에 붙어 하루 종일 맴맴 운다. 울음소리가 클수록 날이 덥다.'] },
+  wangmae: { name: '왕매미', art: 'gen', gs: { body: 'flyer', form: 'firefly', c1: '#6a7a2a', c2: '#d8f0a0', glyph: '', k: 0 }, v: 'deep', add: 'crest', big: 1.15, type: '여름', hp: 60, atk: 70, def: 54, moves: ['몸통박치기', '맴맴 울음', '뜨거운 바람', '왕매미 대합창'], dex: ['매미몬', 0.8, 4, '숲에서 가장 큰 소리로 운다. 이 울음이 들리면 여름이 한창이다.'] },
+  jipge: { name: '집게돌이', art: 'gen', gs: { body: 'crab', c1: '#e0603a', c2: '#f8d0b0', glyph: '', k: 1 }, type: '노말', hp: 48, atk: 52, def: 54, moves: ['집게', '집게 찝기', '거품 쏘기', '옆걸음 돌진'], evo: [22, 'keunjip'], dex: ['게몬', 0.3, 2.5, '바닷가 바위틈에 산다. 집게로 조개를 톡톡 두드려 연다.'] },
+  keunjip: { name: '큰집게', art: 'gen', gs: { body: 'crab', c1: '#e0603a', c2: '#f8d0b0', glyph: '', k: 1 }, v: 'red', add: 'spikes', big: 1.15, type: '노말', hp: 62, atk: 70, def: 70, moves: ['집게', '큰집게 찝기', '거품 쏘기', '옆걸음 대돌진'], dex: ['게몬', 0.9, 24, '한쪽 집게가 몸통만큼 크다. 집게를 부딪치면 천둥 같은 소리가 난다.'] },
+  mallang: { name: '말랑이', art: 'gen', gs: { body: 'jelly', c1: '#8ac8f0', c2: '#e8f6ff', glyph: '', k: 2 }, type: '여름', hp: 52, atk: 50, def: 48, moves: ['휘감기', '말랑 찌르기', '둥실 박치기', '바다 반짝임'], dex: ['해파리몬', 0.5, 0.8, '파도를 타고 둥둥 떠다닌다. 만지면 말랑말랑하지만 조금 따끔하다.'] },
+  kkiruk: { name: '끼룩이', art: 'gen', gs: { body: 'bird', form: 'gull', c1: '#f4f4f4', c2: '#a8b8c8', glyph: '', k: 3 }, type: '노말', hp: 48, atk: 54, def: 44, moves: ['몸통박치기', '끼룩 울음', '바닷바람', '갈매기 돌진'], dex: ['갈매기몬', 0.6, 2.8, '항구 위를 빙글빙글 난다. 배가 들어오면 가장 먼저 끼룩 운다.'] },
+  sonak: { name: '소낙이', art: 'gen', gs: { body: 'blob', form: 'cloud', c1: '#9aa8c0', c2: '#ffffff', glyph: '', k: 4 }, type: '여름', hp: 54, atk: 56, def: 46, moves: ['몸통박치기', '빗방울 톡톡', '소나기', '먹구름 돌진'], dex: ['구름몬', 0.8, 0.5, '맑은 날에도 갑자기 소나기를 뿌리고 사라지는 구름.'] },
+  subak: { name: '수박거북', art: 'gen', gs: { body: 'turtle', c1: '#3a9a3a', c2: '#f05a5a', glyph: '', k: 5 }, type: '여름', hp: 58, atk: 46, def: 60, moves: ['몸통박치기', '수박씨 쏘기', '등껍질 들이받기', '수박 굴리기'], dex: ['거북몬', 0.6, 15, '등껍질이 수박처럼 생겼다. 한여름에는 시원한 그늘에서 꼼짝도 안 한다.'] },
+  // 파도동굴 전용 (미리보기 ⑨)
+  eodug: { name: '어둑이', art: 'bat', v: 'cool', type: '비행', hp: 48, atk: 56, def: 42, moves: ['날개치기', '초음파', '어둠 속 급습', '동굴 회오리'], dex: ['박쥐몬', 0.7, 6, '빛이 들지 않는 동굴 천장에 거꾸로 매달려 잔다. 날개 소리만 들리고 모습은 잘 안 보인다.'] },
+  doldeong: { name: '돌덩이', art: 'gen', gs: { body: 'biped', form: 'golem', c1: '#9a8a70', c2: '#d8c8a0', glyph: '', k: 12 }, type: '바위', hp: 58, atk: 52, def: 66, moves: ['몸통박치기', '돌 던지기', '단단해지기', '바위 굴리기'], dex: ['바위몬', 1.0, 90, '동굴 벽에서 굴러 나온 돌이 모여 생겼다. 가만히 있으면 진짜 바위와 구별이 안 된다.'] },
+});
 // 도감 순서: 계열끼리 붙여서 정렬 (전설은 맨 뒤)
 const LEGENDS = ['beastO', 'beastI', 'beastG', 'dragon', 'whale', 'phi', 'euler', 'zeroking'];
 function evolveFor(sp, lv) { let s = sp, g = 0; while (SP[s].evo && lv >= SP[s].evo[0] && g++ < 3) s = SP[s].evo[1]; return s; }
@@ -1168,17 +1182,17 @@ const TCLASS = {
   '낚시꾼': { sex: 'm', hair: ['short'], eye: 'calm', mouth: ['smile', 'grin'], hat: 'bucket', hatCol: '#8a9a5a', vest: '#5a7a4a', top: '#ece4cc', bottom: '#4a5a7a', shoe: '#3a3a2a', pose: 'rod', beardMaybe: '#5a3a1a' },
   '선원': { sex: 'm', hair: ['short'], eye: 'bright', mouth: 'grin', hat: 'sailorcap', top: '#f6f6f6', stripes: '#22345e', bottom: '#22345e', shoe: '#1a1a22', pose: 'hips' },
   '수영 선수': { sex: 'mf', hair: ['short'], eye: 'bright', mouth: 'grin', hat: 'swimcap', hatCol: ['#e04a5a', '#2e7ad0', '#f0c020', '#2a9a5a'], swim: 1, suit: ['#2e5ad0', '#d0304a', '#2a8a7a'], shoe: '#f2c8a0', pose: 'wave' },
-  '계산 달인': { sex: 'm', hair: ['spiky', 'short'], eye: 'sharp', mouth: 'grin', headband: '#f4f4f4', hbGlyph: 'Σ', hbCol: '#c0302a', top: '#f6f6f2', coat: '#f6f6f2', bottom: '#f6f6f2', belt: '#1e1e26', shoe: '#f2c8a0', pose: 'fist' },
+  '태권도 소년': { sex: 'm', hair: ['spiky', 'short'], eye: 'sharp', mouth: 'grin', headband: '#f4f4f4', hbGlyph: 'Σ', hbCol: '#c0302a', top: '#f6f6f2', coat: '#f6f6f2', bottom: '#f6f6f2', belt: '#1e1e26', shoe: '#f2c8a0', pose: 'fist' },
   '모범생': { sex: 'mf', hair: ['short', 'bob', 'pony'], eye: 'normal', mouth: 'smile', glasses: 'round', coat: '#2a3a6a', top: '#f6f6f6', tie: '#c02a2a', bottom: '#5a5a6a', skirtIfF: 1, shoe: '#2a1a1a', pose: 'book', bookCol: '#2a6ab0', bookGlyph: '수학' },
   '엘리트 트레이너': { sex: 'mf', hair: ['spiky', 'long', 'sidecut', 'pony'], eye: 'sharp', mouth: 'smirk', coat: ['#c02a3a', '#2a3a8a', '#2a6a4a'], top: '#f4f4f4', bottom: '#2a2a34', shoe: '#1a1a1a', pose: ['point', 'hips'], emblem: '★' },
   '체육관 관원': { sex: 'mf', hair: ['short', 'pony', 'spiky', 'bob'], eye: 'bright', mouth: 'grin', top: 'GYM', stripe: '#ffffff', bottom: '#2a2a3a', shoe: '#f4f4f4', headband: '#f4f4f4', hbGlyph: '', pose: 'fist' },
-  '공식 마니아': { sex: 'f', hair: ['twin', 'pony', 'long'], eye: 'normal', mouth: 'smile', glasses: 'square', coat: '#e8a0b8', top: '#fbf6ea', bottom: '#6a4a7a', skirt: 1, shoe: '#4a2a3a', pose: 'book', bookCol: '#e0a040', bookGlyph: 'f(x)' },
+  '책벌레 소녀': { sex: 'f', hair: ['twin', 'pony', 'long'], eye: 'normal', mouth: 'smile', glasses: 'square', coat: '#e8a0b8', top: '#fbf6ea', bottom: '#6a4a7a', skirt: 1, shoe: '#4a2a3a', pose: 'book', bookCol: '#e0a040', bookGlyph: 'f(x)' },
   '등대지기': { sex: 'm', hair: ['short'], eye: 'calm', mouth: 'smile', hat: 'bucket', hatCol: '#f0c020', coat: '#f0c020', top: '#4a4a5a', bottom: '#3a3a4a', shoe: '#1e1e26', beard: '#8a8a8a', pose: 'lantern' },
   '캠핑 소녀': { sex: 'f', hair: ['pony', 'twin'], eye: 'bright', mouth: 'grin', cap: '#3a8a4a', heroCap: 1, capPatch: '#3a8a4a', capGlyph: '▲', capGlyphCol: '#ffffff', top: '#f0a040', bottom: '#5a6a3a', shorts: 1, shoe: '#6a4a2a', backpack: '#c8502a', pose: 'hips' },
   '피크닉 소녀': { sex: 'f', hair: ['long', 'bob'], eye: 'normal', mouth: 'smile', hat: 'sun', hatCol: '#f4e2a0', hatBand: '#e04a7a', top: '#f6a8c0', bottom: '#f6a8c0', skirt: 1, shoe: '#e04a7a', pose: 'basket' },
-  '수학 경시반': { sex: 'mf', kid: 1, hair: ['short', 'bob'], eye: 'bright', mouth: 'grin', coat: '#2a5ab0', top: '#f6f6f6', bottom: '#2a3a5a', shorts: 1, shoe: '#1a1a2a', medal: 1, pose: 'hips' },
-  '수학 덕후': { sex: 'm', hair: ['short', 'wild'], eye: 'normal', mouth: 'grin', glasses: 'round', top: '#e8e0f4', shirtGlyph: 'π', glyphCol: '#5a3ab0', bottom: '#5a5a6a', shoe: '#3a3a3a', backpack: '#4a6a3a', pose: 'book', bookCol: '#8a3ac8', bookGlyph: '∞' },
-  '오답 수집가': { sex: 'mf', hair: ['sidecut', 'bob', 'short'], eye: 'sly', mouth: 'smirk', coat: '#8a5a3a', top: '#f0e6d0', bottom: '#3a3a3a', shoe: '#2a1a1a', pose: 'folder' },
+  '육상부': { sex: 'mf', kid: 1, hair: ['short', 'bob'], eye: 'bright', mouth: 'grin', coat: '#2a5ab0', top: '#f6f6f6', bottom: '#2a3a5a', shorts: 1, shoe: '#1a1a2a', medal: 1, pose: 'hips' },
+  '만화 덕후': { sex: 'm', hair: ['short', 'wild'], eye: 'normal', mouth: 'grin', glasses: 'round', top: '#e8e0f4', shirtGlyph: 'π', glyphCol: '#5a3ab0', bottom: '#5a5a6a', shoe: '#3a3a3a', backpack: '#4a6a3a', pose: 'book', bookCol: '#8a3ac8', bookGlyph: '∞' },
+  '우표 수집가': { sex: 'mf', hair: ['sidecut', 'bob', 'short'], eye: 'sly', mouth: 'smirk', coat: '#8a5a3a', top: '#f0e6d0', bottom: '#3a3a3a', shoe: '#2a1a1a', pose: 'folder' },
   '퀴즈왕': { sex: 'm', hair: ['slick', 'short'], eye: 'bright', mouth: 'grin', vest: '#c02a3a', top: '#f6f6f6', bowtie: '#f0c020', bottom: '#2a2a34', shoe: '#1a1a1a', pose: 'buzzer' },
   '곤충채집 소년': { sex: 'm', kid: 1, hair: ['short'], eye: 'bright', mouth: 'grin', hat: 'straw', top: '#f6f6f2', coat: '#7ac04a', bottom: '#c8a040', shorts: 1, shoe: '#6a4a2a', pose: 'net' },
   '등산객': { sex: 'm', hair: ['short'], eye: 'calm', mouth: 'grin', beard: '#4a2a1a', cap: '#c8502a', heroCap: 1, capPatch: '#c8502a', capGlyph: '⛰', capGlyphCol: '#fff6d0', top: '#4a7aa0', coat: '#c8502a', bottom: '#5a4a3a', shoe: '#3a2a1a', backpack: '#3a6a3a', pose: 'stick' },
@@ -1404,27 +1418,41 @@ function carve(a, sx, sy, ex, ey, rnd, ch = '=', wide = 0) {
 }
 function clampN(v, a, b) { return Math.max(a, Math.min(b, v)); }
 // ---------- 트레이너 자동 생성 ----------
-const TCL = [['반바지 꼬마', 't4'], ['피크닉 소녀', 't2'], ['모범생', 't1'], ['수학 덕후', 't3'], ['등산객', 't4'], ['곤충채집 소년', 't4'], ['퀴즈왕', 't3'], ['계산 달인', 't1'], ['공식 마니아', 't2'], ['오답 수집가', 't3'], ['낚시꾼', 'swim'], ['캠핑 소녀', 't2'], ['엘리트 트레이너', 't1'], ['수학 경시반', 't3']];
+const TCL = [['반바지 꼬마', 't4'], ['피크닉 소녀', 't2'], ['모범생', 't1'], ['만화 덕후', 't3'], ['등산객', 't4'], ['곤충채집 소년', 't4'], ['퀴즈왕', 't3'], ['태권도 소년', 't1'], ['책벌레 소녀', 't2'], ['우표 수집가', 't3'], ['낚시꾼', 'swim'], ['캠핑 소녀', 't2'], ['엘리트 트레이너', 't1'], ['육상부', 't3']];
 const TNAMES = ['도윤', '하은', '서준', '지우', '민준', '서연', '예준', '하윤', '지호', '수아', '건우', '지민', '현우', '채원', '우진', '다은', '선우', '유나', '시우', '소율', '준서', '나연', '태윤', '아린', '은호', '가은', '이안', '윤서', '도현', '예린', '로운', '세아', '하람', '지안', '주원', '시아', '연우', '라온', '유찬', '보민'];
-const TLINES = {
-  1: ['분모의 소인수가 2와 5뿐이면? 바로 유한소수지!', '순환마디 위에 점 찍는 거, 처음과 끝에만 찍는 거 알지?', '[1|3]을 소수로 바꾸면 3이 끝없이 반복돼!', '내 사계몬은 끝없이 순환하는 공격을 해!'],
-  '2a': ['x^2 × x^3 = x^6이라고 생각했다면 넌 이미 졌어!', '괄호 앞이 빼기면? 부호를 전부 바꿔야지!', '동류항끼리만 더할 수 있다고!', '지수법칙 4종 세트, 다 외웠어?'],
-  '2b': ['부등식에 음수를 곱하면 방향이 뒤집혀!', '연립방정식은 가감법이 최고야!', '닭과 토끼 문제, 다리 수만 보면 다 풀려!', '대입법 vs 가감법, 넌 어느 쪽이야?'],
-  3: ['기울기는 (y의 증가량) ÷ (x의 증가량)!', 'y절편은 x = 0일 때의 y값이야!', '평행한 두 직선은 기울기가 같지!', '두 그래프의 교점 = 연립방정식의 해!'],
-  4: ['외심은 꼭짓점, 내심은 변! 헷갈리지 마!', 'RHA, RHS 합동 구별할 수 있어?', '평행사변형의 대각선은 서로를 이등분해!', '이등변삼각형의 두 밑각은 같아!'],
-  '5a': ['닮음비가 2 : 3이면 넓이비는 4 : 9!', '무게중심은 중선을 2 : 1로 나눠!', 'AA 닮음이면 충분하지!', '중점을 이은 선분은 나머지 변의 절반!'],
-  '5b': ['3, 4, 5! 5, 12, 13! 외웠지?', '사다리 문제는 피타고라스로 풀어!', '빗변의 제곱 = 나머지 두 변의 제곱의 합!', '직각삼각형 판별, 가장 긴 변부터 봐!'],
-  6: ['주사위 두 개, 합이 7일 확률은 6분의 1!', '"적어도"가 나오면 1에서 빼!', '동시에 일어나면 곱하고, 또는이면 더해!', '확률은 0 이상 1 이하야!'],
-  0: ['여기까지 왔다면 모든 단원을 복습했겠지?', '학기말 시험 범위 전체가 내 무기다!', '오답노트, 몇 번 봤어?', '진짜 실력은 전 단원에서 나온다!'],
-};
-const TLOSE = ['으악, 계산 실수했다…', '오답노트에 적어야겠어…', '역시 개념이 중요하구나!', '다음엔 꼭 이길 거야!', '해설을 다시 읽어 봐야지…', '공식만 외워서는 안 되는구나!', '네 풀이가 더 깔끔하네.', '…검산을 안 했어.'];
+// 도로 트레이너 대사 (2026-11-06: 수학 느낌 없이, 모든 도로 공통)
+const TLINES = ['잠깐, 나를 이기고 지나가시지.', '눈이 마주쳤으니 승부다!', '여기서 너를 기다리고 있었어!', '내 사계몬이 몸이 근질근질하대!', '이 길을 지나가려면 나를 넘어야 해!', '오늘 아침에 새로 잡은 사계몬을 보여 줄게!', '심심하던 참이었어. 한 판 붙자!', '너 꽤 강해 보이는데? 확인해 볼까!', '거기 너! 사계몬 트레이너지?', '졸업 여행 기념으로 한 판 어때?', '풀숲에서 몰래 특훈 중이었는데, 딱 좋아!', '나랑 내 사계몬은 환상의 짝꿍이야!'];
+const TLOSE = ['으악, 졌다…', '다음엔 꼭 이길 거야!', '내 사계몬도 잘 싸웠어…', '너 정말 강하구나!', '특훈이 부족했나 봐…', '이럴 수가… 완패야.', '좋은 승부였어!', '집에 가서 사계몬이랑 푹 쉬어야겠다…'];
+// 집 책꽂이 (중1~중3 다섯 영역)
+const BOOKS = [
+  '「소수 사냥꾼의 일기」 — 2, 3, 5, 7, 11… 소수가 끝없이 적혀 있다.',
+  '「영하 30도의 비밀」 — 온도계 그림으로 음수를 설명하는 책이다.',
+  '「끝나지 않는 소수점」 — 같은 숫자가 계속 되풀이되는 수 이야기다.',
+  '「루트 탐험대」 — √2는 끝없이 이어지는 무리수라고 쓰여 있다.',
+  '「x를 찾아서」 — 사라진 x를 찾아 나서는 탐정 소설이다.',
+  '「닭과 토끼의 다리 세기」 — 연립방정식으로 푸는 옛날이야기 모음이다.',
+  '「이차방정식 해결사」 — 표지에 근의 공식이 큼직하게 쓰여 있다.',
+  '「좌표평면 보물지도」 — (3, −2) 자리에 X 표시가 있다.',
+  '「기울기로 보는 등산 안내서」 — 산길이 가파를수록 기울기가 크다.',
+  '「포물선 분수대 설계도」 — 물줄기가 그리는 곡선이 그려져 있다.',
+  '「자와 컴퍼스만으로」 — 눈금 없는 자로 그리는 작도 책이다.',
+  '「전개도 오려 만들기」 — 오려 붙이면 정육면체가 된다.',
+  '「삼각형 탐정」 — 외심과 내심을 찾아내는 추리 소설이다.',
+  '책장에 「피타고라스 정리의 100가지 증명」이 꽂혀 있다.',
+  '「그림자로 탑 높이 재기」 — 닮음으로 높이를 재는 방법이 나온다.',
+  '「원의 비밀」 — 같은 호에 대한 원주각은 모두 같다고 쓰여 있다.',
+  '「우리 반 키 조사 보고서」 — 줄기와 잎 그림이 그려져 있다.',
+  '「주사위 1000번 던져 보기」 — 누군가 정말로 다 던져 본 기록이다.',
+  '「평균은 같은데 왜 다를까?」 — 산포도를 설명하는 책이다.',
+  '「사계몬 도감 해설서」 — 사계몬 이름의 유래가 빼곡히 적혀 있다.',
+];
 let TSEQ = 0;
 function genTrainer(rnd, wild, lv, unit, cls) {
   const [title, pal] = cls || TCL[Math.floor(rnd() * TCL.length)];
   const name = TNAMES[(TSEQ++ * 7 + Math.floor(rnd() * 40)) % TNAMES.length];
   const n = 1 + Math.floor(rnd() * 3);
   const team = Array.from({ length: n }, (_, i) => { const l = lv[0] + Math.floor(rnd() * (lv[1] - lv[0] + 1)) + (n === 1 ? 1 : 0); return [evolveFor(wild[Math.floor(rnd() * wild.length)], l), l]; });
-  const lines = TLINES[unit] || TLINES[0];
+  const lines = TLINES;
   return { kind: 'trainer', title, name, pal, team, line: lines[Math.floor(rnd() * lines.length)], lose: TLOSE[Math.floor(rnd() * TLOSE.length)], sight: 2 + Math.floor(rnd() * 2) };
 }
 // ---------- 추가 계열 출현지 ----------
@@ -2052,11 +2080,12 @@ const GYMS = [
     tr: [T2('체육관 관원', '봄이', 't2', [['piyak', 7], ['bung', 8]], '관장님께 가려면 날 넘어라!', '꽃잎처럼 흩날렸다…'), T2('체육관 관원', '새싹', 't4', [['gaegul', 9]], '봄비처럼 쏟아지는 공격을 받아라!', '비가 그쳤다…'), T2('체육관 관원', '꽃잎', 't1', [['daram', 8], ['napul', 9]], '관장님 바로 앞이야. 여기서 멈춰!', '꽃잎이 다 떨어졌어…')] },
   // 체육관 2 (봄 · 문자와 식 Ⅰ 식의 계산): 관원 = 중2(unit '2a'), 관장 = 중3(lunit 23). 레벨은 선생님 요청으로 관장 약 20 (2026-11-05)
   { label: '꽃샘', town: 'cycle', floor: '#e6eef8', name: '나린', badge: '꽃샘 배지', unit: '2a', lunit: 23, team: [['kkokko', 18], ['wanggaegul', 19], ['kkotsaem', 20]], reward: [['ball', 5]], key: null,
-    intro: ['꽃샘 체육관에 온 걸 환영해. 나는 관장 나린.', '곱셈공식과 인수분해로 식을 깔끔하게 정리해 봐!'], win: '봄바람처럼 따뜻한 승부였어. 네가 이겼어!', after: '동쪽 여름 지방으로 가는 길은 아직 준비 중이래. 그동안 오답노트를 다시 풀어 보렴!',
+    intro: ['꽃샘 체육관에 온 걸 환영해. 나는 관장 나린.', '곱셈공식과 인수분해로 식을 깔끔하게 정리해 봐!'], win: '봄바람처럼 따뜻한 승부였어. 네가 이겼어!', after: '이제 동쪽 문이 열릴 거야. 3번 도로를 지나면 여름 지방의 소나기항구가 나온단다!',
     tr: [T2('체육관 관원', '시린', 't3', [['daram', 14], ['kkokko', 15]], '꽃샘바람처럼 차갑게 상대해 주지!', '바람이 잦아들었다…'), T2('체육관 관원', '솔솔', 't1', [['queenbung', 16]], '여왕붕붕의 침을 피할 수 있을까?', '꿀이 다 떨어졌다…'), T2('체육관 관원', '서리', 't4', [['wanggaegul', 16], ['kkotsaem', 17]], '관장님께 가려면 나부터 넘어라!', '서리가 녹아 버렸다…')] },
-  { label: 'Ⅱ-2', town: 'ineq', floor: '#f0e4d0', name: '이항', badge: '부등호 배지', unit: '2b', team: [['croc', 17], ['fighter', 18], ['bird', 19], ['cat2', 20]], reward: [['xshare', 1], ['hpotion', 2]], key: null,
-    intro: ['부등호시티 체육관에 온 걸 환영해! 나는 관장 이항.', '음수를 곱하면 뒤집히는 부등호처럼, 승부도 뒤집어 주지!'], win: '연립방정식처럼 딱 하나의 해… 너의 승리였어!', after: '꽃집에 가 보렴. 남쪽 길을 막은 흔들리는 나무에 물을 뿌릴 수 있을 거야.',
-    tr: [T2('체육관 관원', '부등', 't2', [['croc', 15]], '부등식의 해를 수직선에 그려 봐!', '방향을 반대로 그렸다…'), T2('체육관 관원', '연립', 't3', [['fighter', 16]], '가감법이냐 대입법이냐!', '둘 다 졌다…'), T2('체육관 관원', '해야', 't1', [['bird', 16], ['mouse', 16]], '닭과 토끼의 다리를 세어 봐!', '토끼가 더 많았어…')] },
+  // 체육관 3 (여름 · 문자와 식 Ⅱ 방정식과 부등식): 관원 = 중2(unit '2b'), 관장 = 중3(lunit 33)
+  { label: '소나기', town: 'expo', floor: '#dcecf6', name: '여울', badge: '소나기 배지', unit: '2b', lunit: 33, team: [['keunjip', 24], ['mallang', 25], ['sonak', 26]], reward: [['ball', 5]], key: null,
+    intro: ['소나기 체육관에 온 걸 환영해. 나는 관장 여울.', '방정식의 해처럼, 이 승부의 답도 하나뿐이야!'], win: '소나기가 그치고 무지개가 떴네. 네가 이겼어!', after: '북쪽 매미숲마을로 가는 길은 아직 준비 중이래. 그동안 실력을 더 키워 두렴!',
+    tr: [T2('체육관 관원', '파도', 't2', [['kkiruk', 20], ['mallang', 21]], '파도처럼 밀려오는 공격을 받아라!', '파도가 잠잠해졌다…'), T2('체육관 관원', '모래', 't4', [['wangmae', 22]], '왕매미의 합창을 들어 봐!', '매미 소리가 멎었다…'), T2('체육관 관원', '물결', 't3', [['subak', 22], ['sonak', 23]], '관장님께 가려면 나부터 넘어라!', '소나기가 그쳤다…')] },
   { label: 'Ⅲ단원', town: 'func', floor: '#eef2c8', name: '한결', badge: '기울기 배지', unit: 3, team: [['sheep', 21], ['dog', 22], ['bird2', 24]], reward: [['pencil', 1], ['hball', 3]], key: 'tube',
     intro: ['함수시티의 관장 한결이다.', '기울기는 한결같지! 일차함수처럼 말이야.'], win: '너의 실력 그래프는 오른쪽 위로 쭉 올라가는구나!', after: '수영 튜브를 줬으니 서쪽 닮음항구 너머 바다도 건널 수 있을 거야.',
     tr: [T2('체육관 관원', '기울', 't4', [['dog', 19]], 'y절편은 x = 0일 때 y값!', '0점이다…'), T2('체육관 관원', '절편', 't2', [['sheep', 19], ['bird', 19]], '평행한 직선은 기울기가 같아!', '만나지 못하고 졌다…'), T2('체육관 관원', '교점', 't3', [['dog', 20]], '교점은 연립방정식의 해!', '해를 놓쳤다…')] },
@@ -2133,7 +2162,7 @@ tower('goldtop', '황금탑 꼭대기', { w: 12, h: 10, floor: '#f8e8b8', unit: 
 API.goldtop.warp(5, 9, 'gold1', 9, 3, { stairs: true });
 // 등대 (닮음항구)
 tower('light1', '항구 등대 1층', { w: 12, h: 12, floor: '#e8e4d8', unit: '5a', mat: 5, up: [10, 2, 'light2', 10, 3], pillars: [[4, 5], [7, 5]], trainers: [{ x: 2, y: 7, dir: 'right', title: '선원', name: '갑판', pal: 'swim', team: [['fish', 23], ['croc', 23]], line: '등대양이 아파서 배들이 길을 잃고 있어!', lose: '너라면 도울 수 있겠구나.' }] });
-tower('light2', '항구 등대 2층', { w: 12, h: 12, floor: '#e8e4d8', unit: '5a', down: [10, 2, 'light1', 10, 3], up: [1, 2, 'light3', 1, 3], pillars: [[5, 4], [5, 5], [5, 6], [8, 8]], trainers: [{ x: 8, y: 4, dir: 'down', title: '등대지기', name: '빛나', pal: 't2', team: [['sheep', 24], ['top', 24]], line: '닮음비로 빛의 거리를 계산하지!', lose: '빛이 꺼졌다…' }, { x: 2, y: 9, dir: 'right', title: '수학 덕후', name: '각도', pal: 't3', team: [['tri2', 25]], line: '꼭대기에 관장님이 계셔.', lose: '빨리 가 봐!' }] });
+tower('light2', '항구 등대 2층', { w: 12, h: 12, floor: '#e8e4d8', unit: '5a', down: [10, 2, 'light1', 10, 3], up: [1, 2, 'light3', 1, 3], pillars: [[5, 4], [5, 5], [5, 6], [8, 8]], trainers: [{ x: 8, y: 4, dir: 'down', title: '등대지기', name: '빛나', pal: 't2', team: [['sheep', 24], ['top', 24]], line: '닮음비로 빛의 거리를 계산하지!', lose: '빛이 꺼졌다…' }, { x: 2, y: 9, dir: 'right', title: '만화 덕후', name: '각도', pal: 't3', team: [['tri2', 25]], line: '꼭대기에 관장님이 계셔.', lose: '빨리 가 봐!' }] });
 tower('light3', '항구 등대 꼭대기', { w: 12, h: 10, floor: '#f0ecdc', unit: '5a', down: [1, 2, 'light2', 1, 3], ents: [{ id: 'sicksheep', kind: 'sick', x: 6, y: 3, dir: 'down' }, { id: 'jasmine', kind: 'npc6', x: 7, y: 4, dir: 'left', pal: 'L5' }] });
 // 방송탑 (부등호시티)
 tower('radio1', '방송탑 1층', { w: 12, h: 12, floor: '#dfe2f0', unit: 0, mat: 5, up: [10, 2, 'radio2', 10, 3], ents: [{ id: 'host', kind: 'host', x: 4, y: 2, dir: 'down', pal: 'vendor' }, { id: 'rtg', kind: 'rgrunt', x: 9, y: 7, dir: 'left', pal: 'grunt' }] });
@@ -2213,6 +2242,7 @@ XW.route2 = [];
 routeGen('route2', { name: '2번 도로', theme: 'town', unit: 21, w: 26, h: 36, cx: 1, pond: 1, wild: ['piyak', 'bung', 'daram', 'daram', 'napul', 'gaegul', 'gaegul', 'kkotsaem'], lv: [10, 15], ends: [['S', 10], ['N', 11], ['E', 18]], trainers: 4, items: [['ball', 3], ['potion', 2]], hidden: [['mpotion', 1]], flowers: 4, seed: 23 });
 API.route2.m.wild.grad = 'N';
 blossom(API.route2.m, 9, .35);
+API.route2.set(19, 10, '.').set(17, 31, '.'); // 숨긴 아이템으로 가는 길 (연못 섬 · 가위 없음)
 // 동쪽 샛길(약수 숲, 예전 몬스터가 나오는 곳)은 닫아 둔다
 { const [, , ex, ey] = API.route2.m.exits.E; gateGuard(API.route2, ex, ey, ex, ey - 1, () => false, '경비원: 이 샛길은 아직 정비 중이야!\n북쪽으로 가면 꽃샘시티가 나와.', '', 'guard', 'r2E'); }
 // 꽃샘시티 (지도 id는 cycle 그대로): 체육관 2
@@ -2222,28 +2252,38 @@ townGen('cycle', { name: '꽃샘시티', theme: 'town', unit: 21, w: 24, h: 20, 
   { x: 16, y: 12, w: 4, roof: 'M', d: 2, to: 'mart', ret: 1, arrive: [4, 6] }, { x: 3, y: 12, w: 4, roof: 'H', d: 1, to: 'kkotH' }] });
 blossom(API.cycle.m, 5, .5);
 // 동쪽 여름 지방(3번 도로)은 아직 닫아 둔다
-gateGuard(API.cycle, API.cycle.m.w - 2, API.cycle.cy, API.cycle.m.w - 2, API.cycle.cy - 1, () => false, '경비원: 이 길 너머 여름 지방은 아직 준비 중이야!\n꽃샘 체육관에 먼저 도전해 보렴.', '', 'guard', 'cycleE');
+gateGuard(API.cycle, API.cycle.m.w - 2, API.cycle.cy, API.cycle.m.w - 2, API.cycle.cy - 1, () => S.badges[1], '경비원: 동쪽은 여름 지방으로 가는 3번 도로야.\n꽃샘 배지가 있어야 지나갈 수 있어!', '경비원: 꽃샘 배지! 동쪽 여름 지방으로 가도 좋아.\n동쪽으로 갈수록 사계몬이 강해지니 조심해!', 'guard', 'cycleE');
 API.cycle.sign(14, 7, '꽃샘시티\n봄과 겨울이 잠깐 만나는 마을');
 API.cycle.ent({ id: 'cyn', kind: 'npc', x: 9, y: 15, dir: 'down', pal: 'kid', wander: true, lines: ['2번 도로는 북쪽으로 갈수록 강한 사계몬이 나와!', '꽃샘 체육관 관장 나린은 진짜 강해. 충분히 키우고 도전해!', '보건실에서 오답노트를 다시 풀면 힌트 카드를 받을 수 있대.'] });
-routeGen('route3', { name: '3번 도로', theme: 'town', unit: '2a', w: 42, h: 21, cx: 1, pond: 1, wild: ['bird', 'bat', 'rock', 'mouse'], lv: [6, 9], ends: [['W', 10], ['E', 6]], trainers: 4, items: [['spotion', 1], ['sball', 1]], hidden: [['ether', 1]], flowers: 5, seed: 37 });
+// 3번 도로: 여름 지방. 동쪽(소나기항구 쪽)으로 갈수록 야생 몬스터 레벨이 오른다
+XW.route3 = [];
+routeGen('route3', { name: '3번 도로', theme: 'summer', unit: 31, w: 42, h: 21, cx: 1, pond: 1, wild: ['maem', 'maem', 'jipge', 'mallang', 'kkiruk', 'kkiruk', 'sonak', 'subak'], lv: [16, 19], ends: [['W', 10], ['E', 6]], trainers: 4, items: [['mpotion', 2], ['ball', 3]], hidden: [['mpotion', 1]], flowers: 5, seed: 37 });
+API.route3.m.wild.grad = 'E';
+blossom(API.route3.m, 13, .3);
+API.route3.set(10, 7, '.').set(20, 15, '.'); // 숨긴 아이템 2개로 가는 길 (가위 없음 · 연못 섬)
+// 파도동굴: 3번 도로와 소나기항구 사이의 어두운 동굴 (미리보기 ⑨). 동쪽으로 갈수록 야생 레벨이 오른다
+routeGen('tidecave', { name: '파도동굴', theme: 'cave', unit: 31, w: 36, h: 21, fill: .65, cave: true, dark: true, wild: ['eodug', 'eodug', 'doldeong', 'doldeong', 'jipge', 'mallang'], lv: [19, 22], ends: [['W', 8], ['E', 11]], trainers: 3, items: [['mpotion', 2], ['ball', 2]], hidden: [['hpotion', 1]], seed: 53 });
+API.tidecave.m.wild.grad = 'E';
 routeGen('cave1', { name: '연결동굴', theme: 'cave', unit: '2a', w: 36, h: 21, fill: .65, cave: true, dark: true, wild: ['bat', 'rock', 'croc', 'bat'], lv: [7, 10], ends: [['W', 8], ['E', 9]], trainers: 3, items: [['potion', 2], ['revive', 1], ['ball', 3]], seed: 43 });
 { const a = API.cave1; a.rect(15, 1, 15, 13, '.'); a.rect(12, 14, 18, 16, '~'); a.rect(12, 13, 18, 13, '.'); a.ent({ id: 'turtleF', kind: 'friday', x: 15, y: 15, dir: 'up' }); a.sign(11, 13, '물가 안내판\n"금요일에만 이상한 그림자가 보인다"'); }
-// 지수마을
-townGen('expo', { name: '지수마을', theme: 'town', unit: '2a', w: 22, h: 18, exits: ['W', 'S'], blds: [
-  { x: 14, y: 2, w: 4, roof: 'C', d: 2, to: 'center', ret: 1 }, // 체육관 2는 꽃샘시티로 옮김
-  { x: 2, y: 11, w: 4, roof: 'M', d: 2, to: 'mart', ret: 1, arrive: [4, 6] }, { x: 13, y: 11, w: 4, roof: 'H', d: 1, to: 'expoH' }, { x: 7, y: 12, w: 3, roof: 'B', d: 1, to: 'well', emblem: '井' }] });
-gateGuard(API.expo, 5, 6, 4, 6, () => S.flags.wellClear, '찍기단 조무래기: 체육관 관장? 지금 우물에서 우리 일을 막으러 갔다가 혼쭐났지~\n덤비려면 우물로 와라! 히히!', '관장 지수가 체육관으로 돌아왔다!', 'grunt', 'expogrunt');
-gateGuard(API.expo, 11, 16, 12, 16, () => S.badges[1], '경비원: 남쪽 순환소수 숲은 길이 험해. 지수 배지가 있어야 지나갈 수 있어!', '경비원: 지수 배지 확인! 숲의 작은 나무는 가위로 자르면 돼.', 'guard', 'expoS');
-API.expo.sign(9, 6, '지수마을\n거듭제곱으로 쑥쑥 크는 마을');
-// 지수 배지를 받고 남쪽(순환소수 숲) 길로 나갈 때 라이벌을 만난다
-API.expo.ev(11, 16, 'rival2', () => rivalBattle(2), () => S.badges[1]);
+// 소나기항구 (지도 id는 expo 그대로): 체육관 3. 남쪽은 바다와 부두
+house('sonagiH', '소나기항구 민가', [{ id: 'sonag', kind: 'npc', x: 7, y: 4, dir: 'left', pal: 'swim', lines: ['소나기가 오면 소낙이들이 항구 위를 떠다닌단다.', '체육관 관장 여울은 바다처럼 시원시원한 사람이야.', '북쪽 매미숲마을로 가는 길은 아직 닫혀 있어.'] }]);
+townGen('expo', { name: '소나기항구', theme: 'summer', unit: 31, w: 24, h: 22, seed: 909, exits: ['W', 'N'], blds: [
+  { x: 2, y: 2, w: 6, roof: 'G', d: 3, to: 'gym2', emblem: '3' }, { x: 16, y: 2, w: 4, roof: 'C', d: 2, to: 'center', ret: 1 },
+  { x: 16, y: 12, w: 4, roof: 'M', d: 2, to: 'mart', ret: 1, arrive: [4, 6] }, { x: 3, y: 12, w: 4, roof: 'H', d: 1, to: 'sonagiH' }] });
+blossom(API.expo.m, 4, .5);
+{ const a = API.expo, m = a.m; for (let y = m.h - 5; y <= m.h - 2; y++) for (let x = 2; x <= m.w - 3; x++) if (x !== a.cx) a.set(x, y, '~'); }
+// 북쪽 매미숲마을(체육관 4)은 아직 닫아 둔다
+gateGuard(API.expo, API.expo.cx, 1, API.expo.cx + 1, 1, () => false, '경비원: 이 길 너머 매미숲마을은 아직 준비 중이야!\n소나기 체육관에 먼저 도전해 보렴.', '', 'guard', 'expoN');
+API.expo.sign(API.expo.cx + 2, 7, '소나기항구\n소나기가 지나가면 무지개가 뜨는 항구');
+API.expo.ent({ id: 'sonak1', kind: 'npc', x: 10, y: 15, dir: 'down', pal: 'swim', wander: true, lines: ['3번 도로는 동쪽으로 갈수록 강한 사계몬이 나와!', '여름 사계몬은 가을 사계몬에게 약해. 상성을 잘 생각해 봐!', '부두 끝에서 바다를 보면 마음이 시원해져.'] });
 // 순환소수 숲
 routeGen('forest', { name: '순환소수 숲', theme: 'forest', unit: '2b', w: 32, h: 36, cell: 4, maze: 1, fill: .7, ledges: 0, wild: ['bug2', 'cat', 'bird', 'catpsy', 'snake', 'bug3'], lv: [10, 13], ends: [['N', 11], ['S', 14], ['E', 8]], trainers: 4, items: [['spotion', 2], ['candy', 1], ['sball', 2]], hidden: [['revive', 1]], trees: 90, seed: 59 });
 { const a = API.forest, h = a.m.h; a.rect(2, h - 3, a.m.w - 3, h - 2, 'T'); a.set(14, h - 2, '='); a.set(14, h - 3, 'x'); a.set(14, h - 4, '='); a.set(13, h - 4, '.'); a.set(15, h - 4, '.'); relocate(a, 1); }
 routeGen('route4', { name: '4번 도로', theme: 'plain', unit: '2b', w: 26, h: 31, cx: 1, pond: 1, wild: ['bird', 'mouse', 'croc', 'dog', 'fighter'], lv: [12, 15], ends: [['N', 10], ['S', 9], ['E', 8]], trainers: 4, items: [['hpotion', 1], ['sball', 2]], hidden: [['ether', 1]], flowers: 6, seed: 71 });
 // 부등호시티
 townGen('ineq', { name: '부등호시티', theme: 'casino', unit: '2b', w: 30, h: 24, exits: ['N', 'S'], blds: [
-  { x: 2, y: 2, w: 6, roof: 'G', d: 3, to: 'gym2', emblem: 'Ⅱ' }, { x: 8, y: 2, w: 6, roof: 'B', d: 3, to: 'radio1', emblem: '탑' }, { x: 17, y: 2, w: 4, roof: 'C', d: 2, to: 'center', ret: 1 }, { x: 23, y: 2, w: 4, roof: 'H', d: 1, to: 'ineqFlower', emblem: '꽃' },
+  { x: 8, y: 2, w: 6, roof: 'B', d: 3, to: 'radio1', emblem: '탑' }, // 체육관 3은 소나기항구로 옮김 { x: 17, y: 2, w: 4, roof: 'C', d: 2, to: 'center', ret: 1 }, { x: 23, y: 2, w: 4, roof: 'H', d: 1, to: 'ineqFlower', emblem: '꽃' },
   { x: 2, y: 14, w: 6, roof: 'M', d: 3, to: 'dept', emblem: '백' }, { x: 8, y: 14, w: 4, roof: 'H', d: 1, to: 'ineqBike', emblem: '자' }, { x: 17, y: 14, w: 6, roof: 'B', d: 3, to: 'casino', emblem: '?' }, { x: 24, y: 14, w: 4, roof: 'H', d: 1, to: 'ineqH' }] });
 API.ineq.sign(13, 11, '부등호시티\n크고 작음이 분명한 대도시');
 API.ineq.ent({ id: 'ineqn', kind: 'npc', x: 20, y: 9, dir: 'down', pal: 't2', wander: true, lines: ['방송탑 1층에서 퀴즈를 5문제 연속으로 맞히면 라디오 카드를 준대!', '자전거 가게 아저씨가 공짜로 자전거를 빌려준다던데?', '순환소수 숲 동쪽으로 빠지면 모래언덕을 돌아 4번 도로로 올 수 있대.', '튜브가 생기면 길가의 연못 한가운데 섬에도 가 봐. 물건이 놓여 있더라!'] });
@@ -2338,7 +2378,7 @@ ELITES.forEach((E, i) => {
 // 체육관 문 연결: townGen 에서 gym 방 출구를 설정
 // ================= 연결 =================
 link('town', 'N', 'route1', 'S'); link('route1', 'N', 'bunsu', 'S'); link('bunsu', 'N', 'route2', 'S'); link('route2', 'N', 'cycle', 'S');
-link('cycle', 'E', 'route3', 'W'); link('route3', 'E', 'cave1', 'W'); link('cave1', 'E', 'expo', 'W'); link('expo', 'S', 'forest', 'N');
+link('cycle', 'E', 'route3', 'W'); link('route3', 'E', 'tidecave', 'W'); link('tidecave', 'E', 'expo', 'W'); // 3번 도로 → 파도동굴 → 소나기항구 (예전 연결동굴·순환소수 숲은 지나지 않음)
 link('forest', 'S', 'route4', 'N'); link('route4', 'S', 'ineq', 'N'); link('ineq', 'S', 'route5', 'N'); link('route5', 'S', 'func', 'N');
 link('func', 'W', 'route6', 'E'); link('route6', 'W', 'harbor', 'E'); link('harbor', 'S', 'sea', 'N'); link('sea', 'S', 'island', 'N');
 link('func', 'E', 'route7', 'W'); link('route7', 'E', 'pita', 'W'); link('pita', 'N', 'lake', 'S'); link('pita', 'E', 'ice1', 'W'); link('ice1', 'N', 'ice2', 'S'); link('ice2', 'N', 'prob', 'W');
@@ -2736,7 +2776,7 @@ function monRow(m, extra = '') { return `<img src="${icon(m.sp)}" alt=""><span c
 // ---------- 퀴즈 ----------
 let lastQ = null;
 // 복습 (기획서 Q1-1): 지금 영역보다 앞서 지나온 영역의 문제를 25% 섞는다. 체육관을 하나 만들 때마다 한 줄씩 더한다
-const REVIEW_DOMAINS = [[11, 1, 13], [21, '2a', 23]];
+const REVIEW_DOMAINS = [[11, 1, 13], [21, '2a', 23], [31, '2b', 33]];
 function pickUnit() {
   if (B && B.o.units) return pick(B.o.units);
   const u = B && B.o.unit !== undefined ? B.o.unit : CUR.unit;
@@ -3033,7 +3073,7 @@ function interact() {
   if (t === 'x') { run(() => cutTree(x, y)); return; }
   if (t === 'h') { run(() => say('사계몬 회복 장치다. 보건 선생님께 말을 걸어 보자.')); return; }
   if (t === 'k') { run(pcMenu); return; }
-  if (t === 'b') { run(() => say(pick(['수학 문제집이 빼곡하다. "개념원리", "쎈"… 익숙한 이름이다.', '「중2 수학 오답 모음집」… 누군가 열심히 공부했나 보다.', '책장에 "피타고라스 정리의 100가지 증명"이 꽂혀 있다.', '「사계몬 도감 해설서」 — 순환소수는 모두 유리수!']))); return; }
+  if (t === 'b') { run(() => say(pick(BOOKS))); return; }
   const h = CUR.hidden.find(h => h.x === x && h.y === y && !S.flags['hid:' + h.id]);
   if (h) run(async () => { S.flags['hid:' + h.id] = 1; const id = itemId(h.item); S.bag[id] = (S.bag[id] || 0) + h.n; SFX.lvl(); await say(`어라? 숨겨진 ${jo(ITEMS[id].name, '을를')} ${h.n}개 발견했다!`); });
 }
@@ -3239,7 +3279,6 @@ async function awardBadge(n) {
   pop.remove();
   for (const [it, k] of G.reward) await giveItem(it, k);
   if (G.key) await giveKey(G.key, KEYS[G.key].desc);
-  if (n === 2) await sayAll([`관장 ${G.name}: 나눔학습노트는 '장착 아이템'이야. 사계몬에게 지니게 하면 싸우지 않아도 경험치를 나눠 받지.`, '(메뉴 → 사계몬 → 지닌 물건, 또는 가방에서 장착할 수 있다.)', '(부등호 백화점에서도 이제 장착 아이템을 팔기 시작했다!)']);
   if (n === 6) { S.flags.takeover = 1; }
   if (G.after) await say(`관장 ${G.name}: ${G.after}`);
   if (n === 7) await sayAll(['관장 운수: 이제 수학마을 동쪽 27번 도로로 가 봐. 학기말 고원이 기다려!', '(정박사님이 연구소로 와 달라고 했다는 소식이 들린다.)']);
@@ -3506,7 +3545,7 @@ function drawWorld(now) {
   }
   if (CUR.dark && !S.keys.lamp) {
     const cx = Math.round(px - camX) + 8, cy = Math.round(py - camY) + 6;
-    const gr = ctx.createRadialGradient(cx, cy, 10, cx, cy, 34);
+    const gr = ctx.createRadialGradient(cx, cy, 26, cx, cy, 54); // 주변 약 3칸이 보임 (미리보기 ⑨)
     gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,0.96)');
     ctx.fillStyle = gr; ctx.fillRect(0, 0, 240, 160);
   }
@@ -3842,8 +3881,8 @@ async function wildBattle(w) {
     return;
   }
   let lv = R(w.lv[0], w.lv[1]); let sp = pick(w.list);
-  // grad 'N': 남쪽 입구는 낮은 레벨, 북쪽 끝으로 갈수록 높은 레벨 (±1)
-  if (w.grad === 'N') { const k = 1 - P.y / (CUR.h - 1); lv = clamp(w.lv[0] + Math.round((w.lv[1] - w.lv[0]) * k) + R(-1, 1), w.lv[0], w.lv[1]); }
+  // grad: 입구 쪽은 낮은 레벨, 'N'은 북쪽·'E'는 동쪽 끝으로 갈수록 높은 레벨 (±1)
+  if (w.grad) { const k = w.grad === 'E' ? P.x / (CUR.w - 1) : 1 - P.y / (CUR.h - 1); lv = clamp(w.lv[0] + Math.round((w.lv[1] - w.lv[0]) * k) + R(-1, 1), w.lv[0], w.lv[1]); }
   if (SP[sp].evo && lv >= SP[sp].evo[0] && Math.random() < .4) sp = evolveFor(sp, lv);
   await battle({ kind: 'wild', team: [mkMon(sp, lv, false, HPMUL.wild)] });
 }
@@ -4485,7 +4524,7 @@ function trainerCard() {
 // ---------- 성적표 (기획서 8장, 미리보기 ⑤): 학생이 캡처해서 제출한다 ----------
 const REPORT_ROWS = ['수와 연산', '문자와 식', '함수', '기하', '확률과 통계'];
 // 문제 단원 번호 → [영역 줄, 학년]. 새 단원을 만들면 여기에 더한다
-const REPORT_MAP = { 11: [0, 1], 1: [0, 2], 13: [0, 3], 21: [1, 1], 2: [1, 2], 23: [1, 3], 3: [2, 2], 4: [3, 2], 5: [3, 2], 6: [4, 2] };
+const REPORT_MAP = { 11: [0, 1], 1: [0, 2], 13: [0, 3], 21: [1, 1], 2: [1, 2], 23: [1, 3], 31: [1, 1], 33: [1, 3], 3: [2, 2], 4: [3, 2], 5: [3, 2], 6: [4, 2] };
 async function askSid() {
   while (true) {
     const v = await nameInput('학번을 입력해 주세요 (숫자 5자리)', '30215', 5, '');
