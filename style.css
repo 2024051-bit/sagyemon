@@ -56,6 +56,12 @@ body{font-family:var(--f-ui);padding-left:max(16px,env(safe-area-inset-left,0px)
 .stat{position:absolute;padding:1.2cqw 2.4cqw;font-weight:700;z-index:2}
 #ehp{left:2.5%;top:4%;width:46%}
 #php{right:2.5%;top:43%;width:47%}
+/* 연속 정답 콤보 (미리보기 ⑫): 내 HP 창 왼쪽 아래 */
+#ui .combo{position:absolute;left:47%;top:56.6%;z-index:4;font:700 2.6cqw var(--f-ui);color:#5a4410;background:#fff8dc;border:.35cqw solid #c9a42a;border-radius:5cqw;padding:.3cqw 2cqw;letter-spacing:.04em}
+#ui .combo b{color:#e08a10;font-weight:700}
+#ui .combo.ready{background:#ffe58a;box-shadow:0 0 2.4cqw #ffd84a}
+#ui .combo.go{background:#e8502a;color:#fff;border-color:#a02a10;font-size:3.4cqw;box-shadow:0 0 2.4cqw #ff9a4a}
+#ui .menu.comboon{border-color:#e0b020;box-shadow:0 0 0 .5cqw #ffe58a}
 .stat .nm{display:flex;justify-content:space-between;font-size:3cqw}
 .stat .num{text-align:right;font-size:2.8cqw;font-variant-numeric:tabular-nums}
 .stat .xp{height:.9cqw;background:#ccc;border-radius:1cqw;overflow:hidden;margin-top:.5cqw}

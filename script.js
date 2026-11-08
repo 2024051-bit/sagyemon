@@ -2269,6 +2269,7 @@ API.route3.set(10, 7, '.').set(20, 15, '.'); // 숨긴 아이템 2개로 가는 
 // 파도동굴: 3번 도로와 소나기항구 사이의 어두운 동굴 (미리보기 ⑨). 동쪽으로 갈수록 야생 레벨이 오른다
 routeGen('tidecave', { name: '파도동굴', theme: 'cave', unit: 31, w: 36, h: 21, fill: .65, cave: true, dark: true, wild: ['eodug', 'eodug', 'doldeong', 'doldeong', 'jipge', 'mallang'], lv: [19, 22], ends: [['W', 8], ['E', 11]], trainers: 3, items: [['mpotion', 2], ['ball', 2]], hidden: [['hpotion', 1]], seed: 53 });
 API.tidecave.m.wild.grad = 'E';
+API.tidecave.ev(33, 11, 'rival2', () => rivalBattle(2)); // 동쪽 출구 바로 앞 외길에서 라이벌 (체육관 3 앞, 미리보기 ⑬)
 routeGen('cave1', { name: '연결동굴', theme: 'cave', unit: '2a', w: 36, h: 21, fill: .65, cave: true, dark: true, wild: ['bat', 'rock', 'croc', 'bat'], lv: [7, 10], ends: [['W', 8], ['E', 9]], trainers: 3, items: [['potion', 2], ['revive', 1], ['ball', 3]], seed: 43 });
 { const a = API.cave1; a.rect(15, 1, 15, 13, '.'); a.rect(12, 14, 18, 16, '~'); a.rect(12, 13, 18, 13, '.'); a.ent({ id: 'turtleF', kind: 'friday', x: 15, y: 15, dir: 'up' }); a.sign(11, 13, '물가 안내판\n"금요일에만 이상한 그림자가 보인다"'); }
 // 소나기항구 (지도 id는 expo 그대로): 체육관 3. 남쪽은 바다와 부두
@@ -3253,16 +3254,25 @@ async function rivalBattle(n) {
   CUR.ents.push(rv); SFX.enc();
   const L = {
     1: ['???: 야! 거기 너! 너도 박사님한테 사계몬 받았지?', `나는 ${RIVAL_NAME}. 박사님 손자다! 수학은 감으로 푸는 거야!`, '누가 더 센지 붙어 보자!'],
-    2: [`${RIVAL_NAME}: 또 너냐! 찍기단을 쫓아냈다며? 흥, 나도 할 수 있었어.`, '이번엔 찍어도 다 맞힐걸?'],
+    2: [`${RIVAL_NAME}: 또 너냐! 벚꽃마을에서 진 뒤로, 이번엔 한 문제씩 제대로 읽고 풀기로 했어.`, '…어두워서 길 찾느라 고생했지? 그래도 승부는 승부다!'],
     3: [`${RIVAL_NAME}: …이 탑에 전설의 사계몬이 잠들어 있대.`, '그 녀석들을 잡는 건 나야. 비켜!'],
     4: [`${RIVAL_NAME}: 찍기단 녀석들… 찍기만 하는 놈들이 제일 싫어.`, '…예전의 나 같아서. 그래도 승부는 승부다!'],
     5: [`${RIVAL_NAME}: …기다렸다.`, '찍기만 해서는 안 된다는 거, 너한테 지고 나서 알았어. 그래서 오답노트를 썼지.', '이번엔 진짜 실력으로 간다!'],
   }[n];
   await sayAll(L);
-  const team = { 1: [[rivalSp(1), 5]], 2: [['bat', 13], ['croc', 13], [rivalSp(2), 15]], 3: [['bat', 19], ['croc', 20], ['catpsy', 19], [rivalSp(3), 22]], 4: [['bat2', 29], ['croc', 29], ['catpsy', 30], ['ghost2', 30], [rivalSp(4), 32]], 5: [['bat2', 37], ['croc2', 37], ['catpsy2', 38], ['ghost2', 38], [rivalSp(5), 41]] }[n].map(([sp, lv]) => mkMon(sp, lv, false, HPMUL.rival));
-  const r = await battle({ kind: 'rival', team, trainer: { title: '라이벌', name: RIVAL_NAME, pal: 'rival', lose: { 1: '칫… 다음엔 안 진다!', 2: '왜 자꾸 지는 거야… 혹시 공부를 해야 하나?', 3: '…넌 왜 이렇게 강한 거야?', 4: '…알았어. 넌 진짜야.', 5: '…인정. 넌 진짜 강해. 챔피언한테도 꼭 이겨라!' }[n] }, money: n * 700 });
+  // 체육관 2개마다 한 번 (미리보기 ⑬, Q47): 1 = 벚꽃마을(체육관 1 앞), 2 = 파도동굴 출구(체육관 3 앞). 첫 몬스터는 관장보다 2레벨 낮게
+  const rb = rivalSp(1), team = { 1: [['piyak', 7], [evolveFor(rb, 9), 9]], 2: [['kkiruk', 21], ['keunjip', 22], [evolveFor(rb, 24), 24]], 3: [['bat', 19], ['croc', 20], ['catpsy', 19], [rivalSp(3), 22]], 4: [['bat2', 29], ['croc', 29], ['catpsy', 30], ['ghost2', 30], [rivalSp(4), 32]], 5: [['bat2', 37], ['croc2', 37], ['catpsy2', 38], ['ghost2', 38], [rivalSp(5), 41]] }[n].map(([sp, lv]) => mkMon(sp, lv, false, HPMUL.rival));
+  // 문제: 지금까지 지나온 영역에서 골고루 (복습 보스, Q48)
+  const units = { 1: [11, 1, 13], 2: [11, 1, 13, 21, '2a', 23, 31, '2b', 33] }[n];
+  const r = await battle({ kind: 'rival', team, units, trainer: { title: '라이벌', name: RIVAL_NAME, pal: 'rival', lose: { 1: '칫… 다음엔 안 진다!', 2: '…천천히 읽었는데도 졌네. 찍는 것만으론 안 된다는 건 알겠어.', 3: '…넌 왜 이렇게 강한 거야?', 4: '…알았어. 넌 진짜야.', 5: '…인정. 넌 진짜 강해. 챔피언한테도 꼭 이겨라!' }[n] }, money: n * 700 });
   if (r !== 'win') S.flags['rival' + n] = 0;
-  else await say({ 1: `${RIVAL_NAME}: 흥! 오늘은 봐준다. 다음에 보자!`, 2: `${RIVAL_NAME}: 순환소수 숲 너머에서 기다린다!`, 3: `${RIVAL_NAME}: …지하에서 무슨 소리가 났어. 너도 가 봐.`, 4: `${RIVAL_NAME}: 위층에 보스가 있어. …조심해.`, 5: `${RIVAL_NAME}: 학기말 고원은 위쪽이야. 가라!` }[n]);
+  else {
+    await say({ 1: `${RIVAL_NAME}: 흥! 오늘은 봐준다. 다음에 보자!`, 2: `${RIVAL_NAME}: 소나기항구는 바로 앞이야. 여울 관장한테 지기만 해 봐!`, 3: `${RIVAL_NAME}: …지하에서 무슨 소리가 났어. 너도 가 봐.`, 4: `${RIVAL_NAME}: 위층에 보스가 있어. …조심해.`, 5: `${RIVAL_NAME}: 학기말 고원은 위쪽이야. 가라!` }[n]);
+    if (n <= 2) { // 보상: 힌트 카드 1장 (Q49)
+      if ((S.hints || 0) < HINT_MAX) { S.hints = (S.hints || 0) + 1; SFX.lvl(); await say(`${jo(RIVAL_NAME, '이가')} 힌트 카드 1장을 던져 주고 갔다!\n(가진 카드 ${S.hints}장 / 최대 ${HINT_MAX}장)`); }
+      else await say(`${jo(RIVAL_NAME, '이가')} 힌트 카드를 주려 했지만, 이미 ${HINT_MAX}장을 가지고 있다.`);
+    }
+  }
   CUR.ents.splice(CUR.ents.indexOf(rv), 1);
 }
 // 체육관
@@ -3877,10 +3887,20 @@ function hud() {
   else { e.classList.remove('pb'); e.hidden = !a.eVis; if (B.e) e.innerHTML = `<div class="nm"><span>${monName(B.e)}${stTag(B.e)}${S.caught[B.e.sp] && (B.o.kind === 'wild' || B.o.kind === 'legend') ? ' <span style="color:#d79a18">●</span>' : ''}</span><span>Lv.${B.e.lvl}</span></div><div class="tys">${typeTags(B.e.sp)}</div>${bar(B.e)}`; }
   if (a.pTr) { p.hidden = false; p.classList.add('pb'); p.innerHTML = `<div class="pballs">${balls(S.party)}</div>`; }
   else { p.classList.remove('pb'); p.hidden = !a.pVis; if (B.p) p.innerHTML = `<div class="nm"><span>${monName(B.p)}${stTag(B.p)}</span><span>Lv.${B.p.lvl}</span></div>${bar(B.p)}<div class="num">${B.p.hp} / ${B.p.maxhp}</div><div class="xp"><i style="width:${Math.min(100, B.p.xp / need(B.p.lvl, B.p) * 100)}%"></i></div>`; }
+  // 연속 정답 콤보 표시 (미리보기 ⑫): 내 HP 창 왼쪽 아래
+  let c = $('#combo');
+  if (!c) { c = document.createElement('div'); c.id = 'combo'; c.className = 'combo'; ui.appendChild(c); }
+  c.hidden = a.pTr || !a.pVis || !B.p;
+  const k = B.combo || 0;
+  c.classList.toggle('ready', k >= COMBO_N); c.classList.remove('go');
+  c.innerHTML = k >= COMBO_N ? `콤보 준비! <b>${'●'.repeat(COMBO_N)}</b>` : `콤보 <b>${'●'.repeat(k)}</b>${'○'.repeat(COMBO_N - k)}`;
 }
 const stTag = m => (m.status ? ` <b class="stt st-${m.status}">${ST_NAME[m.status]}</b>` : '') + (m.conf ? ' <b class="stt st-conf">혼란</b>' : '');
 function typeTags(sp) { return spTypes(sp).map(t => `<b class="ty" style="background:${TYPE_COL[t]}">${t}</b>`).join(''); }
-function killHud() { ['#ehp', '#php'].forEach(s => { const el = $(s); if (el) el.remove(); }); }
+function killHud() { ['#ehp', '#php', '#combo'].forEach(s => { const el = $(s); if (el) el.remove(); }); }
+// 연속 정답 콤보: 한 배틀 안에서 COMBO_N문제 연속으로 맞히면 다음 기술 한 번은 문제 없이 나간다 (보통 피해)
+const COMBO_N = 2;
+function comboAdd(ok) { if (!B) return; B.combo = ok ? Math.min(COMBO_N, (B.combo || 0) + 1) : 0; hud(); }
 async function flashTrans() {
   for (let i = 0; i < 3; i++) { fx = { kind: 'white' }; await sleep(70); fx = null; await sleep(70); }
   fx = { kind: 'bars', k: 0 }; await tween(450, k => fx.k = k); await sleep(80); fx = null;
@@ -3922,7 +3942,7 @@ const isWildKind = k => k === 'wild' || k === 'legend' || k === 'roam';
 async function battle(o) {
   const wild = isWildKind(o.kind);
   o.team.forEach(m => S.seen[m.sp] = 1);
-  B = { o, idx: 0, e: o.team[0], p: firstAlive(), part: new Set(), theme: CUR.indoor ? (CUR.theme === 'indoor' ? 'indoor' : CUR.theme) : CUR.theme, a: { eX: 0, eY: 0, pX: 0, pY: 0, eVis: false, pVis: false, eAlpha: 1, pAlpha: 1, eScale: 1, pScale: 1, flash: 0, eTr: false, pTr: true, eTrX: 0, pTrX: 160 } };
+  B = { o, idx: 0, e: o.team[0], p: firstAlive(), part: new Set(), combo: 0, theme: CUR.indoor ? (CUR.theme === 'indoor' ? 'indoor' : CUR.theme) : CUR.theme, a: { eX: 0, eY: 0, pX: 0, pY: 0, eVis: false, pVis: false, eAlpha: 1, pAlpha: 1, eScale: 1, pScale: 1, flash: 0, eTr: false, pTr: true, eTrX: 0, pTrX: 160 } };
   const a = B.a;
   await flashTrans();
   scene = 'battle';
@@ -3957,7 +3977,7 @@ async function battle(o) {
       const ms = movesOf(B.p);
       if (ms.every(m => ppLeft(B.p, m) <= 0)) { await say(`${jo(monName(B.p), '은는')} 쓸 수 있는 기술이 없다!`); await playerMove(MOVES['발버둥']); }
       else {
-        const i = await choose(ms.map(m => `${m.name}<span class="sub"><b class="ty" style="background:${TYPE_COL[m.type]}">${m.type}</b> ${m.eff ? `<i class="efx">${EFF_INFO[m.eff][0]}</i> ` : ''}${ppLeft(B.p, m)}/${m.pp}</span>`), { cls: 'moves', cols: 2, cancel: true, start: Math.max(0, ms.findIndex(m => ppLeft(B.p, m) > 0)) });
+        const i = await choose(ms.map(m => `${m.name}<span class="sub"><b class="ty" style="background:${TYPE_COL[m.type]}">${m.type}</b> ${m.eff ? `<i class="efx">${EFF_INFO[m.eff][0]}</i> ` : ''}${ppLeft(B.p, m)}/${m.pp}</span>`), { cls: B.combo >= COMBO_N ? 'moves comboon' : 'moves', cols: 2, cancel: true, start: Math.max(0, ms.findIndex(m => ppLeft(B.p, m) > 0)) });
         if (i < 0) continue;
         if (ppLeft(B.p, ms[i]) <= 0) { toast('이 기술은 더 이상 쓸 수 없어요! (보건실에서 회복)'); continue; }
         await playerMove(ms[i]);
@@ -4071,7 +4091,16 @@ async function doMove(user, target, mv, side, { fast }) {
 }
 async function playerMove(mv) {
   if (!await canAct(B.p, 'p')) return;
+  if (B.combo >= COMBO_N && !mv.struggle) { // 콤보 발동: 문제 없이 기술 사용 (급소 없음)
+    B.combo = 0; hud(); const c = $('#combo'); if (c) { c.classList.add('go'); c.innerHTML = '콤보!'; }
+    SFX.lvl(); await say('콤보 발동! 문제 없이 공격한다!', { wait: false }); await sleep(700);
+    usePP(B.p, mv);
+    await say(`${monName(B.p)}의 ${mv.name}!`, { wait: false }); await sleep(350); hud();
+    await doMove(B.p, B.e, mv, 'p', { fast: false });
+    return;
+  }
   const r = await quiz(pickUnit(), { title: `${mv.name}! 맞히면 ${mv.eff ? '성공' : '공격 성공'}`, timed: !mv.eff });
+  comboAdd(r.ok);
   usePP(B.p, mv);
   await say(`${monName(B.p)}의 ${mv.name}!`, { wait: false }); await sleep(350);
   if (!r.ok) { SFX.no(); await say(mv.eff ? '하지만 문제를 틀려서\n기술이 실패했다!' : '하지만 문제를 틀려서\n공격이 빗나갔다!'); return; }
@@ -4199,6 +4228,7 @@ async function battleBag() {
       if (!isWildKind(B.o.kind)) { await say('다른 트레이너의 사계몬은\n잡을 수 없어!'); return 'cancel'; }
       S.bag[id]--;
       const r = await quiz(pickUnit(), { title: `${it.name} 던지기! 맞히면 명중` });
+      comboAdd(r.ok);
       await say(`${jo(S.name, '은는')} ${jo(it.name, '을를')} 던졌다!`, { wait: false });
       return await throwBall(r.ok, it, id);
     }
@@ -4208,6 +4238,7 @@ async function battleBag() {
     if (t < 0) continue;
     const m = targets[t];
     const r = await quiz(pickUnit(), { title: `${it.name}! 맞히면 사용 성공` });
+    comboAdd(r.ok);
     if (!r.ok) { await say(`앗! ${it.name} 뚜껑이 열리지 않는다!\n(아이템은 그대로 남아 있어요)`); return 'used'; }
     S.bag[id]--; SFX.heal();
     if (it.kind === 'revive') { m.hp = Math.floor(m.maxhp / 2); hud(); await say(`${jo(monName(m), '이가')} 기운을 되찾았다!`); }
