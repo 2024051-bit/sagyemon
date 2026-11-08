@@ -2133,7 +2133,7 @@ const GYMS = [
     tr: [T2('체육관 관원', '동전', 't1', [['coin', 32]], '동전 3개면 경우의 수는 8!', '뒷면만 나왔다…'), T2('체육관 관원', '주사위', 't3', [['dice', 32]], '두 주사위 합이 7일 확률은?', '내 확률은 0이었구나…'), T2('체육관 관원', '경우', 't2', [['octo', 33], ['penguin', 33]], '5명을 한 줄로 세우면 120가지!', '줄을 잘못 섰다…')] },
 ];
 GYMS.forEach((G, n) => gymRoom(n, G));
-MAPS.gym4.xpMul = 0.8; MAPS.gym5.xpMul = 0.8; // 가을 체육관도 가을 지방 경험치(0.8배)
+MAPS.gym4.xpMul = 0.9; MAPS.gym5.xpMul = 0.9; // 가을 체육관도 가을 지방 경험치(0.9배)
 // ================= 실내 고유 =================
 {
   const h = room('home', 10, 8, { name: '우리 집', floor: '#e8d8b8' });
@@ -2249,7 +2249,7 @@ API.hide1.m.warps[API.hide1.get(14, 1)].x = 13; API.hide1.m.warps[API.hide1.get(
   a.sign(12, 12, '새봄마을\n봄바람이 처음 부는 곳');
   gateGuard(a, 10, 1, 11, 1, () => S.party.length > 0, '연구소 조수: 잠깐! 사계몬 없이 풀숲에 들어가면 위험해!\n오른쪽 연구소의 정박사님께 먼저 가 봐.', '연구소 조수: 북쪽 1번 도로를 지나면 분수마을이야. 조심해!', 'guard', 'aide');
   gateGuard(a, 20, 7, 19, 6, () => S.badges.every(Boolean), '경비원: 동쪽은 졸업 언덕으로 가는 길이야.\n배지 8개를 모두 모은 트레이너만 갈 수 있어!', '경비원: 배지 8개! 졸업 언덕으로 가는 길이 열렸다!');
-  a.ent({ id: 'tkid', kind: 'npc', x: 7, y: 11, dir: 'down', pal: 'kid', wander: true, lines: ['START(Shift 키)를 누르면 메뉴가 열려!', '"오답노트"에 틀린 문제가 다 모인대. 시험 전에 꼭 봐!', '1번 도로 풀숲에는 봄 사계몬이 잔뜩 있대!', '턱이 진 언덕은 위에서 아래로 뛰어내릴 수만 있어. 돌아가는 길을 찾아봐!'] });
+  a.ent({ id: 'tkid', kind: 'npc', x: 7, y: 11, dir: 'down', pal: 'kid', wander: true, lines: ['START(Shift 키)를 누르면 메뉴가 열려!', '"오답노트"에 틀린 문제가 다 모인대. 시험 전에 꼭 봐!', '1번 도로 풀숲에는 봄 사계몬이 잔뜩 있대!', '턱이 진 언덕은 위에서 아래로 뛰어내릴 수만 있어. 돌아가는 길을 찾아봐!', '여름 사계몬은 봄 사계몬에게 강하대! 1번 도로 풀숲에 수박거북이 가끔 나온대.'] });
 }
 // 1번 도로 / 벚꽃마을(지도 id는 bunsu 그대로) / 2번 도로
 XW.route1 = []; // 봄 지방: 예전 추가 계열은 나오지 않게
@@ -2285,7 +2285,7 @@ blossom(API.cycle.m, 5, .5);
 // 동쪽 여름 지방(3번 도로)은 아직 닫아 둔다
 gateGuard(API.cycle, API.cycle.m.w - 2, API.cycle.cy, API.cycle.m.w - 2, API.cycle.cy - 1, () => S.badges[1], '경비원: 동쪽은 여름 지방으로 가는 3번 도로야.\n꽃샘 배지가 있어야 지나갈 수 있어!', '경비원: 꽃샘 배지! 동쪽 여름 지방으로 가도 좋아.\n동쪽으로 갈수록 사계몬이 강해지니 조심해!', 'guard', 'cycleE');
 API.cycle.sign(14, 7, '꽃샘시티\n봄과 겨울이 잠깐 만나는 마을');
-API.cycle.ent({ id: 'cyn', kind: 'npc', x: 9, y: 15, dir: 'down', pal: 'kid', wander: true, lines: ['2번 도로는 북쪽으로 갈수록 강한 사계몬이 나와!', '꽃샘 체육관 관장 나린은 진짜 강해. 충분히 키우고 도전해!', '보건실에서 오답노트를 다시 풀면 힌트 카드를 받을 수 있대.'] });
+API.cycle.ent({ id: 'cyn', kind: 'npc', x: 9, y: 15, dir: 'down', pal: 'kid', wander: true, lines: ['2번 도로는 북쪽으로 갈수록 강한 사계몬이 나와!', '꽃샘 체육관 관장 나린은 진짜 강해. 충분히 키우고 도전해!', '보건실에서 오답노트를 다시 풀면 힌트 카드를 받을 수 있대.', '3번 도로엔 가을 사계몬 밤톨이도 나온대. 여름 관장한테 강하대!'] });
 // 3번 도로: 여름 지방. 동쪽(소나기항구 쪽)으로 갈수록 야생 몬스터 레벨이 오른다
 XW.route3 = [];
 routeGen('route3', { name: '3번 도로', theme: 'summer', unit: 31, w: 42, h: 21, cx: 1, pond: 1, wild: ['maem', 'maem', 'jipge', 'mallang', 'kkiruk', 'kkiruk', 'sonak', 'subak'], lv: [16, 19], ends: [['W', 10], ['E', 6]], trainers: 4, items: [['mpotion', 2], ['ball', 3]], hidden: [['mpotion', 1]], flowers: 5, seed: 37 });
@@ -2346,10 +2346,10 @@ townGen('maemi', { name: '매미숲마을', theme: 'summer', unit: 41, w: 24, h:
 blossom(API.maemi.m, 7, .5);
 gateGuard(API.maemi, API.maemi.cx, 1, API.maemi.cx + 1, 1, () => S.badges[3], '경비원: 북쪽은 가을 지방으로 가는 5번 도로야.\n한여름 배지가 있어야 지나갈 수 있어!', '경비원: 한여름 배지! 북쪽 가을 지방으로 가도 좋아.\n가을 사계몬은 겨울 사계몬에게 약하대!', 'guard', 'maemiN');
 API.maemi.sign(API.maemi.cx + 2, 7, '매미숲마을\n한여름 매미 소리가 끊이지 않는 숲속 마을');
-// ================== 가을 지방 (미리보기 ⑮): 경험치 0.8배(xpMul. 여름 0.6배보다 많게, 2026-11-08 1.0배에서 조정) ==================
+// ================== 가을 지방 (미리보기 ⑮): 경험치 0.9배(xpMul. 2026-11-08 1.0 → 0.8 → 학생 시간 줄이기로 0.9배, 봄·여름과 같음) ==================
 // 5번 도로: 매미숲마을 북쪽 → 단풍마을. 겨울 몬스터 서리물범이 자주 나온다 (가을 관장 대비)
 routeGen('route5a', { name: '5번 도로', theme: 'autumn', unit: 51, w: 24, h: 36, cx: 1, pond: 1, wild: ['seal', 'seal', 'bam', 'jam', 'song', 'gom'], lv: [30, 33], ends: [['S', 11], ['N', 12]], trainers: 3, items: [['mpotion', 2], ['ball', 2]], hidden: [['hpotion', 1]], flowers: 5, seed: 71 });
-API.route5a.m.wild.grad = 'N'; API.route5a.m.xpMul = 0.8;
+API.route5a.m.wild.grad = 'N'; API.route5a.m.xpMul = 0.9;
 blossom(API.route5a.m, 41, .35); openSecrets(API.route5a, API.route5a.m.exits.S[2], API.route5a.m.exits.S[3]);
 API.route5a.ev(API.route5a.m.exits.N[2], API.route5a.m.exits.N[3], 'rival3', () => rivalBattle(3)); // 북쪽 출구 바로 앞(꼭 지나는 칸)에서 라이벌 3번째 (체육관 5 앞)
 // 단풍마을: 체육관 5 (기하 Ⅰ)
@@ -2357,15 +2357,15 @@ house('mapleH', '단풍마을 민가', [{ id: 'mapleh', kind: 'npc', x: 7, y: 4,
 townGen('maple', { name: '단풍마을', theme: 'autumn', unit: 51, w: 24, h: 20, seed: 1201, exits: ['S', 'N'], blds: [
   { x: 2, y: 2, w: 6, roof: 'G', d: 3, to: 'gym4', emblem: '5' }, { x: 16, y: 2, w: 4, roof: 'C', d: 2, to: 'center', ret: 1 },
   { x: 16, y: 12, w: 4, roof: 'M', d: 2, to: 'mart', ret: 1, arrive: [4, 6] }, { x: 3, y: 12, w: 4, roof: 'H', d: 1, to: 'mapleH' }] });
-API.maple.m.xpMul = 0.8; blossom(API.maple.m, 43, .5);
+API.maple.m.xpMul = 0.9; blossom(API.maple.m, 43, .5);
 gateGuard(API.maple, API.maple.cx, 1, API.maple.cx + 1, 1, () => S.badges[4], '경비원: 북쪽은 은행나무시티로 가는 6번 도로야.\n단풍 배지가 있어야 지나갈 수 있어!', '경비원: 단풍 배지! 북쪽으로 가도 좋아.\n낙엽골짜기는 길이 복잡하니 조심해!', 'guard', 'mapleN');
 API.maple.sign(API.maple.cx + 2, 7, '단풍마을\n온 산이 붉게 물드는 마을');
 // 6번 도로 → 낙엽골짜기(나무 미로) → 은행나무시티. 트레이너 수를 줄여 빠르게 관장에게
 routeGen('route6a', { name: '6번 도로', theme: 'autumn', unit: 4, w: 24, h: 32, cx: 1, pond: 1, wild: ['bam', 'jam', 'song', 'gom', 'seal'], lv: [33, 35], ends: [['S', 12], ['N', 11]], trainers: 2, items: [['hpotion', 1], ['ball', 2]], hidden: [['mpotion', 1]], flowers: 5, seed: 73 });
-API.route6a.m.wild.grad = 'N'; API.route6a.m.xpMul = 0.8;
+API.route6a.m.wild.grad = 'N'; API.route6a.m.xpMul = 0.9;
 blossom(API.route6a.m, 45, .35); openSecrets(API.route6a, API.route6a.m.exits.S[2], API.route6a.m.exits.S[3]);
 routeGen('valley', { name: '낙엽골짜기', theme: 'autumn', unit: 4, w: 32, h: 34, cell: 4, maze: 1, fill: .7, ledges: 0, wild: ['bam', 'bam2', 'song', 'gom', 'jam'], lv: [34, 36], ends: [['S', 12], ['N', 18]], trainers: 2, items: [['hpotion', 1], ['ball', 2]], hidden: [['hpotion', 1]], trees: 90, seed: 79 });
-API.valley.m.wild.grad = 'N'; API.valley.m.xpMul = 0.8;
+API.valley.m.wild.grad = 'N'; API.valley.m.xpMul = 0.9;
 blossom(API.valley.m, 47, .4); openSecrets(API.valley, API.valley.m.exits.S[2], API.valley.m.exits.S[3]);
 // 히든 맵 '황금 은행나무 언덕' (미리보기 ⑮): 낙엽골짜기 깊은 막다른 곳의 큰 은행나무 아래 굴 → 언덕. 비석 2연속 정답 → 황금사슴 Lv 38
 const HILL_UNITS = [11, 1, 13, 21, '2a', 23, 31, '2b', 33, 41, 3, 43, 51, 52, 53]; // 체육관 1~5 전 범위 (체육관 6의 기하 Ⅱ 제외)
@@ -2379,7 +2379,7 @@ routeGen('goldhill', { name: '황금 은행나무 언덕', theme: 'autumn', unit
       for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, k = nx + ',' + ny; if (seen.has(k) || !isOpen(a, nx, ny)) continue; seen.set(k, d + 1); q.push([nx, ny]); } }
     return best; };
   const h = API.goldhill, hm = h.m, [hx, hy, hax, hay] = hm.exits.S; h.set(hx, hy, 'T');
-  hm.units = HILL_UNITS; hm.xpMul = 0.8; blossom(hm, 51, .5); openSecrets(h, hax, hay);
+  hm.units = HILL_UNITS; hm.xpMul = 0.9; blossom(hm, 51, .5); openSecrets(h, hax, hay);
   const st = farthest(h, hax, hay, false);
   h.ent({ id: 'stele2', kind: 'stele', x: st[0], y: st[1], dir: 'down', cfg: { flag: 'deer', sp: 'deer', lv: 38, units: () => HILL_UNITS, hint: '황금빛 사슴이 모습을 드러내리라', glow: '비석이 황금빛으로 빛난다!', come: '은행잎 사이로 황금사슴이 걸어 나왔다!', gone: '황금사슴은 은행잎 속으로 사라져 버렸다…' } });
   // 골짜기: 남쪽 입구에서 가장 먼 빈 땅 옆의 큰 나무 줄기에 굴 입구 (나무 칸이라 길을 막지 않는다)
@@ -2394,9 +2394,16 @@ house('ginkgoH', '은행나무시티 민가', [{ id: 'ginkgoh', kind: 'npc', x: 
 townGen('ginkgo', { name: '은행나무시티', theme: 'autumn', unit: 4, w: 26, h: 20, seed: 1301, exits: ['S', 'N'], blds: [
   { x: 2, y: 2, w: 6, roof: 'G', d: 3, to: 'gym5', emblem: '6' }, { x: 18, y: 2, w: 4, roof: 'C', d: 2, to: 'center', ret: 1 },
   { x: 18, y: 12, w: 4, roof: 'M', d: 2, to: 'mart', ret: 1, arrive: [4, 6] }, { x: 3, y: 12, w: 4, roof: 'H', d: 1, to: 'ginkgoH' }] });
-API.ginkgo.m.xpMul = 0.8; blossom(API.ginkgo.m, 49, .55);
+API.ginkgo.m.xpMul = 0.9; blossom(API.ginkgo.m, 49, .55);
 gateGuard(API.ginkgo, API.ginkgo.cx, 1, API.ginkgo.cx + 1, 1, () => false, '경비원: 이 길 너머 겨울 지방은 아직 준비 중이야!\n가온 관장에게 먼저 도전해 보렴.', '', 'guard', 'ginkgoN');
 API.ginkgo.sign(API.ginkgo.cx + 2, 7, '은행나무시티\n황금빛 은행잎이 쏟아지는 도시');
+// 도로 트레이너는 맵당 2명 (2026-11-08 학생 예상 시간 줄이기). 지도 모양이 그대로이도록 만든 뒤에 몬스터가 많은 트레이너를 뺀다
+[['route1', ['route1t2']], ['route2', ['route2t2', 'route2t3']], ['route3', ['route3t0', 'route3t2']], ['tidecave', ['tidecavet2']],
+ ['route4s', ['route4st0', 'route4st3']], ['maemforest', ['maemforestt0']], ['route5a', ['route5at1']]].forEach(([k, ids]) => {
+  const es = API[k].m.ents; for (let i = es.length - 1; i >= 0; i--) if (ids.includes(es[i].id)) es.splice(i, 1);
+});
+// 지방 입구의 상성 몬스터 (미리보기 ⑯, 2026-11-08): 봄 관장에 강한 수박거북(여름), 여름 관장에 강한 밤톨이(가을). 가을 지방은 서리물범(겨울)
+API.route1.m.wild.list.push('subak', 'subak'); API.route2.m.wild.list.push('subak'); API.route3.m.wild.list.push('bam', 'bam');
 // 순환소수 숲
 routeGen('forest', { name: '순환소수 숲', theme: 'forest', unit: '2b', w: 32, h: 36, cell: 4, maze: 1, fill: .7, ledges: 0, wild: ['bug2', 'cat', 'bird', 'catpsy', 'snake', 'bug3'], lv: [10, 13], ends: [['N', 11], ['S', 14], ['E', 8]], trainers: 4, items: [['spotion', 2], ['candy', 1], ['sball', 2]], hidden: [['revive', 1]], trees: 90, seed: 59 });
 { const a = API.forest, h = a.m.h; a.rect(2, h - 3, a.m.w - 3, h - 2, 'T'); a.set(14, h - 2, '='); a.set(14, h - 3, 'x'); a.set(14, h - 4, '='); a.set(13, h - 4, '.'); a.set(15, h - 4, '.'); relocate(a, 1); }
@@ -2777,10 +2784,10 @@ function stageMul(sp) { // 진화한 상대일수록 경험치를 더 준다
   return depth === 0 ? 1.25 : depth === 1 ? 1.4 : 1.5;
 }
 // 받는 사계몬의 레벨(Lp) 기준: 같은 레벨이면 위 마리 수, 낮은 레벨 상대는 조금 덜(√(L/Lp)), 높은 레벨 상대는 조금 더(최대 1.5배)
-// 첫 배지를 딴 뒤(2번째 지방부터)는 경험치를 줄여 레벨업을 어렵게 한다 (2026-11-05 선생님 요청: 체육관 1은 1차시, 2부터는 한 차시에 못 끝내는 학생도 있게)
-const XP_LATE = 0.6;
+// 첫 배지를 딴 뒤(2번째 지방부터)는 경험치를 줄인다 (2026-11-05 0.6배 → 2026-11-08 학생 예상 시간이 길어 0.9배: 보통 학생 한 단계 약 40~55분 목표)
+const XP_LATE = 0.9;
 function xpYield(sp, L, trainer, Lp = L) {
-  // 첫 배지 뒤에는 0.6배. 단, 지도에 xpMul이 있으면 그 값 (가을 지방 1.0배: 레벨업을 쉽게, 미리보기 ⑮)
+  // 첫 배지 뒤에는 0.9배. 단, 지도에 xpMul이 있으면 그 값 (가을 지방 0.9배, 미리보기 ⑮)
   const ref = (totalXP(Lp + 1) - totalXP(Lp)) / battlesPerLv(Lp), late = S && S.badges[0] ? ((typeof CUR !== 'undefined' && CUR && CUR.xpMul) || XP_LATE) : 1;
   return Math.max(1, Math.round(ref * Math.min(1.5, Math.sqrt(L / Lp)) * stageMul(sp) * (trainer ? 1.5 : 1) * late));
 }
