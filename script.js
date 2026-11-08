@@ -3251,7 +3251,7 @@ async function rivalBattle(n) {
   const fx2 = P.x - DIRV[P.dir][0] * 0, fy2 = P.y;
   const rv = { id: 'rival', kind: 'rival', show: true, x: P.x + (DIRV[P.dir][0] || 0), y: P.y + (DIRV[P.dir][1] || 0), dir: OPP[P.dir], pal: 'rival' };
   if (!walkable(rv.x, rv.y)) { rv.x = P.x; rv.y = P.y - 1; P.dir = 'up'; rv.dir = 'down'; }
-  CUR.ents.push(rv); SFX.enc();
+  const host = CUR.ents; host.push(rv); SFX.enc(); // 지면 보건실로 옮겨지므로, 나타난 지도에서 지워야 한다
   const L = {
     1: ['???: 야! 거기 너! 너도 박사님한테 사계몬 받았지?', `나는 ${RIVAL_NAME}. 박사님 손자다! 수학은 감으로 푸는 거야!`, '누가 더 센지 붙어 보자!'],
     2: [`${RIVAL_NAME}: 또 너냐! 벚꽃마을에서 진 뒤로, 이번엔 한 문제씩 제대로 읽고 풀기로 했어.`, '…어두워서 길 찾느라 고생했지? 그래도 승부는 승부다!'],
@@ -3273,7 +3273,7 @@ async function rivalBattle(n) {
       else await say(`${jo(RIVAL_NAME, '이가')} 힌트 카드를 주려 했지만, 이미 ${HINT_MAX}장을 가지고 있다.`);
     }
   }
-  CUR.ents.splice(CUR.ents.indexOf(rv), 1);
+  const ri = host.indexOf(rv); if (ri >= 0) host.splice(ri, 1);
 }
 // 체육관
 H.qdoor = async e => {
