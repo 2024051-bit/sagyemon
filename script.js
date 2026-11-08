@@ -476,6 +476,8 @@ Object.assign(SP, {
   wangppul: { name: '왕뿔이', art: 'gen', gs: { body: 'bug', form: 'beetle', c1: '#5a3a1e', c2: '#d8a850', glyph: '', k: 15 }, v: 'deep', add: 'horns', big: 1.15, type: '여름', hp: 68, atk: 78, def: 70, moves: ['몸통박치기', '왕뿔 찌르기', '단단해지기', '통나무 던지기'], dex: ['풍뎅이몬', 1.2, 30, '커다란 뿔로 통나무도 들어 올린다. 숲의 힘센 대장.'] },
   neurit: { name: '느릿이', art: 'gen', gs: { body: 'biped', form: 'sloth', c1: '#a08a6a', c2: '#e8dcc0', glyph: '', k: 16 }, type: '노말', hp: 66, atk: 58, def: 58, moves: ['할퀴기', '하품', '나뭇가지 휘두르기', '느릿느릿 박치기'], dex: ['나무늘보몬', 0.9, 20, '나뭇가지에 매달려 하루 종일 꾸벅꾸벅 존다. 화가 나면 의외로 빠르다.'] },
   doldeong: { name: '돌덩이', art: 'gen', gs: { body: 'biped', form: 'golem', c1: '#9a8a70', c2: '#d8c8a0', glyph: '', k: 12 }, type: '바위', hp: 58, atk: 52, def: 66, moves: ['몸통박치기', '돌 던지기', '단단해지기', '바위 굴리기'], dex: ['바위몬', 1.0, 90, '동굴 벽에서 굴러 나온 돌이 모여 생겼다. 가만히 있으면 진짜 바위와 구별이 안 된다.'] },
+  // 무지개섬 특별 몬스터 (미리보기 ⑭): 도전의 비석에서 2문제 연속 정답이면 나타난다. 잡기 어려움(특별 몬스터 포획률)
+  rainbow: { name: '무지개깃', art: 'gen', gs: { body: 'bird', form: 'swift', c1: '#4aa8f0', c2: '#f8d848', glyph: '', k: 20 }, add: 'crest', big: 1.1, type: '여름', hp: 72, atk: 74, def: 64, moves: ['날개치기', '햇살 부리', '소나기 바람', '무지개 폭풍'], dex: ['무지개몬', 1.1, 12, '소나기가 그친 뒤 무지개 끝에서 날아온다. 날개를 펴면 일곱 빛깔이 반짝인다.'] },
 });
 // 도감 순서: 계열끼리 붙여서 정렬 (전설은 맨 뒤)
 const LEGENDS = ['beastO', 'beastI', 'beastG', 'dragon', 'whale', 'phi', 'euler', 'zeroking'];
@@ -2283,6 +2285,25 @@ blossom(API.expo.m, 4, .5);
 gateGuard(API.expo, API.expo.cx, 1, API.expo.cx + 1, 1, () => S.badges[2], '경비원: 북쪽은 매미숲으로 가는 4번 도로야.\n소나기 배지가 있어야 지나갈 수 있어!', '경비원: 소나기 배지! 북쪽 4번 도로로 가도 좋아.\n북쪽으로 갈수록 사계몬이 강해지니 조심해!', 'guard', 'expoN');
 API.expo.sign(API.expo.cx + 2, 7, '소나기항구\n소나기가 지나가면 무지개가 뜨는 항구');
 API.expo.ent({ id: 'sonak1', kind: 'npc', x: 10, y: 15, dir: 'down', pal: 'swim', wander: true, lines: ['3번 도로는 동쪽으로 갈수록 강한 사계몬이 나와!', '여름 사계몬은 가을 사계몬에게 약해. 상성을 잘 생각해 봐!', '부두 끝에서 바다를 보면 마음이 시원해져.'] });
+// 무지개섬 문제 범위: 체육관 1~3 전 범위 복습 (수와 연산 · 식의 계산 · 방정식). 함수는 체육관 4 몫이라 뺀다
+const ISLE_UNITS = [11, 1, 13, 21, '2a', 23, 31, '2b', 33];
+// 무지개섬 (히든 맵, 미리보기 ⑭): 소나기항구 부두 끝 뱃사공이 배로 데려다준다 (소나기 배지 뒤). 바다로 둘러싸인 작은 섬
+routeGen('rainbowisle', { name: '무지개섬', theme: 'summer', unit: 41, w: 24, h: 20, cx: 1, pond: 1, wild: ['mallang', 'kkiruk', 'subak', 'sonak'], lv: [20, 24], ends: [['N', 11]], trainers: 0, items: [['mpotion', 2], ['ball', 3]], hidden: [['hpotion', 1]], flowers: 6, seed: 211 });
+{
+  const a = API.rainbowisle, m = a.m, [ex, ey, ax, ay] = m.exits.N; a.set(ex, ey, '~');
+  m.units = ISLE_UNITS; // 섬 야생 배틀 문제도 체육관 1~3 전 범위 복습
+  blossom(m, 31, .45);
+  for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) if ((x < 2 || y < 2 || x >= m.w - 2 || y >= m.h - 2) && 'TY'.includes(a.get(x, y))) a.set(x, y, '~');
+  // 섬 가장 깊은 곳(배에서 내리는 곳에서 가장 먼 빈 땅)에 도전의 비석
+  const open = (x, y) => ['.', ',', '*', '='].includes(a.get(x, y)) && !m.ents.some(e => e.x === x && e.y === y);
+  const seen = new Map([[ax + ',' + ay, 0]]), q = [[ax, ay]]; let far = [ax, ay], fd = 0;
+  while (q.length) { const [x, y] = q.shift(), d = seen.get(x + ',' + y); if (d > fd && a.get(x, y) === '.' && open(x, y)) { fd = d; far = [x, y]; } for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, k = nx + ',' + ny; if (seen.has(k) || !['.', ',', '*', '='].includes(a.get(nx, ny))) continue; seen.set(k, d + 1); q.push([nx, ny]); } }
+  a.ent({ id: 'stele1', kind: 'stele', x: far[0], y: far[1], dir: 'down' });
+  a.set(8, 4, '.').set(5, 8, '.'); // 숨긴 아이템으로 가는 길 (가위 없음 · 연못 섬). 비석 자리를 정한 뒤에 연다
+  const bx = open(ax + 1, ay) ? ax + 1 : ax - 1;
+  a.ent({ id: 'boatI', kind: 'boat', x: bx, y: ay, dir: 'down', pal: 'swim', to: 'expo', tx: API.expo.cx, ty: API.expo.m.h - 3, tdir: 'up' });
+  API.expo.ent({ id: 'boatH', kind: 'boat', x: API.expo.cx, y: API.expo.m.h - 2, dir: 'up', pal: 'swim', to: 'rainbowisle', tx: ax, ty: ay, tdir: 'down' });
+}
 // 4번 도로 (여름): 소나기항구 북쪽. 북쪽(매미숲 쪽)으로 갈수록 야생 레벨이 오른다 (미리보기 ⑩)
 routeGen('route4s', { name: '4번 도로', theme: 'summer', unit: 41, w: 24, h: 36, cx: 1, pond: 1, wild: ['maem', 'maem', 'subak', 'kkiruk', 'ppul', 'neurit'], lv: [22, 25], ends: [['S', 11], ['N', 12]], trainers: 4, items: [['mpotion', 2], ['ball', 2]], hidden: [['hpotion', 1]], flowers: 5, seed: 61 });
 API.route4s.m.wild.grad = 'N';
@@ -2712,7 +2733,7 @@ const stgMul = s => s >= 0 ? (2 + s) / 2 : 2 / (2 - s);
 
 // ---------- 포획 확률표 (기획서 4.2): 정답일 때 상대 체력에 따라 60/80/95%, 특별 몬스터는 40/60/80% ----------
 // 정답인데 놓치면 그 몬스터는 다음 정답에서 반드시 잡힌다 (e.pity)
-const RARE = new Set(['xdragon', 'zero', 'fishr']); // 희귀한 계열
+const RARE = new Set(['xdragon', 'zero', 'fishr', 'rainbow']); // 희귀한 계열 (특별 몬스터 포획률)
 const isSpecialMon = sp => LEGENDS.includes(sp) || RARE.has(lineInfo(sp).root);
 const CATCH_LABEL = sp => isSpecialMon(sp) ? '어려움' : '보통';
 function catchChance(e) {
@@ -2804,6 +2825,7 @@ let lastQ = null;
 const REVIEW_DOMAINS = [[11, 1, 13], [21, '2a', 23], [31, '2b', 33], [41, 3, 43]];
 function pickUnit() {
   if (B && B.o.units) return pick(B.o.units);
+  if (CUR && CUR.units && !(B && B.o.unit !== undefined)) return pick(CUR.units); // 지도 전체가 복습 범위인 곳 (무지개섬)
   const u = B && B.o.unit !== undefined ? B.o.unit : CUR.unit;
   if (!u) return 0;
   const di = REVIEW_DOMAINS.findIndex(d => d.includes(u));
@@ -3470,6 +3492,34 @@ H.beasts = async () => {
   await sayAll(['……!', '탑 지하에 잠들어 있던 세 마리의 사계몬이 눈을 떴다!', '외심수, 내심수, 무게중심수가 순식간에 달려 나갔다!', '(세 마리는 이제 전국의 풀숲을 떠돌아다닌다. 언젠가 다시 만날지도…)']);
   S.flags.beasts = 1; ['beastO', 'beastI', 'beastG'].forEach(sp => { S.seen[sp] = 1; S.roam[sp] = S.roam[sp] || { hp: null }; });
 };
+// 무지개섬 (미리보기 ⑭): 소나기항구 부두 끝 뱃사공 ↔ 섬의 뱃사공. 소나기 배지를 딴 뒤에 태워 준다
+H.boat = async e => {
+  if (e.to === 'rainbowisle') {
+    if (!S.badges[2]) return sayAll(['뱃사공: 저 멀리 바다 위에 무지개가 걸린 섬이 보이지?', '소나기 체육관을 이긴 실력자만 태워 준단다. 소나기 배지를 따 오렴!']);
+    await say('뱃사공: 소나기 배지로구나! 무지개섬까지 태워 줄까?', { wait: false });
+    if (!await yesno()) return say('뱃사공: 언제든 말만 하렴.');
+  } else {
+    await say('뱃사공: 소나기항구로 돌아갈까?', { wait: false });
+    if (!await yesno()) return say('뱃사공: 천천히 둘러보고 오렴. 섬 깊은 곳에 오래된 비석이 있단다.');
+  }
+  SFX.sel(); await warpTo(e.to, e.tx, e.ty, e.tdir);
+  if (e.to === 'rainbowisle' && !S.flags.isleVisit) { S.flags.isleVisit = 1; await sayAll(['(배를 타고 무지개섬에 도착했다!)', '뱃사공: 섬 깊은 곳 비석에 무언가 쓰여 있다던데… 한번 찾아보렴.']); }
+};
+// 도전의 비석: 문제(ISLE_UNITS) 2개를 연속으로 맞히면 무지개깃이 나타난다. 틀려도 다시 도전
+H.stele = async () => {
+  if (S.flags.rainbow) return say('도전의 비석은 조용하다.\n(무지개깃은 이미 함께 여행하고 있다)');
+  await say('도전의 비석이다.\n"두 문제를 연속으로 맞히는 자에게 무지개가 모습을 드러내리라." 도전할까?', { wait: false });
+  if (!await yesno()) return;
+  const units = ISLE_UNITS;
+  for (let i = 1; i <= 2; i++) {
+    const r = await quiz(pick(units), { title: `도전의 비석 ${i}/2` });
+    if (!r.ok) return say('비석의 빛이 사그라들었다…\n(해설을 떠올리며 다시 도전해 보자!)');
+  }
+  await sayAll(['비석이 일곱 빛깔로 빛난다!', '하늘에서 무지개깃이 내려왔다!']);
+  const r = await battle({ kind: 'legend', team: [mkMon('rainbow', 26, false, HPMUL.legend)], units });
+  if (r === 'caught') S.flags.rainbow = 1;
+  else if (r === 'win') await say('무지개깃은 무지개 너머로 날아가 버렸다…\n(비석에 다시 도전하면 또 만날 수 있다)');
+};
 H.legend = async e => {
   await sayAll(['…공기가 떨린다.', `${SP[e.sp].name}의 눈이 이쪽을 바라본다!`]);
   const r = await battle({ kind: 'legend', team: [mkMon(e.sp, e.lv, false, HPMUL.legend)], unit: 0 });
@@ -3571,6 +3621,13 @@ function drawWorld(now) {
     const e = o.e, [ex, ey] = pos(e), sx = Math.round(ex * 16 - camX), sy = Math.round(ey * 16 - camY);
     if (e.kind === 'item' || e.kind === 'starter') { drawBall(sx + 8, sy + 8, e.kind === 'starter' ? '#e04a4a' : '#f0c040'); continue; }
     if (e.kind === 'qdoor') { drawQdoor(sx, sy); continue; }
+    if (e.kind === 'stele') { // 도전의 비석: 돌판 (특별 몬스터를 잡기 전에는 은은하게 빛난다)
+      ctx.fillStyle = '#0003'; ctx.fillRect(sx + 2, sy + 13, 12, 2);
+      ctx.fillStyle = '#6a6a78'; ctx.fillRect(sx + 3, sy - 1, 10, 15); ctx.fillStyle = '#c8c8d4'; ctx.fillRect(sx + 4, sy, 8, 13);
+      ctx.fillStyle = '#5a5a6a'; for (const yy of [3, 6, 9]) ctx.fillRect(sx + 5, sy + yy, 6, 1);
+      if (!S.flags.rainbow) { ctx.fillStyle = `rgba(248,216,72,${.25 + .2 * Math.sin(now / 300)})`; ctx.fillRect(sx + 4, sy, 8, 13); }
+      continue;
+    }
     const bigSp = { faketree: 'tree', legend: e.sp, friday: 'turtle', redfish: 'fishr', beasts: e.sp || 'beastO', sick: 'sheep2' }[e.kind];
     if (bigSp) { const k = e.kind === 'faketree' ? 22 : 30; drawMon(bigSp, 'front', sx + 8 - k / 2, sy + 14 - k + (e.kind === 'faketree' ? Math.round(Math.sin(now / 150)) : Math.sin(now / 400) * 2), k); continue; }
     ctx.fillStyle = '#0003'; ctx.fillRect(sx + 3, sy + 13, 10, 2);
