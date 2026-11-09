@@ -2610,7 +2610,7 @@ const SFX = {
 };
 
 // ---------- 입력 ----------
-const KEYMAP = { ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down', ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right', KeyZ: 'a', Enter: 'a', NumpadEnter: 'a', Space: 'a', KeyX: 'b', Escape: 'b', Backspace: 'b', ShiftLeft: 'start', ShiftRight: 'start', KeyM: 'start', KeyH: 'h', Digit1: '1', Digit2: '2', Digit3: '3', Digit4: '4', Numpad1: '1', Numpad2: '2', Numpad3: '3', Numpad4: '4' };
+const KEYMAP = { ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down', ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right', KeyZ: 'a', Enter: 'a', NumpadEnter: 'a', Space: 'a', KeyX: 'b', Escape: 'b', Backspace: 'b', ShiftLeft: 'start', ShiftRight: 'start', KeyM: 'start', KeyH: 'h', KeyC: 'c', Digit1: '1', Digit2: '2', Digit3: '3', Digit4: '4', Numpad1: '1', Numpad2: '2', Numpad3: '3', Numpad4: '4' };
 const DIRS = ['up', 'down', 'left', 'right'];
 const DIRV = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
 const OPP = { up: 'down', down: 'up', left: 'right', right: 'left' };
@@ -4494,11 +4494,11 @@ const DEX_ORDER = (() => {
   return out.concat(LEGENDS);
 })();
 const dexNo = sp => String(DEX_ORDER.indexOf(sp) + 1).padStart(3, '0');
-function overlay(html, cls) {
+function overlay(html, cls, acts) { // acts: 닫지 않고 실행할 단추 { 키 동작: 함수 } (성적표 '이미지로 저장')
   return new Promise(res => {
     const el = document.createElement('div'); el.className = cls; el.innerHTML = html; ui.appendChild(el);
-    const off = pushHandler(a => { if (a === 'a' || a === 'b') { off(); el.remove(); SFX.sel(); res(); } });
-    el.addEventListener('click', () => { off(); el.remove(); res(); });
+    const off = pushHandler(a => { if (acts && acts[a]) acts[a](); else if (a === 'a' || a === 'b') { off(); el.remove(); SFX.sel(); res(); } });
+    el.addEventListener('click', e => { const b = e.target.closest('[data-act]'); if (b && acts && acts[b.dataset.act]) { acts[b.dataset.act](); return; } off(); el.remove(); res(); });
   });
 }
 function dexCard(sp) {
@@ -4749,27 +4749,85 @@ async function askSid() {
     toast('학번은 숫자 5자리로 써 주세요');
   }
 }
-async function reportMenu() {
-  if (!S.sid) await askSid(); // 예전 저장: 처음 열 때 학번 입력
+// 성적표 내용 (화면과 '이미지로 저장' 그림이 함께 쓴다)
+function reportData() {
   const cell = {};
   for (const u in S.stats) { const m = REPORT_MAP[u]; if (!m) continue; const k = m.join(), c = cell[k] || (cell[k] = [0, 0]); c[0] += S.stats[u][0]; c[1] += S.stats[u][1]; }
   const pct = c => Math.round(c[1] / c[0] * 100);
-  const td = (r, g) => { const c = cell[r + ',' + g]; if (!c || !c[0]) return '<td class="na">-</td>'; const p = pct(c); return `<td class="${p >= 70 ? 'hi' : p >= 50 ? 'mid' : 'lo'}">${p}%<small>${c[0]}문제</small></td>`; };
   // 더 연습할 곳: 3문제 이상 푼 칸 중 정답률이 가장 낮은 곳
   let weak = null; for (const k in cell) if (cell[k][0] >= 3 && (!weak || pct(cell[k]) < pct(cell[weak]))) weak = k;
   const wk = weak && weak.split(',').map(Number), wp = weak && pct(cell[weak]);
-  const weakHtml = !weak ? '<div class="rp-weak good">아직 3문제 이상 푼 영역이 없어요. 문제를 더 풀어 봐요!</div>'
-    : wp >= 70 ? '<div class="rp-weak good">모든 영역 정답률 70% 이상! 아주 잘하고 있어요.</div>'
-    : `<div class="rp-weak">더 연습할 곳: ${REPORT_ROWS[wk[0]]} · 중${wk[1]} (${wp}%) → 보건실에서 '오답노트 다시 풀기'로 복습해요!</div>`;
+  const weakTxt = !weak ? ['good', '아직 3문제 이상 푼 영역이 없어요. 문제를 더 풀어 봐요!']
+    : wp >= 70 ? ['good', '모든 영역 정답률 70% 이상! 아주 잘하고 있어요.']
+    : ['', `더 연습할 곳: ${REPORT_ROWS[wk[0]]} · 중${wk[1]} (${wp}%) → 보건실에서 '오답노트 다시 풀기'로 복습해요!`];
   const tot = Object.values(S.stats).reduce((a, [n, ok]) => [a[0] + n, a[1] + ok], [0, 0]);
   const d = new Date(), pad = v => String(v).padStart(2, '0');
+  return { cell, pct, weakTxt, tot, acc: tot[0] ? Math.round(tot[1] / tot[0] * 100) : 0, d, pad,
+    date: `${d.getFullYear()}. ${pad(d.getMonth() + 1)}. ${pad(d.getDate())}.(${'일월화수목금토'[d.getDay()]}) ${pad(d.getHours())}:${pad(d.getMinutes())}` };
+}
+async function reportMenu() {
+  if (!S.sid) await askSid(); // 예전 저장: 처음 열 때 학번 입력
+  const R = reportData(), cell = R.cell, pct = R.pct;
+  const td = (r, g) => { const c = cell[r + ',' + g]; if (!c || !c[0]) return '<td class="na">-</td>'; const p = pct(c); return `<td class="${p >= 70 ? 'hi' : p >= 50 ? 'mid' : 'lo'}">${p}%<small>${c[0]}문제</small></td>`; };
+  const weakHtml = `<div class="rp-weak ${R.weakTxt[0]}">${R.weakTxt[1]}</div>`, tot = R.tot;
   const badges = GYMS.map((G, i) => S.badges[i] ? `<img src="${badgeIcon(i, 48)}" alt="${G.badge}">` : '<i></i>').join('');
-  await overlay(`<div class="rp-h"><b>사계몬스터 성적표</b><span>${d.getFullYear()}. ${pad(d.getMonth() + 1)}. ${pad(d.getDate())}.(${'일월화수목금토'[d.getDay()]}) ${pad(d.getHours())}:${pad(d.getMinutes())}</span></div>
+  await overlay(`<div class="rp-h"><b>사계몬스터 성적표</b><span>${R.date}</span></div>
     <div class="rp-id"><span class="who"><em>${S.sid}</em>${S.name}</span><span class="rp-badges">배지 ${S.badges.filter(Boolean).length}/8 ${badges}</span></div>
-    <div class="rp-sum">푼 문제 ${tot[0]}개 · 정답률 ${tot[0] ? Math.round(tot[1] / tot[0] * 100) : 0}% · 잡은 사계몬 ${Object.keys(S.caught).length}종 · 플레이 ${Math.floor((S.playMs || 0) / 60000)}분 · 오답노트 ${S.notes.length}문제 남음 (정복 ${S.solved || 0})</div>
+    <div class="rp-sum">푼 문제 ${tot[0]}개 · 정답률 ${R.acc}% · 잡은 사계몬 ${Object.keys(S.caught).length}종 · 플레이 ${Math.floor((S.playMs || 0) / 60000)}분 · 오답노트 ${S.notes.length}문제 남음 (정복 ${S.solved || 0})</div>
     <table><tr><th>영역</th><th>중1</th><th>중2</th><th>중3</th></tr>${REPORT_ROWS.map((n, r) => `<tr><td>${n}</td>${td(r, 1)}${td(r, 2)}${td(r, 3)}</tr>`).join('')}</table>
     ${weakHtml}
-    <div class="rp-f"><span>이 화면을 캡처해서 제출하세요</span><span>A: 닫기</span></div>`, 'report');
+    <div class="rp-f"><span>이 화면을 캡처하거나 이미지로 저장해서 제출하세요</span><span><button class="rp-save" data-act="c">📷 이미지로 저장 (C)</button> A: 닫기</span></div>`, 'report', { c: saveReportPNG });
+}
+// ---------- 성적표 '이미지로 저장' (미리보기 ⑱, 2026-11-09): 게임이 직접 그려 PNG로 내려받는다. 인터넷·서버 없이 됨 ----------
+function reportCanvas() {
+  const R = reportData(), W = 1280, H = 800, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const g = cv.getContext('2d'), UI = '"Nanum Gothic Coding","Malgun Gothic","Apple SD Gothic Neo",sans-serif', TT = '"Black Han Sans","Malgun Gothic",sans-serif';
+  const rr = (x, y, w, h, r, fill) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); g.fillStyle = fill; g.fill(); };
+  const txt = (s, x, y, font, col, align = 'left') => { g.font = font; g.fillStyle = col; g.textAlign = align; g.textBaseline = 'middle'; g.fillText(s, x, y); };
+  g.fillStyle = '#2a3a8a'; g.fillRect(0, 0, W, H);
+  rr(14, 14, W - 28, H - 28, 22, '#fffdf4');
+  // 머리
+  txt('사계몬스터 성적표', 56, 78, `400 54px ${TT}`, '#2a3a8a');
+  txt(R.date, W - 56, 84, `700 26px ${UI}`, '#46465e', 'right');
+  g.fillStyle = '#2a3a8a'; g.fillRect(56, 122, W - 112, 6);
+  // 학번 · 이름 · 배지
+  g.font = `700 40px ${UI}`; const sw = g.measureText(S.sid).width;
+  rr(56, 150, sw + 28, 56, 10, '#ffe58a'); txt(S.sid, 70, 179, `700 40px ${UI}`, '#26263a');
+  txt(S.name, 56 + sw + 48, 179, `700 40px ${UI}`, '#26263a');
+  const bx = W - 56 - 8 * 56;
+  txt(`배지 ${S.badges.filter(Boolean).length}/8`, bx - 16, 179, `700 28px ${UI}`, '#26263a', 'right');
+  GYMS.forEach((G, i) => { const x = bx + i * 56;
+    if (S.badges[i]) g.drawImage(badgeCanvas(i, 48), x, 155, 48, 48);
+    else { g.setLineDash([6, 5]); g.beginPath(); g.arc(x + 24, 179, 21, 0, 7); g.lineWidth = 3; g.strokeStyle = '#b8b4a8'; g.stroke(); g.setLineDash([]); } });
+  // 요약 두 줄
+  txt(`푼 문제 ${R.tot[0]}개 · 정답률 ${R.acc}% · 잡은 사계몬 ${Object.keys(S.caught).length}종`, 56, 244, `700 28px ${UI}`, '#46465e');
+  txt(`플레이 ${Math.floor((S.playMs || 0) / 60000)}분 · 오답노트 ${S.notes.length}문제 남음 (정복 ${S.solved || 0})`, 56, 284, `700 28px ${UI}`, '#46465e');
+  // 영역 × 학년 표
+  const tx = 56, ty = 316, cw0 = 320, cw = (W - 112 - cw0) / 3, rh = 52;
+  const box = (c, r, fill) => { const x = c ? tx + cw0 + (c - 1) * cw : tx, y = ty + r * rh, w = c ? cw : cw0; g.fillStyle = fill; g.fillRect(x, y, w, rh); g.lineWidth = 2; g.strokeStyle = '#d8d2bc'; g.strokeRect(x, y, w, rh); return [x, y, w]; };
+  ['영역', '중1', '중2', '중3'].forEach((h, c) => { const [x, y, w] = box(c, 0, '#eef0fa'); txt(h, x + w / 2, y + rh / 2, `700 28px ${UI}`, '#2a3a8a', 'center'); });
+  REPORT_ROWS.forEach((n, r) => {
+    const [x, y] = box(0, r + 1, '#fbf8ec'); txt(n, x + 18, y + rh / 2, `700 28px ${UI}`, '#26263a');
+    for (let gr = 1; gr <= 3; gr++) {
+      const c = R.cell[r + ',' + gr];
+      if (!c || !c[0]) { const [x2, y2, w2] = box(gr, r + 1, '#fffdf4'); txt('-', x2 + w2 / 2, y2 + rh / 2, `700 28px ${UI}`, '#b0aa98', 'center'); continue; }
+      const p = R.pct(c), [x2, y2, w2] = box(gr, r + 1, p >= 70 ? '#dff5e3' : p >= 50 ? '#fff4c8' : '#fbe0de');
+      g.font = `700 30px ${UI}`; const a = `${p}%`, aw = g.measureText(a).width; g.font = `700 20px ${UI}`; const b = `${c[0]}문제`, bw = g.measureText(b).width;
+      const sx = x2 + (w2 - aw - 10 - bw) / 2; txt(a, sx, y2 + rh / 2, `700 30px ${UI}`, '#26263a'); txt(b, sx + aw + 10, y2 + rh / 2 + 2, `700 20px ${UI}`, '#6a6a7a');
+    }
+  });
+  // 더 연습할 곳 · 바닥
+  rr(56, 650, W - 112, 58, 12, R.weakTxt[0] ? '#dff5e3' : '#fbe0de'); txt(R.weakTxt[1], 76, 679, `700 26px ${UI}`, '#26263a');
+  txt('사계몬스터 · 중학교 수학 · 사계절 졸업 여행', 56, 748, `700 22px ${UI}`, '#7a1d3e');
+  txt('이 그림은 게임의 「이미지로 저장」으로 만들었어요', W - 56, 748, `700 22px ${UI}`, '#7a1d3e', 'right');
+  return cv;
+}
+function saveReportPNG() {
+  const d = new Date(), p = v => String(v).padStart(2, '0');
+  const fn = `${S.sid}_${String(S.name).replace(/[\\/:*?"<>|\s]/g, '')}_${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}.png`;
+  const a = document.createElement('a'); a.download = fn; a.href = reportCanvas().toDataURL('image/png');
+  document.body.appendChild(a); a.click(); a.remove();
+  SFX.sel(); toast('이미지를 저장했어요! (다운로드 폴더)');
 }
 // ---------- 타이틀 & 엔딩 ----------
 function drawTitle(now) {

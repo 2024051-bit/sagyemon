@@ -108,7 +108,8 @@ body{font-family:var(--f-ui);padding-left:max(16px,env(safe-area-inset-left,0px)
 .report td small{font-size:.8em;color:#6a6a7a;margin-left:.4cqw}
 .report .rp-weak{background:#fbe0de;border-radius:.8cqw;padding:.6cqw 1.2cqw;font-size:2.3cqw}
 .report .rp-weak.good{background:#dff5e3}
-.report .rp-f{margin-top:auto;display:flex;justify-content:space-between;font-size:2.1cqw;color:#7a1d3e}
+.report .rp-f{margin-top:auto;display:flex;justify-content:space-between;align-items:center;font-size:2.1cqw;color:#7a1d3e}
+#ui .report .rp-save{font:700 2.1cqw var(--f-ui);color:#5a4410;background:#ffe58a;border:.3cqw solid #c9a42a;border-radius:5cqw;padding:.2cqw 1.6cqw;box-shadow:0 .35cqw 0 #c9a42a;margin-right:1.4cqw;cursor:pointer}
 /* 힌트 카드: 버튼과 지운 보기 */
 .quiz .qhint{display:flex;justify-content:flex-end}
 #ui .quiz .qhint button{font:700 2.5cqw var(--f-ui);color:#5a4410;background:#ffe58a;border:.35cqw solid #c9a42a;border-radius:5cqw;padding:.5cqw 2.2cqw;box-shadow:0 .45cqw 0 #c9a42a;cursor:pointer}
