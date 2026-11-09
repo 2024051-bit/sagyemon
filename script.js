@@ -48,6 +48,17 @@ const FG = (() => {
   const inR = (A, B, C) => { const a = len(sub(B, C)), b = len(sub(A, C)), c = len(sub(A, B)); const area = Math.abs((B[0] - A[0]) * (C[1] - A[1]) - (C[0] - A[0]) * (B[1] - A[1])) / 2; return 2 * area / (a + b + c); };
   const gapLab = (X, pts, t, d = 10) => { const as = pts.map(p => Math.atan2(p[1] - X[1], p[0] - X[0])).sort((a, b) => a - b); let best = 0, bg = -1; as.forEach((a, i) => { const nx = i + 1 < as.length ? as[i + 1] : as[0] + 2 * Math.PI, g = nx - a; if (g > bg) { bg = g; best = a + g / 2; } }); return tx([X[0] + Math.cos(best) * d, X[1] + Math.sin(best) * d], t); };
   const addCirc = (raw, k) => { if (k !== 'O') return; const R2 = len(sub(raw.A, raw.X)); raw.c1 = [raw.X[0] - R2, raw.X[1]]; raw.c2 = [raw.X[0] + R2, raw.X[1]]; raw.c3 = [raw.X[0], raw.X[1] - R2]; raw.c4 = [raw.X[0], raw.X[1] + R2]; };
+  // 중3 도형 그림용 (미리보기 ⑳, 2026-11-09): 원, 각 표시(글자 길이만큼 띄움)
+  const ring = (c, r) => `<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${r.toFixed(1)}" fill="${FILL}" stroke="${INK}" stroke-width="2"/>`;
+  const circBox = (O, r) => ({ c1: [O[0] - r, O[1]], c2: [O[0] + r, O[1]], c3: [O[0], O[1] - r], c4: [O[0], O[1] + r] });
+  const oLab = (O, away) => { const v = sub(O, away), l = len(v) || 1; return dot(O) + tx([O[0] + v[0] / l * 11, O[1] + v[1] / l * 11], 'O', { s: 13 }); };
+  const arc3 = (V, A, B, r, label, col = GIV, s = 14) => {
+    let a1 = ang(V, A), a2 = ang(V, B); let d = a2 - a1; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI;
+    const e = a1 + d, sw = d > 0 ? 1 : 0;
+    const p1 = [V[0] + r * Math.cos(a1), V[1] + r * Math.sin(a1)], p2 = [V[0] + r * Math.cos(e), V[1] + r * Math.sin(e)];
+    const m = a1 + d / 2, L = [V[0] + (r + 11 + String(label).length * 1.6) * Math.cos(m), V[1] + (r + 11) * Math.sin(m)];
+    return `<path d="M${P([p1])} A${r} ${r} 0 0 ${sw} ${P([p2])}" fill="none" stroke="${col}" stroke-width="1.6"/>` + (label ? tx(L, label, { c: col, s }) : '');
+  };
   return {
     iso(given, gv, askAt) {
       const base = given === 'A' ? (180 - gv) / 2 : +gv, T = fit(triAng(180 - 2 * base, base, base)), { A, B, C } = T; const V = { A, B, C }, nb = { A: [B, C], B: [A, C], C: [A, B] };
@@ -128,11 +139,92 @@ const FG = (() => {
       const sa = Math.sqrt(+a2 || (c2 - b2)), sb = Math.sqrt(+b2 || (c2 - a2)), k = 40 / Math.max(sa, sb), B = [84, 96], A = [78, 94 - sa * k], C = [78 + sb * k, 94], K = cen([A, B, C]);
       const sq = (p, q, col, lab) => { const d = sub(q, p); let n = [d[1], -d[0]]; const m2 = mid(p, q); if ((K[0] - m2[0]) * n[0] + (K[1] - m2[1]) * n[1] > 0) n = [-n[0], -n[1]]; const pts = [p, q, [q[0] + n[0], q[1] + n[1]], [p[0] + n[0], p[1] + n[1]]]; return poly(pts, col) + tx(cen(pts), lab, { c: lab === '?' ? ASK : GIV, s: 14 }); };
       return svg(sq(B, A, '#e6f0ff', a2) + sq(C, B, '#e6ffe6', b2) + sq(A, C, '#fff0e0', c2) + poly([A, B, C]) + right(B, A, C, 6)); },
+    // ---- 중3 기하 (미리보기 ⑳) ----
+    // ∠C = 90° 직각삼각형: B 왼쪽 아래, C 오른쪽 아래(직각), A 위. BC = a, AC = b, AB = c. 묻는 각에 빨간 호
+    trigSides(a, b, c, at) {
+      const T = fit({ B: [0, 0], C: [+a, 0], A: [+a, -b] }, [26, 12, 178, 118]), { A, B, C } = T;
+      return svg(poly([A, B, C]) + right(C, A, B) + (at === 'A' ? arc3(A, B, C, 15, '', ASK) : arc3(B, A, C, 15, '', ASK)) + dim(B, C, a, GIV, A) + dim(A, C, b, GIV, B) + dim(A, B, c, GIV, C) + labs([A, B, C], ['A', 'B', 'C'])); },
+    // 삼각비로 변의 길이: kind = sin(AB 주어짐) / tan(AC 주어짐) / 30(∠A = 30°, AB 주어짐). BC를 묻는다
+    trigFind(kind, v) {
+      const sh = kind === '30' ? [1, Math.sqrt(3)] : [3, 4], T = fit({ B: [0, 0], C: [sh[0], 0], A: [sh[0], -sh[1]] }, [40, 10, 170, 112]), { A, B, C } = T;
+      let s2 = poly([A, B, C]) + right(C, A, B) + dim(B, C, '?', ASK, A) + labs([A, B, C], ['A', 'B', 'C']);
+      if (kind === 'sin') s2 += dim(A, B, v, GIV, C) + arc3(A, B, C, 15) + tx([34, 8], 'sin A = 3/5', { c: GIV, s: 14 });
+      else if (kind === 'tan') s2 += dim(A, C, v, GIV, B) + arc3(A, B, C, 15) + tx([34, 8], 'tan A = 3/4', { c: GIV, s: 14 });
+      else s2 += dim(A, B, v, GIV, C) + arc3(A, B, C, 18, '30°');
+      return svg(s2); },
+    // 현의 수직이등분선: 반지름 r, 중심에서 현까지 d, 현의 절반 h. ask = 'AB' 또는 'r'
+    chord(r, d, h, ask) {
+      r = +r; d = +d; h = +h; const raw = { O: [0, 0], A: [-h, d], B: [h, d], M: [0, d], ...circBox([0, 0], r) }, T = fit(raw, [30, 6, 174, 128]), { O, A, B, M } = T, R = r * T._k;
+      return svg(ring(O, R) + ln(A, B, { w: 2 }) + ln(O, M) + ln(O, A, { c: ask === 'r' ? ASK : INK }) + right(M, O, B, 6) + dot(A) + dot(B) + oLab(O, M) + tx([M[0], M[1] + 12], 'M', { s: 13 }) + vlab(A, 'A', O) + vlab(B, 'B', O)
+        + dim(O, M, d, GIV, A, 7) + (ask === 'r' ? dim(O, A, '?', ASK, M, 8) + dim(A, B, 2 * h, GIV, O, 9) : dim(O, A, r, GIV, M, 8) + dim(A, B, '?', ASK, O, 9))); },
+    // 중심에서 같은 거리에 있는 두 현
+    twoChords(ab, cd) {
+      const r = 1, d = .55, h = Math.sqrt(r * r - d * d), rot = (p, deg) => { const c = Math.cos(rad(deg)), s = Math.sin(rad(deg)); return [p[0] * c - p[1] * s, p[0] * s + p[1] * c]; };
+      const raw = { O: [0, 0], A: [-h, d], B: [h, d], M: [0, d], C: rot([-h, d], 215), D: rot([h, d], 215), N: rot([0, d], 215), ...circBox([0, 0], r) }, T = fit(raw, [40, 10, 164, 124]), { O, A, B, M, C, D, N } = T, R = r * T._k;
+      return svg(ring(O, R) + ln(A, B, { w: 2 }) + ln(C, D, { w: 2 }) + ln(O, M, { dash: 1 }) + ln(O, N, { dash: 1 }) + right(M, O, B, 6) + right(N, O, D, 6) + tick(O, M) + tick(O, N) + dot(O) + tx([O[0] + 10, O[1] - 6], 'O', { s: 13 })
+        + [[A, 'A'], [B, 'B'], [C, 'C'], [D, 'D']].map(([p, t]) => dot(p) + vlab(p, t, O)).join('') + dim(A, B, ab, GIV, O, 8) + dim(C, D, cd, GIV, O, 8)); },
+    // 원 밖의 점 P에서 그은 두 접선 (길이 식)
+    tangents(pa, pb) {
+      const r = 1, op = 2.4, th = Math.acos(r / op) * 180 / Math.PI, raw = { O: [0, 0], P: [op, 0], A: pol([0, 0], r, th), B: pol([0, 0], r, -th), ...circBox([0, 0], r) }, T = fit(raw, [8, 10, 196, 124]), { O, P: Pp, A, B } = T, R = r * T._k;
+      return svg(ring(O, R) + ln(Pp, A, { w: 2 }) + ln(Pp, B, { w: 2 }) + dot(O) + tx([O[0] - 10, O[1]], 'O', { s: 13 }) + dot(A) + dot(B) + dot(Pp) + tx([A[0] - 4, A[1] - 11], 'A') + tx([B[0] - 4, B[1] + 12], 'B') + tx([Pp[0] + 11, Pp[1]], 'P') + dim(Pp, A, pa, GIV, O, 9) + dim(Pp, B, pb, GIV, O, 9)); },
+    // 반지름과 OP로 접선의 길이 구하기
+    tangentLen(h, o) {
+      h = +h; o = +o; const t = Math.sqrt(o * o - h * h), th = Math.acos(h / o) * 180 / Math.PI, raw = { O: [0, 0], P: [o, 0], A: pol([0, 0], h, th), ...circBox([0, 0], h) }, T = fit(raw, [8, 12, 196, 122]), { O, P: Pp, A } = T, R = h * T._k;
+      return svg(ring(O, R) + ln(Pp, A, { w: 2, c: ASK }) + ln(O, A) + ln(O, Pp, { dash: 1 }) + right(A, O, Pp, 7) + dot(O) + tx([O[0] - 10, O[1] + 2], 'O', { s: 13 }) + dot(A) + dot(Pp) + tx([A[0] - 2, A[1] - 12], 'A') + tx([Pp[0] + 11, Pp[1]], 'P')
+        + dim(O, A, h, GIV, Pp, 8) + dim(Pp, A, '?', ASK, O, 9) + dim(O, Pp, o, GIV, A, 10)); },
+    // 두 접선이 이루는 각 ∠APB와 ∠AOB
+    tangentAng(p, askP) {
+      p = +p; const r = 1, op = 1 / Math.sin(rad(p / 2)), th = 90 - p / 2, raw = { O: [0, 0], P: [op, 0], A: pol([0, 0], r, th), B: pol([0, 0], r, -th), ...circBox([0, 0], r) }, T = fit(raw, [8, 8, 196, 126]), { O, P: Pp, A, B } = T, R = r * T._k;
+      return svg(ring(O, R) + ln(Pp, A, { w: 2 }) + ln(Pp, B, { w: 2 }) + ln(O, A) + ln(O, B) + right(A, O, Pp, 6) + right(B, O, Pp, 6) + dot(O) + tx([O[0] - 11, O[1]], 'O', { s: 13 }) + tx([A[0] - 2, A[1] - 12], 'A') + tx([B[0] - 2, B[1] + 12], 'B') + tx([Pp[0] + 11, Pp[1]], 'P')
+        + arc3(Pp, A, B, 16, askP ? '?' : p + '°', askP ? ASK : GIV) + arc3(O, A, B, 13, askP ? (180 - p) + '°' : '?', askP ? GIV : ASK)); },
+    // 원주각과 중심각: 중심각 2k
+    inscribed(k, askP) {
+      k = +k; const raw = { O: [0, 0], A: pol([0, 0], 1, 270 - k), B: pol([0, 0], 1, 270 + k), P: pol([0, 0], 1, 105), ...circBox([0, 0], 1) }, T = fit(raw, [40, 8, 164, 126]), { O, A, B, P: Pp } = T, R = T._k;
+      return svg(ring(O, R) + ln(Pp, A, { w: 1.8 }) + ln(Pp, B, { w: 1.8 }) + ln(O, A) + ln(O, B) + oLab(O, mid(A, B)) + [[A, 'A'], [B, 'B'], [Pp, 'P']].map(([p, t]) => dot(p) + vlab(p, t, O)).join('')
+        + arc3(O, A, B, 13, askP ? 2 * k + '°' : '?', askP ? GIV : ASK) + arc3(Pp, A, B, 18, askP ? '?' : k + '°', askP ? ASK : GIV)); },
+    // 같은 호에 대한 원주각 (식)
+    sameArc(ec, ed) {
+      const raw = { O: [0, 0], A: pol([0, 0], 1, 215), B: pol([0, 0], 1, 325), C: pol([0, 0], 1, 125), D: pol([0, 0], 1, 60), ...circBox([0, 0], 1) }, T = fit(raw, [40, 10, 164, 126]), { O, A, B, C, D } = T, R = T._k;
+      return svg(ring(O, R) + ln(C, A, { w: 1.8 }) + ln(C, B, { w: 1.8 }) + ln(D, A, { w: 1.8 }) + ln(D, B, { w: 1.8 }) + [[A, 'A'], [B, 'B'], [C, 'C'], [D, 'D']].map(([p, t]) => dot(p) + vlab(p, t, O)).join('')
+        + arc3(C, A, B, 15, '', GIV) + arc3(D, A, B, 15, '', GIV) + tx([C[0] - 36, C[1] + 18], `(${ec})°`, { c: GIV, s: 12 }) + tx([D[0] + 36, D[1] + 18], `(${ed})°`, { c: GIV, s: 12 })); },
+    // 반원에 대한 원주각: AB 지름, ∠CAB = a
+    semicircle(a) {
+      a = +a; const raw = { O: [0, 0], A: [-1, 0], B: [1, 0], C: pol([0, 0], 1, 180 - 2 * a > 0 ? 180 - 2 * a : 20), ...circBox([0, 0], 1) }, T = fit(raw, [30, 8, 174, 126]), { O, A, B, C } = T, R = T._k;
+      return svg(ring(O, R) + poly([A, B, C]) + oLab(O, C) + [[A, 'A'], [B, 'B'], [C, 'C']].map(([p, t]) => dot(p) + vlab(p, t, O)).join('') + arc3(A, B, C, 18, a + '°') + arc3(B, A, C, 16, '?', ASK)); },
+    // 원에 내접하는 사각형: mode 'C'(∠A 주고 ∠C) / 'ext'(∠B 주고 D의 외각)
+    cyclic(a, mode) {
+      const a0 = +a; a = Math.max(70, Math.min(115, a0)); let raw; // 모양은 너무 납작해지지 않게 (글자는 실제 각도)
+      if (mode === 'C') raw = { A: pol([0, 0], 1, 180), B: pol([0, 0], 1, -a + 8), C: pol([0, 0], 1, 0 + 4), D: pol([0, 0], 1, a - 12) };
+      else raw = { B: pol([0, 0], 1, 270), A: pol([0, 0], 1, 90 + a), C: pol([0, 0], 1, 90 - a), D: pol([0, 0], 1, 98) };
+      raw.O = [0, 0]; Object.assign(raw, circBox([0, 0], 1));
+      const T = fit(raw, [36, 12, 168, 124]), { O, A, B, C, D } = T, R = T._k;
+      let s2 = ring(O, R) + poly([A, B, C, D]) + [[A, 'A'], [B, 'B'], [C, 'C'], [D, 'D']].map(([p, t]) => vlab(p, t, O)).join('');
+      if (mode === 'C') s2 += arc3(A, B, D, 16, a0 + '°') + arc3(C, B, D, 16, '?', ASK);
+      else { const E = [D[0] + (D[0] - C[0]) * .55, D[1] + (D[1] - C[1]) * .55]; s2 += ln(D, E, { dash: 1 }) + arc3(B, A, C, 16, a0 + '°') + arc3(D, A, E, 14, '?', ASK); }
+      return svg(s2); },
   };
 })();
 function figFor(t) {
   let m;
   try {
+    // 중3 기하 Ⅲ (미리보기 ⑳)
+    if ((m = t.match(/BC = (\d+), AC = (\d+), AB = (\d+)일 때, (?:sin|cos|tan) ([AB])의 값/))) return FG.trigSides(m[1], m[2], m[3], m[4]);
+    if ((m = t.match(/AB = (\d+), sin A = \[3\|5\]일 때, BC/))) return FG.trigFind('sin', m[1]);
+    if ((m = t.match(/AC = (\d+), tan A = \[3\|4\]일 때, BC/))) return FG.trigFind('tan', m[1]);
+    if ((m = t.match(/∠A = 30°인 직각삼각형 ABC에서 AB = (\d+)일 때, BC/))) return FG.trigFind('30', m[1]);
+    if ((m = t.match(/반지름의 길이가 (\d+) cm인 원 O의 중심에서 현 AB까지의 거리가 (\d+) cm/))) return FG.chord(m[1], m[2], Math.sqrt(m[1] * m[1] - m[2] * m[2]), 'AB');
+    if ((m = t.match(/중심에서 길이가 (\d+) cm인 현 AB까지의 거리가 (\d+) cm일 때, 원 O의 반지름/))) return FG.chord(Math.hypot(m[1] / 2, m[2]), m[2], m[1] / 2, 'r');
+    if ((m = t.match(/두 현 AB, CD까지의 거리가 같다\. AB = (.+?), CD = (.+?)일 때/))) return FG.twoChords(m[1], m[2]);
+    if ((m = t.match(/PA = (.+?), PB = (.+?)일 때, x의 값/))) return FG.tangents(m[1], m[2]);
+    if ((m = t.match(/반지름의 길이가 (\d+) cm인 원 O 밖의 한 점 P에서 원 O에 그은 접선의 접점을 A라 하자\. PO = (\d+) cm/))) return FG.tangentLen(m[1], m[2]);
+    if ((m = t.match(/두 접선의 접점을 각각 A, B라 하자\. ∠APB = (\d+)°일 때, ∠AOB/))) return FG.tangentAng(m[1], false);
+    if ((m = t.match(/두 접선의 접점을 각각 A, B라 하자\. ∠AOB = (\d+)°일 때, ∠APB/))) return FG.tangentAng(180 - m[1], true);
+    if ((m = t.match(/중심각 ∠AOB = (\d+)°일 때, 호 AB에 대한 원주각/))) return FG.inscribed(m[1] / 2, false);
+    if ((m = t.match(/원주각 ∠APB = (\d+)°일 때, 중심각/))) return FG.inscribed(m[1], true);
+    if ((m = t.match(/원주각 ∠ACB = \((.+?)\)°, ∠ADB = \((.+?)\)°일 때/))) return FG.sameArc(m[1], m[2]);
+    if ((m = t.match(/지름이고 점 C는 원 위의 점이다\. ∠CAB = (\d+)°/))) return FG.semicircle(m[1]);
+    if ((m = t.match(/내접하는 사각형 ABCD에서 ∠A = (\d+)°일 때, ∠C/))) return FG.cyclic(m[1], 'C');
+    if ((m = t.match(/내접하는 사각형 ABCD에서 ∠B = (\d+)°일 때, 꼭짓점 D에서의 외각/))) return FG.cyclic(m[1], 'ext');
     if ((m = t.match(/AB = AC인 이등변삼각형 ABC에서 ∠A = (\d+)°일 때, ∠B/))) return FG.iso('A', m[1], 'B');
     if ((m = t.match(/AB = AC인 이등변삼각형 ABC에서 ∠B = (\d+)°일 때, ∠A/))) return FG.iso('B', m[1], 'A');
     if ((m = t.match(/점 ([OI])가 △ABC의 (?:외심|내심)이고 ∠[OI]AB = (\d+)°, ∠[OI]BC = (\d+)°/))) return FG.center(m[1], m[2], m[3]);
