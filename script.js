@@ -4553,6 +4553,7 @@ async function enemyTurn() {
   await doMove(e, B.p, mv, 'e', { fast: false });
 }
 async function enemyFainted() {
+  B.enemyActed = false; B.pendingEnemyMove = null;
   const e = B.e, wild = isWildKind(B.o.kind);
   SFX.bump(); await tween(400, k => { B.a.eY = k * 30; B.a.eAlpha = 1 - k; }); B.a.eVis = false; B.a.eY = 0; B.a.eAlpha = 1; hud();
   await say(`${B.o.kind === 'wild' ? '야생 ' : wild ? '' : '상대 '}${jo(monName(e), '은는')} 쓰러졌다!`);
@@ -4623,6 +4624,7 @@ async function learnMove(m, n) {
   }
 }
 async function playerFainted() {
+  if (B) { B.enemyActed = false; B.pendingEnemyMove = null; }
   SFX.no(); await tween(400, k => { B.a.pY = k * 30; B.a.pAlpha = 1 - k; }); B.a.pVis = false; B.a.pY = 0; B.a.pAlpha = 1; hud();
   await say(`${jo(monName(B.p), '은는')} 쓰러졌다!`);
   if (!firstAlive()) return 'lose';
