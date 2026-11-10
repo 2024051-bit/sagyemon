@@ -3807,6 +3807,7 @@ H.multiplayer = async () => {
     }
     return say('온라인 교환 방 연결을 확인했어! 다만 사계몬 소유권 검증과 실제 교환 확정은 아직 구현되지 않았어.');
   } catch (error) {
+    if (ONLINE_ROOM && ONLINE_ROOM.ws) { try { ONLINE_ROOM.ws.close(1000, 'operation failed'); } catch (e) {} ONLINE_ROOM = null; }
     const messages = {
       Failed_to_fetch: '서버에 연결할 수 없어. 주소와 서버 배포 상태를 확인해 줘.',
       server_error: '온라인 서버에서 오류가 발생했어.',
@@ -3814,7 +3815,10 @@ H.multiplayer = async () => {
       invite_already_used: '이미 사용된 친구 코드야.',
       ticket_expired: '매칭 대기 시간이 만료됐어.',
       websocket_failed: '온라인 방 연결에 실패했어.',
-      websocket_timeout: '온라인 방 연결 시간이 초과됐어.'
+      websocket_timeout: '온라인 방 연결 시간이 초과됐어.',
+      online_wait_timeout: '상대 트레이너의 응답 시간이 초과됐어.',
+      online_room_disconnected: '온라인 방 연결이 끊어졌어.',
+      battle_protocol_mismatch: '상대 게임 버전이 달라 대전을 시작할 수 없어.'
     };
     const key = String(error && error.message || 'server_error').replace(/[^a-zA-Z_]/g, '_');
     return say('온라인 기능을 사용할 수 없어.\n' + (messages[key] || ('오류: ' + (error.message || 'server_error'))) + '\n서버 주소와 배포 상태를 확인해 줘.');
