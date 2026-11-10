@@ -3825,6 +3825,96 @@ function onlineValidateRosterPreview(packet) {
   };
 }
 
+function onlineBattleRandom(room) {
+  let x = room.turnSeed | 0; x ^= x << 13; x ^= x >>> 17; x ^= x << 5;
+  room.turnSeed = x | 0; return (x >>> 0) / 4294967296;
+}
+function onlineBattleMonTypes(mon) {
+  return Array.isArray(mon.types) ? mon.types : (mon.sp != null ? spTypes(mon.sp) : []);
+}
+function onlineBattleApplyMove(room, side, move) {
+  const own = side === 'local';
+  const atkTeam = own ? room.localTeam : room.opponentRoster.party;
+  const defTeam = own ? room.opponentRoster.party : room.localTeam;
+  const ai = own ? room.activeLocal : room.activeOpponent;
+  const di = own ? room.activeOpponent : room.activeLocal;
+  const attacker = atkTeam[ai], defender = defTeam[di];
+  if (!attacker || !defender || attacker.hp <= 0 || defender.hp <= 0 || !move) return null;
+  if (onlineBattleRandom(room) * 100 >= move.accuracy) return { missed: true };
+  const stages = room.battleStages;
+  const as = stages[own ? 'local' : 'opponent'][ai], ds = stages[own ? 'opponent' : 'local'][di];
+  const e = move.eff;
+  if (e === 'heal') {
+    const before = attacker.hp; attacker.hp = Math.min(attacker.maxhp, attacker.hp + Math.ceil(attacker.maxhp / 2));
+    return { healed: attacker.hp - before };
+  }
+  if (e === 'atkup') as.atk = Math.min(6, as.atk + 1);
+  else if (e === 'defup') as.def = Math.min(6, as.def + 1);
+  else if (e === 'bulk') { as.atk = Math.min(6, as.atk + 1); as.def = Math.min(6, as.def + 1); }
+  else if (e === 'atkdn') ds.atk = Math.max(-6, ds.atk - 1);
+  else if (e === 'defdn') ds.def = Math.max(-6, ds.def - 1);
+  if (!move.power || move.category === 'status') return { status: e || '변화' };
+  const ak = move.category === 'special' ? 'spa' : 'atk', dk = move.category === 'special' ? 'spd' : 'def';
+  const A = (attacker[ak] || attacker.stats && attacker.stats[ak] || 1) * stgMul(as.atk);
+  const D = (defender[dk] || defender.stats && defender.stats[dk] || 1) * stgMul(ds.def);
+  let bonus = 1;
+  if (attacker.ability === '맹공' && move.category === 'physical') bonus *= 1.1;
+  if (attacker.ability === '집중력' && move.category === 'special') bonus *= 1.1;
+  if (attacker.ability === '역전투혼' && attacker.hp <= attacker.maxhp / 3) bonus *= 1.2;
+  if (defender.ability === '강철피부' && move.category === 'physical') bonus *= .9;
+  if (defender.ability === '정신장벽' && move.category === 'special') bonus *= .9;
+  const at = onlineBattleMonTypes(attacker), dt = onlineBattleMonTypes(defender);
+  const atTrait = TYPE_TRAITS[at[0]] || TYPE_TRAITS.노말, dtTrait = TYPE_TRAITS[dt[0]] || TYPE_TRAITS.노말;
+  if (atTrait.atk === move.type) bonus *= atTrait.bonus;
+  if (dtTrait.resist === move.type) bonus *= .95;
+  const mult = effect(move.type, dt) * (at.includes(move.type) ? 1.5 : 1);
+  const level = attacker.lvl || attacker.level || 1;
+  const base = (level * .2 + 2) * move.power * (A / Math.max(1, D)) / 10;
+  const damage = Math.max(1, Math.round(base * mult * bonus * (.85 + onlineBattleRandom(room) * .15)));
+  defender.hp = Math.max(0, defender.hp - damage);
+  return { damage, typeMult: mult };
+}
+function onlineBattleApplyTurn(room, payload, ownId) {
+  if (!Number.isInteger(payload.seed) || payload.seed <= 0 || payload.seed > 2147483647) throw new Error('battle_protocol_mismatch');
+  room.turnSeed = payload.seed | 0;
+  room.battleStages = room.battleStages || {
+    local: room.localTeam.map(() => ({ atk: 0, def: 0 })),
+    opponent: room.opponentRoster.party.map(() => ({ atk: 0, def: 0 }))
+  };
+  const choices = payload.choices, ownChoice = choices.find(c => c.playerId === ownId);
+  if (!ownChoice || !choices.some(c => c.playerId !== ownId)) throw new Error('battle_protocol_mismatch');
+  const before = room.localTeam.map(m => m.hp);
+  for (const step of payload.resolutionOrder) {
+    const c = choices.find(x => x.playerId === step.playerId);
+    if (!c || c.action !== step.action) throw new Error('battle_protocol_mismatch');
+    if (c.action === 'switch_mon') {
+      if (c.playerId === ownId) room.activeLocal = c.teamIndex;
+      else room.activeOpponent = c.teamIndex;
+    }
+  }
+  const attacks = choices.filter(c => c.action === 'choose_move').map(c => {
+    const local = c.playerId === ownId, team = local ? room.localTeam : room.opponentRoster.party;
+    const mon = team[local ? room.activeLocal : room.activeOpponent];
+    const moves = local ? movesOf(mon) : mon.moves;
+    if (!mon || !moves || !moves[c.moveIndex]) throw new Error('battle_protocol_mismatch');
+    return { c, local, mon, move: moves[c.moveIndex] };
+  }).sort((a,b) => (b.move.priority || 0) - (a.move.priority || 0) ||
+    Number((b.mon.spe || b.mon.stats && b.mon.stats.spe) || 1) - Number((a.mon.spe || a.mon.stats && a.mon.stats.spe) || 1) ||
+    String(a.c.playerId).localeCompare(String(b.c.playerId)));
+  const logs = [];
+  for (const a of attacks) {
+    const target = a.local ? room.opponentRoster.party[room.activeOpponent] : room.localTeam[room.activeLocal];
+    if (!a.mon || a.mon.hp <= 0 || !target || target.hp <= 0) continue;
+    const r = onlineBattleApplyMove(room, a.local ? 'local' : 'opponent', a.move);
+    if (r && r.missed) logs.push(a.move.name + ' 빗나갔다!');
+    else if (r && r.damage != null) logs.push(a.move.name + ' · ' + r.damage + ' 피해');
+    else if (r && r.healed != null) logs.push(a.move.name + ' · HP ' + r.healed + ' 회복');
+    else if (r && r.status) logs.push(a.move.name + ' · ' + r.status);
+  }
+  room.localTeam.forEach((m,i) => { if (m.hp !== before[i]) onlineSendHpUpdate(i,m); });
+  return { logs, localOut: room.localTeam.every(m => m.hp <= 0), opponentOut: room.opponentRoster.party.every(m => m.hp <= 0) };
+}
+
 async function onlineRunBattleTurn(turn) {
   const room = ONLINE_ROOM;
   if (!room || !Array.isArray(room.localTeam) || !room.opponentRoster) throw new Error('battle_protocol_mismatch');
@@ -3867,20 +3957,13 @@ async function onlineRunBattleTurn(turn) {
   if (!payload || payload.action !== 'turn_choices' || payload.turn !== turn || !Array.isArray(payload.choices) || payload.choices.length !== 2 || !Array.isArray(payload.resolutionOrder)) throw new Error('battle_protocol_mismatch');
   const ownId = room.playerId || onlinePlayerId();
   if (!payload.choices.some(choice => choice.playerId === ownId)) throw new Error('battle_protocol_mismatch');
-  for (const step of payload.resolutionOrder) {
-    const choice = payload.choices.find(item => item.playerId === step.playerId);
-    if (!choice || choice.action !== step.action) throw new Error('battle_protocol_mismatch');
-    if (choice.action === 'switch_mon') {
-      if (choice.playerId === ownId) room.activeLocal = choice.teamIndex;
-      else room.activeOpponent = choice.teamIndex;
-    }
-  }
+  const outcome = onlineBattleApplyTurn(room, payload, ownId);
   if (submitted.action === 'switch_mon') {
     const mon = room.localTeam[room.activeLocal];
     await say('교체! ' + (mon.nick || (SP[mon.sp] && SP[mon.sp].name) || '사계몬') + '이(가) 전투에 나섰어.');
-  } else {
-    await say('양쪽 행동을 확인했어. 공격 실행과 피해 판정은 아직 연결 중이야.');
   }
+  if (outcome.logs.length) await say(outcome.logs.join('\\n'));
+  if (outcome.localOut || outcome.opponentOut) return { finished: true, result: outcome.localOut ? 'lose' : 'win' };
   return { finished: false, choices: payload.choices, resolutionOrder: payload.resolutionOrder };
 }
 
@@ -3983,9 +4066,16 @@ H.multiplayer = async () => {
       await say(opponentRoster.trainer + '의 사계몬 팀을 확인했어.\n' + opponentRoster.party.map((m, i) => (i + 1) + '. ' + (m.nickname || m.species) + ' Lv.' + m.level + ' · ' + m.types.join('/')).join('\n'));
       if (ONLINE_ROOM) ONLINE_ROOM.playerId = playerId;
       await say('3대3 온라인 대전이 시작됐어! 행동을 선택해 줘. 교체는 공격보다 먼저 처리돼.');
-      const firstTurn = await onlineRunBattleTurn(1);
-      if (firstTurn.finished) return say('출전할 수 있는 사계몬이 없어 대전이 종료됐어.');
-      return say('첫 턴의 행동이 양쪽에 전달됐어. 교체를 먼저 반영했으며, 실제 공격 피해 계산은 다음 단계에서 연결할게.');
+      let turn = 1;
+      while (turn <= 500) {
+        const result = await onlineRunBattleTurn(turn);
+        if (result.finished) {
+          await say(result.result === 'win' ? '축하해! 온라인 대전에서 승리했어!' : '아쉽지만 온라인 대전에서 패배했어.');
+          return;
+        }
+        turn++;
+      }
+      return say('대전 턴 제한에 도달해 연결을 종료했어.');
     }
     return say('온라인 교환 방 연결을 확인했어! 다만 사계몬 소유권 검증과 실제 교환 확정은 아직 구현되지 않았어.');
   } catch (error) {
