@@ -4105,7 +4105,7 @@ async function onlineRunTrade() {
   const role = await choose(['내 사계몬을 제안하기', '상대의 제안 기다리기'], { cls: 'start', cancel: false });
   let offer, localIndex = -1;
   if (role === 0) {
-    if (S.party.length < 2) return say('교환 후에도 사계몬이 한 마리 이상 남아 있어야 해!');
+    if (S.party.length < 1) return say('교환할 사계몬이 없어!');
     localIndex = await chooseList({ title: '교환할 사계몬 선택', rows: S.party.map(mon => monRow(mon)) });
     if (localIndex < 0) return say('교환을 취소했어.');
     offer = { id: onlinePlayerId() + '_' + Date.now().toString(36), mon: onlineTradeMonSnapshot(S.party[localIndex]) };
