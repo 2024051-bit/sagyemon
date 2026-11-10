@@ -180,20 +180,86 @@ export class Lobby {
     }
     return new Response(null, { status: 101, webSocket: client });
   }
-  webSocketMessage(ws, message) {
+  async webSocketMessage(ws, message) {
     const meta = ws.deserializeAttachment();
     if (!meta || typeof message !== "string" || message.length > 16_000) return;
     let packet;
     try { packet = JSON.parse(message); } catch { return; }
-    if (!packet || typeof packet.type !== "string" || !["battle_action", "battle_state", "trade_offer", "trade_accept", "ping"].includes(packet.type)) return;
-    const outgoing = JSON.stringify({ type: packet.type, from: meta.playerId, payload: packet.payload ?? null, at: Date.now() });
-    for (const peer of this.ctx.getWebSockets(meta.roomId)) {
-      if (peer !== ws && peer.readyState === WebSocket.OPEN) {
-        try { peer.send(outgoing); } catch {}
-      }
-    }
+    if (!packet || typeof packet.type !== "string") return;
     if (packet.type === "ping") {
       try { ws.send(JSON.stringify({ type: "pong", at: Date.now() })); } catch {}
+      return;
+    }
+    const room = await this.ctx.storage.get("room:" + meta.roomId);
+    if (!room || room.expiresAt < Date.now() || !room.players.some(p => p.playerId === meta.playerId)) {
+      try { ws.close(1008, "room expired"); } catch {}
+      return;
+    }
+    if (room.mode === "battle") {
+      if (packet.type === "battle_action") {
+        const p = packet.payload;
+        if (!p || typeof p.action !== "string") return;
+        // 준비 신호는 대기 단계에서만 허용한다.
+        if (p.action === "ready" && p.protocol === 1) {
+          const state = (await this.ctx.storage.get("battle:" + meta.roomId)) || { ready: [], rosters: [], turn: 1, actions: {} };
+          if (!state.ready.includes(meta.playerId)) state.ready.push(meta.playerId);
+          await this.ctx.storage.put("battle:" + meta.roomId, state);
+          this.broadcast(meta.roomId, ws, { type: "battle_action", from: meta.playerId, payload: { action: "ready", protocol: 1 }, at: Date.now() });
+          return;
+        }
+        // 실제 행동은 서버 턴 동기화가 준비된 이후에만 받을 수 있다.
+        if (p.action === "choose_move") {
+          if (!Number.isInteger(p.turn) || p.turn < 1 || p.turn > 500 ||
+              !Number.isInteger(p.moveIndex) || p.moveIndex < 0 || p.moveIndex > 3) return;
+          const state = (await this.ctx.storage.get("battle:" + meta.roomId)) || { ready: [], rosters: [], turn: 1, actions: {} };
+          if (state.ready.length !== 2 || p.turn !== state.turn || state.actions[meta.playerId]) return;
+          state.actions[meta.playerId] = { moveIndex: p.moveIndex, at: Date.now() };
+          const players = room.players.map(x => x.playerId);
+          if (players.every(id => state.actions[id])) {
+            const result = { type: "battle_action", from: "server", payload: { action: "turn_choices", turn: state.turn, choices: players.map(id => ({ playerId: id, moveIndex: state.actions[id].moveIndex })) }, at: Date.now() };
+            state.turn += 1;
+            state.actions = {};
+            await this.ctx.storage.put("battle:" + meta.roomId, state);
+            this.broadcast(meta.roomId, null, result);
+          } else {
+            await this.ctx.storage.put("battle:" + meta.roomId, state);
+          }
+          return;
+        }
+        return;
+      }
+      if (packet.type === "battle_state") {
+        const p = packet.payload;
+        if (!p || p.action !== "roster_preview" || !p.roster || p.roster.protocol !== 1 ||
+            typeof p.roster.trainer !== "string" || !Array.isArray(p.roster.party) ||
+            p.roster.party.length < 1 || p.roster.party.length > 6) return;
+        const validParty = p.roster.party.every(mon =>
+          mon && typeof mon.species === "string" && mon.species.length <= 20 &&
+          Number.isInteger(mon.level) && mon.level >= 1 && mon.level <= 100 &&
+          Array.isArray(mon.types) && mon.types.length <= 2 &&
+          Array.isArray(mon.moves) && mon.moves.length <= 4 &&
+          mon.moves.every(move => typeof move === "string" && move.length <= 20)
+        );
+        if (!validParty) return;
+        const state = (await this.ctx.storage.get("battle:" + meta.roomId)) || { ready: [], rosters: [], turn: 1, actions: {} };
+        if (!state.rosters.includes(meta.playerId)) state.rosters.push(meta.playerId);
+        await this.ctx.storage.put("battle:" + meta.roomId, state);
+        this.broadcast(meta.roomId, ws, { type: "battle_state", from: meta.playerId, payload: p, at: Date.now() });
+        return;
+      }
+      return;
+    }
+    if (room.mode === "trade" && ["trade_offer", "trade_accept"].includes(packet.type)) {
+      // 교환은 아직 소유권 검증/원자적 이전이 없으므로 검증 없는 패킷을 확정으로 처리하지 않는다.
+      return;
+    }
+  }
+  broadcast(roomId, except, packet) {
+    const outgoing = JSON.stringify(packet);
+    for (const peer of this.ctx.getWebSockets(roomId)) {
+      if (peer !== except && peer.readyState === WebSocket.OPEN) {
+        try { peer.send(outgoing); } catch {}
+      }
     }
   }
   webSocketClose(ws) {
