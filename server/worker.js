@@ -387,12 +387,14 @@ export class Lobby {
     }
     if (room.mode === "trade" && ["trade_offer", "trade_accept", "trade_declined", "trade_commit"].includes(packet.type)) {
       const p = packet.payload;
-      if (!p || typeof p.id !== "string" || p.id.length < 8 || p.id.length > 100) return;
+      if (!p) return;
+      const packetId = packet.type === "trade_offer" ? p.offer && p.offer.id : p.id;
+      if (typeof packetId !== "string" || packetId.length < 8 || packetId.length > 100) return;
       const key = "trade:" + meta.roomId;
       const state = (await this.ctx.storage.get(key)) || { offerId: null, proposer: null, accepted: false, committed: false };
       if (packet.type === "trade_offer") {
         const mon = p.offer && p.offer.mon;
-        if (state.offerId || !p.offer || p.offer.id !== p.id && p.id !== undefined ||
+        if (state.offerId || !p.offer ||
             !mon || !Number.isInteger(mon.sp) || mon.sp < 0 || !Number.isInteger(mon.lvl) ||
             mon.lvl < 1 || mon.lvl > 100 || !Number.isInteger(mon.hp) ||
             !Number.isInteger(mon.maxhp) || mon.maxhp < 1 || mon.hp < 0 || mon.hp > mon.maxhp ||
