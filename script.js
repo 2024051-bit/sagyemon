@@ -3711,6 +3711,11 @@ async function onlineConnectRoom(base, room) {
       try { packet = JSON.parse(event.data); } catch (e) { return; }
       if (!ONLINE_ROOM || ONLINE_ROOM.ws !== ws) return;
       if (packet.type === 'pong' || packet.type === 'connected') return;
+      // 상대 HP 갱신은 대기 중인 UI 흐름과 별도로 즉시 반영한다.
+      if (packet.type === 'battle_state' && packet.payload && packet.payload.action === 'hp_update' &&
+          ONLINE_ROOM.opponentRoster) {
+        if (!onlineApplyOpponentHpUpdate(ONLINE_ROOM.opponentRoster, packet)) return;
+      }
       ONLINE_ROOM.packets.push(packet);
       if (ONLINE_ROOM.packets.length > 100) ONLINE_ROOM.packets.shift();
       const waiters = ONLINE_ROOM.waiters.splice(0);
@@ -3885,6 +3890,7 @@ H.multiplayer = async () => {
       const previewPacket = await onlineWaitPacket('battle_state', 15000);
       if (!previewPacket || !previewPacket.payload || previewPacket.payload.action !== 'roster_preview') throw new Error('battle_protocol_mismatch');
       const opponentRoster = onlineValidateRosterPreview({ payload: previewPacket.payload.roster });
+      if (ONLINE_ROOM) ONLINE_ROOM.opponentRoster = opponentRoster;
       const startedPacket = await onlineWaitPacket('battle_started', 15000);
       if (!startedPacket || !startedPacket.payload || startedPacket.payload.protocol !== 1 || startedPacket.payload.firstTurn !== 1) throw new Error('battle_protocol_mismatch');
       await say('두 트레이너의 접속이 확인됐어!');
