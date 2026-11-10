@@ -251,10 +251,18 @@ export class Lobby {
               },
               at: Date.now()
             };
+            if (!state.activeTeam) state.activeTeam = {};
             players.forEach(id => {
               if (state.actions[id].action === "switch_mon") state.activeTeam[id] = state.actions[id].teamIndex;
               else if (!Number.isInteger(state.activeTeam[id])) state.activeTeam[id] = 0;
             });
+            state.lastResolvedTurn = state.turn;
+            state.lastActions = Object.fromEntries(players.map(id => [id, {
+              action: state.actions[id].action,
+              moveIndex: state.actions[id].moveIndex,
+              teamIndex: state.actions[id].teamIndex
+            }]));
+            state.hpUpdateTurn = {};
             state.turn += 1;
             state.actions = {};
             await this.ctx.storage.put("battle:" + meta.roomId, state);
@@ -278,8 +286,20 @@ export class Lobby {
         if (!state.hpState) state.hpState = {};
         if (!state.hpState[meta.playerId]) state.hpState[meta.playerId] = state.rosterData[meta.playerId].map(mon => ({ hp: mon.hp, maxhp: mon.maxhp }));
         const previousHp = state.hpState[meta.playerId][p.teamIndex];
-        // 현재 온라인 전투 프로토콜에는 회복 판정이 없으므로 HP 갱신은 감소만 허용한다.
-        if (!previousHp || p.hp > previousHp.hp) return;
+        if (!previousHp) return;
+        if (p.hp > previousHp.hp) {
+          // HP 회복은 직전 턴에 실제 선택된 회복 기술을 사용한 출전 사계몬에게만 허용한다.
+          const last = state.lastActions && state.lastActions[meta.playerId];
+          const activeIndex = state.activeTeam && Number.isInteger(state.activeTeam[meta.playerId]) ? state.activeTeam[meta.playerId] : 0;
+          const move = last && last.action === "choose_move" && state.rosterData[meta.playerId][activeIndex] &&
+            state.rosterData[meta.playerId][activeIndex].moves[last.moveIndex];
+          const updateKey = String(state.lastResolvedTurn) + ":" + p.teamIndex;
+          const used = state.hpUpdateTurn && state.hpUpdateTurn[meta.playerId] === updateKey;
+          if (p.teamIndex !== activeIndex || !move || move.eff !== "heal" || used ||
+              p.hp > Math.min(p.maxhp, previousHp.hp + Math.ceil(p.maxhp / 2))) return;
+          if (!state.hpUpdateTurn) state.hpUpdateTurn = {};
+          state.hpUpdateTurn[meta.playerId] = updateKey;
+        }
         state.hpState[meta.playerId][p.teamIndex] = { hp: p.hp, maxhp: p.maxhp };
         await this.ctx.storage.put("battle:" + meta.roomId, state);
         this.broadcast(meta.roomId, ws, {
