@@ -3773,11 +3773,27 @@ async function onlineChooseBattleTeam() {
   if (selected.length !== 3 || new Set(selected).size !== 3) throw new Error('battle_protocol_mismatch');
   return selected;
 }
-function onlineRosterPreview(selectedIndexes) {
+function onlineCreateBattleSnapshot(selectedIndexes) {
+  if (!Array.isArray(selectedIndexes) || selectedIndexes.length !== 3 ||
+      new Set(selectedIndexes).size !== 3 ||
+      selectedIndexes.some(index => !Number.isInteger(index) || index < 0 || index >= Math.min(6, S.party.length))) {
+    throw new Error('battle_protocol_mismatch');
+  }
+  // 스토리 세이브의 몬스터 객체를 직접 사용하지 않고 PvP 전용 복사본을 만든다.
+  return selectedIndexes.map(index => {
+    const source = S.party[index];
+    if (!source || source.hp <= 0) throw new Error('battle_protocol_mismatch');
+    const copy = JSON.parse(JSON.stringify(source));
+    copy.hp = Math.max(1, Math.min(copy.maxhp, Math.floor(copy.hp)));
+    copy.maxhp = Math.max(1, Math.floor(copy.maxhp));
+    return copy;
+  });
+}
+function onlineRosterPreview(selectedIndexes, sourceParty = S.party) {
   return {
     protocol: 1,
     trainer: String(S.name || '트레이너').slice(0, 16),
-    party: selectedIndexes.map(index => S.party[index]).filter(Boolean).map(m => ({
+    party: selectedIndexes.map(index => sourceParty[index]).filter(Boolean).map(m => ({
       species: Number.isInteger(m.sp) && SP[m.sp] ? SP[m.sp].name : '알 수 없음',
       nickname: String(m.nick || '').slice(0, 8),
       level: clamp(Math.floor(Number(m.lvl) || 1), 1, 100),
@@ -3886,7 +3902,10 @@ H.multiplayer = async () => {
       if (!ready || !ready.payload || ready.payload.action !== 'ready' || ready.payload.protocol !== 1) throw new Error('online_wait_timeout');
       const selectedTeam = await onlineChooseBattleTeam();
       if (!selectedTeam) return say('사계몬 3마리를 준비한 뒤 다시 도전해 줘!');
-      onlineSend('battle_state', { action: 'roster_preview', roster: onlineRosterPreview(selectedTeam) });
+      // 이후 PvP HP 변화는 이 복사본에만 적용하고 S.party(스토리 세이브)는 건드리지 않는다.
+      const pvpTeam = onlineCreateBattleSnapshot(selectedTeam);
+      if (ONLINE_ROOM) ONLINE_ROOM.localTeam = pvpTeam;
+      onlineSend('battle_state', { action: 'roster_preview', roster: onlineRosterPreview([0, 1, 2], pvpTeam) });
       const previewPacket = await onlineWaitPacket('battle_state', 15000);
       if (!previewPacket || !previewPacket.payload || previewPacket.payload.action !== 'roster_preview') throw new Error('battle_protocol_mismatch');
       const opponentRoster = onlineValidateRosterPreview({ payload: previewPacket.payload.roster });
