@@ -4087,6 +4087,26 @@ function drawBike(sx, sy, dir, front) {
 let B = null;
 const BG = { forest: ['#eef8e0', '#cfe8b4', '#9ccf74'], cave: ['#f4e8d4', '#e0cba8', '#b89466'], plain: ['#f6fbdc', '#e4f2b6', '#acd464'], tower: ['#f0f0f8', '#dcdcec', '#a8a8c8'], lake: ['#e6f6f6', '#c8eaea', '#7cc8bc'], casino: ['#f8ecfb', '#ead4f4', '#c08ad8'], hall: ['#fcf2e4', '#f2dec6', '#d8b48c'], town: ['#eef8e0', '#cfe8b4', '#9ccf74'], indoor: ['#fcf2e4', '#f2dec6', '#d8b48c'] };
 function tween(ms, fn) { return new Promise(res => { const t0 = performance.now(); const step = now => { const k = Math.min(1, (now - t0) / ms); fn(k); if (k < 1) requestAnimationFrame(step); else res(); }; requestAnimationFrame(step); }); }
+// 전투 날씨: 전투마다 가볍게 결정되며, 피해 보정은 최대 ±5%로 제한한다.
+const BATTLE_WEATHER = [
+  { id: 'clear', name: '맑음', up: '불', down: '물', desc: '불 기술 +5%, 물 기술 -5%' },
+  { id: 'rain', name: '비', up: '물', down: '불', desc: '물 기술 +5%, 불 기술 -5%' },
+  { id: 'snow', name: '눈', up: '얼음', down: null, desc: '얼음 기술 +5%' },
+  { id: 'wind', name: '산들바람', up: '비행', down: null, desc: '비행 기술 +5%' },
+  { id: 'cloud', name: '흐림', up: null, down: null, desc: '특별한 타입 보정 없음' }
+];
+function chooseBattleWeather(theme) {
+  const pool = theme === 'lake' ? ['rain', 'cloud', 'wind', 'clear'] : theme === 'cave' || theme === 'indoor' || theme === 'hall' || theme === 'casino' ? ['cloud', 'cloud', 'wind'] : ['clear', 'rain', 'snow', 'wind', 'cloud'];
+  const id = pool[Math.floor(Math.random() * pool.length)];
+  return BATTLE_WEATHER.find(w => w.id === id) || BATTLE_WEATHER[4];
+}
+function weatherDamageMult(weather, moveType) {
+  if (!weather || !moveType) return 1;
+  if (weather.up === moveType) return 1.05;
+  if (weather.down === moveType) return .95;
+  return 1;
+}
+
 function drawBattle(now) {
   const sh = B.a.shake || 0; ctx.save(); if (sh) ctx.translate(Math.round((Math.random() - .5) * sh * 2), Math.round((Math.random() - .5) * sh * 2));
   const [c1, c2, c3] = BG[B.theme] || BG.forest;
@@ -4406,13 +4426,15 @@ const isWildKind = k => k === 'wild' || k === 'legend' || k === 'roam';
 async function battle(o) {
   const wild = isWildKind(o.kind);
   o.team.forEach(m => S.seen[m.sp] = 1);
-  B = { o, idx: 0, e: o.team[0], p: firstAlive(), part: new Set(), combo: 0, theme: CUR.indoor ? (CUR.theme === 'indoor' ? 'indoor' : CUR.theme) : CUR.theme, a: { eX: 0, eY: 0, pX: 0, pY: 0, eVis: false, pVis: false, eAlpha: 1, pAlpha: 1, eScale: 1, pScale: 1, flash: 0, eTr: false, pTr: true, eTrX: 0, pTrX: 160 } };
+  B = { o, idx: 0, e: o.team[0], p: firstAlive(), part: new Set(), combo: 0, theme: CUR.indoor ? (CUR.theme === 'indoor' ? 'indoor' : CUR.theme) : CUR.theme, weather: null, a: { eX: 0, eY: 0, pX: 0, pY: 0, eVis: false, pVis: false, eAlpha: 1, pAlpha: 1, eScale: 1, pScale: 1, flash: 0, eTr: false, pTr: true, eTrX: 0, pTrX: 160 } };
   const a = B.a;
+  B.weather = chooseBattleWeather(B.theme);
   await flashTrans();
   scene = 'battle';
   if (wild) { a.eVis = true; a.eX = -170; await tween(650, k => { a.eX = (1 - k) * -170; a.pTrX = (1 - k) * 160; }); }
   else { a.eTr = true; a.eTrX = -170; await tween(650, k => { a.eTrX = (1 - k) * -170; a.pTrX = (1 - k) * 160; }); }
   hud();
+  await say(`전투 날씨: ${B.weather.name}! (${B.weather.desc})`);
   if (o.kind === 'legend') await say(`${jo(monName(B.e), '이가')} 덤벼든다!`);
   else if (o.kind === 'roam') await say(`앗! 전설의 ${jo(monName(B.e), '이가')} 나타났다!`);
   else if (wild) await say(`앗! 야생의 ${jo(monName(B.e), '이가')} 튀어나왔다!`);
@@ -4494,6 +4516,7 @@ function dmgCalc(att, def, power, mult, category = 'physical', moveType = null) 
   const atkTrait = typeTraitFor(att.sp), defTrait = typeTraitFor(def.sp);
   if (moveType && atkTrait.atk === moveType) abilityMult *= atkTrait.bonus;
   if (moveType && defTrait.resist === moveType) abilityMult *= .95;
+  abilityMult *= weatherDamageMult(B && B.weather, moveType);
   const base = (att.lvl * .2 + 2) * power * (A / Math.max(1, D)) / 10;
   return Math.max(1, Math.round(base * mult * abilityMult * (.85 + Math.random() * .15)));
 }
