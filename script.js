@@ -3906,6 +3906,10 @@ function onlineBattleApplyTurn(room, payload, ownId) {
     const available = onlineBattleMoves(mon, local);
     const selected = available.find(x => x.index === c.moveIndex) || (available.length === 1 && available[0].move.struggle ? available[0] : null);
     if (!mon || !selected) throw new Error('battle_protocol_mismatch');
+    if (!selected.move.struggle) {
+      if (local) usePP(mon, selected.move);
+      else selected.move.pp = Math.max(0, (selected.move.pp || 0) - 1);
+    }
     return { c, local, mon, move: selected.move };
   }).sort((a,b) => (b.move.priority || 0) - (a.move.priority || 0) ||
     Number((b.mon.spe || b.mon.stats && b.mon.stats.spe) || 1) - Number((a.mon.spe || a.mon.stats && a.mon.stats.spe) || 1) ||
@@ -3914,10 +3918,6 @@ function onlineBattleApplyTurn(room, payload, ownId) {
   for (const a of attacks) {
     const target = a.local ? room.opponentRoster.party[room.activeOpponent] : room.localTeam[room.activeLocal];
     if (!a.mon || a.mon.hp <= 0 || !target || target.hp <= 0) continue;
-    if (!a.move.struggle) {
-      if (a.local) usePP(a.mon, a.move);
-      else a.move.pp = Math.max(0, (a.move.pp || 0) - 1);
-    }
     const r = onlineBattleApplyMove(room, a.local ? 'local' : 'opponent', a.move);
     if (r && r.missed) logs.push(a.move.name + ' 빗나갔다!');
     else if (r && r.damage != null) logs.push(a.move.name + ' · ' + r.damage + ' 피해');
