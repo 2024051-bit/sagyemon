@@ -300,7 +300,7 @@ const SP = {
   // 첫 몬스터 4계열 (봄·여름·가을·겨울). 기술 이름에 MKW 낱말(덩굴·불꽃 등)을 넣으면 옛 타입이 되므로 피한다
   root: { name: '봉실이', art: 'root', type: '봄', hp: 50, atk: 48, def: 50, spa: 53, spd: 45, spe: 43, ability: '강철피부', moves: ['몸통박치기', '새싹 튕기기', '꽃잎 회오리', '벚꽃 폭풍'], evo: [14, 'root2'], dex: ['꽃봉오리몬', 0.7, 6.4, '머리의 새싹을 쓰다듬으면 몽실몽실한 꽃봉오리가 맺힌다.'] },
   root2: { name: '봉실나무', art: 'root2', type: '봄', hp: 66, atk: 60, def: 64, spa: 56, spd: 70, spe: 58, ability: '집중력', moves: ['나무 박치기', '새싹 튕기기', '꽃잎 회오리', '벚꽃 폭풍'], evo: [26, 'root3'], dex: ['꽃봉오리몬', 1.2, 38, '따뜻한 봄볕을 받으면 가지 끝마다 봉오리가 부풀어 오른다.'] },
-  root3: { name: '만개봉실', art: 'root2', v: 'deep', add: 'flowers', big: 1.1, type: '봄', hp: 84, atk: 74, def: 82, spa: 69, spd: 78, spe: 77, ability: '강철피부', moves: ['거목 프레스', '새싹 대포', '꽃잎 대회오리', '만개 벚꽃 폭풍'], dex: ['꽃봉오리몬', 2.0, 155, '온몸의 봉오리가 한꺼번에 피어나면 마을에 봄이 왔다는 신호다.'] },
+  root3: { name: '만개봉실', art: 'root2', v: 'deep', add: 'flowers', big: 1.1, type: '봄', hp: 84, atk: 74, def: 82, spa: 69, spd: 78, spe: 77, ability: '재생력', moves: ['거목 프레스', '새싹 대포', '꽃잎 대회오리', '만개 벚꽃 폭풍'], dex: ['꽃봉오리몬', 2.0, 155, '온몸의 봉오리가 한꺼번에 피어나면 마을에 봄이 왔다는 신호다.'] },
   haerong: { name: '해롱이', art: 'haerong', type: '여름', hp: 46, atk: 54, def: 44, spa: 60, spd: 50, spe: 54, ability: '집중력', moves: ['몸통박치기', '햇살 쏘기', '한낮 열풍', '태양 광선'], evo: [14, 'haerong2'], dex: ['햇살몬', 0.5, 7.5, '머리 둘레의 해 갈기가 따뜻해서 늘 졸린 듯 해롱거린다.'] },
   haerong2: { name: '해롱룡', art: 'haerong2', type: '여름', hp: 60, atk: 68, def: 56, spa: 65, spd: 60, spe: 59, ability: '집중력', moves: ['할퀴기', '햇살 쏘기', '한낮 열풍', '태양 광선'], evo: [26, 'haerong3'], dex: ['햇살몬', 1.2, 24, '한낮이 되면 갈기가 눈부시게 빛난다. 여름이 가장 신나는 계절이다.'] },
   haerong3: { name: '한여름룡', art: 'haerong2', v: 'red', add: 'horns', big: 1.12, type: '여름', hp: 76, atk: 84, def: 70, spa: 80, spd: 64, spe: 77, ability: '맹공', moves: ['황금 발톱', '햇살 대포', '한여름 열풍', '태양 대폭발'], dex: ['햇살몬', 1.9, 82, '날갯짓 한 번에 한여름 햇살이 쏟아진다.'] },
@@ -312,7 +312,7 @@ const SP = {
   nunmung3: { name: '오로라펭', art: 'nunbora', v: 'cool', add: 'crown', big: 1.15, type: '겨울', hp: 88, atk: 72, def: 80, spa: 78, spd: 76, spe: 82, ability: '질주', moves: ['미끄럼 박치기', '서리 대포', '오로라 입김', '오로라 폭풍'], dex: ['눈송이몬', 1.5, 58, '겨울밤 하늘의 오로라를 목도리에 담아 다닌다.'] },
   inf: { name: '무한물범', art: 'inf', type: '물', hp: 54, atk: 46, def: 50, spa: 50, spd: 53, spe: 40, ability: '정신장벽', moves: ['몸통박치기', '순환 물대포', '무한 파도', '무한대 하이드로'], evo: [16, 'inf2'], dex: ['무한대몬', 0.6, 9, '등의 무늬는 아무리 따라가도 끝나지 않는다.'] },
   inf2: { name: '무한바다범', art: 'inf2', type: '물', hp: 70, atk: 58, def: 62, spa: 56, spd: 63, spe: 62, ability: '질주', moves: ['꼬리치기', '순환 물대포', '무한 파도', '무한대 하이드로'], evo: [36, 'inf3'], dex: ['무한대몬', 1.1, 25, '바다를 한 바퀴 돌면 다시 같은 자리로 돌아온다.'] },
-  inf3: { name: '무한해왕', art: 'inf2', v: 'cool', add: 'crown', big: 1.12, type: ['물', '얼음'], hp: 88, atk: 72, def: 78, spa: 71, spd: 77, spe: 73, ability: '정신장벽', moves: ['해왕 꼬리', '순환 대해일', '무한 빙하', '무한대 하이드로캐논'], dex: ['무한대몬', 1.8, 85.5, '왕관의 뿔 개수는 셀 때마다 달라진다. 아마 무한개일 것이다.'] },
+  inf3: { name: '무한해왕', art: 'inf2', v: 'cool', add: 'crown', big: 1.12, type: ['물', '얼음'], hp: 88, atk: 72, def: 78, spa: 71, spd: 77, spe: 73, ability: '재생력', moves: ['해왕 꼬리', '순환 대해일', '무한 빙하', '무한대 하이드로캐논'], dex: ['무한대몬', 1.8, 85.5, '왕관의 뿔 개수는 셀 때마다 달라진다. 아마 무한개일 것이다.'] },
   // ── Ⅰ 지역 ──
   bug: { name: '소수점벌레', art: 'bug', type: '벌레', hp: 38, atk: 36, def: 40, spa: 38, spd: 34, spe: 45, ability: '질주', moves: ['몸통박치기', '점 찍기', '소수점 실', '유한 공격'], evo: [7, 'bug2'], dex: ['소수점몬', 0.3, 2.9, '몸의 점 개수가 유한하면 2와 5만 먹고 자란 것이라고 한다.'] },
   bug2: { name: '소수점고치', art: 'cocoon', type: '벌레', hp: 44, atk: 26, def: 60, spa: 26, spd: 65, spe: 39, ability: '강철피부', moves: ['단단해지기', '점 찍기', '소수점 실', '유한 공격'], evo: [10, 'bug3'], dex: ['고치몬', 0.7, 9.9, '고치 안에서 순환마디를 정리하며 진화를 기다린다.'] },
@@ -330,7 +330,7 @@ const SP = {
   bat2: { name: '거듭제곱박쥐', art: 'bat', v: 'dark', add: 'horns', big: 1.15, type: ['노말', '비행'], hp: 66, atk: 72, def: 58, spa: 74, spd: 64, spe: 70, ability: '집중력', moves: ['에어슬래시', '지수 초음파', '거듭제곱 흡혈', '지수법칙 폭풍'], dex: ['지수몬', 1.6, 55, '두 마리가 합체하면 지수끼리 더해져 더 강해진다.'] },
   rock: { name: '다항돌', art: 'rock', type: '바위', hp: 52, atk: 44, def: 62, spa: 48, spd: 63, spe: 46, ability: '강철피부', moves: ['구르기', '동류항 굳히기', '전개 돌팔매', '분배법칙 바위'], evo: [25, 'rock2'], dex: ['다항식몬', 0.4, 20, '같은 종류의 돌끼리만 붙는다. 동류항이 아니면 절대 안 붙는다.'] },
   rock2: { name: '다항바위', art: 'rock', v: 'dark', add: 'spikes', big: 1.2, type: '바위', hp: 74, atk: 64, def: 86, spa: 62, spd: 82, spe: 76, ability: '강철피부', moves: ['지진', '동류항 압축', '전개 낙석', '분배법칙 대폭발'], dex: ['다항식몬', 1.4, 210, '괄호를 풀 듯 몸을 펼치면 몸집이 몇 배로 커진다.'] },
-  croc: { name: '부등악어', art: 'croc', type: '물', hp: 48, atk: 54, def: 46, spa: 55, spd: 52, spe: 42, ability: '맹공', moves: ['물기', '부등호 턱', '방향 전환 꼬리', '음수 곱하기 물기'], evo: [30, 'croc2'], dex: ['부등호몬', 1.0, 9.5, '입을 항상 큰 쪽을 향해 벌린다. 음수를 보면 고개를 반대로 돌린다.'] },
+  croc: { name: '부등악어', art: 'croc', type: '물', hp: 48, atk: 54, def: 46, spa: 55, spd: 52, spe: 42, ability: '역전투혼', moves: ['물기', '부등호 턱', '방향 전환 꼬리', '음수 곱하기 물기'], evo: [30, 'croc2'], dex: ['부등호몬', 1.0, 9.5, '입을 항상 큰 쪽을 향해 벌린다. 음수를 보면 고개를 반대로 돌린다.'] },
   croc2: { name: '부등대악어', art: 'croc', v: 'deep', add: 'spikes', big: 1.15, type: '물', hp: 70, atk: 76, def: 64, spa: 71, spd: 65, spe: 74, ability: '강철피부', moves: ['깨물어부수기', '부등호 대턱', '이항 꼬리', '음수 곱하기 대물기'], dex: ['부등호몬', 2.3, 88, '입 크기가 ≥와 ≤를 오가며 변한다.'] },
   // ── Ⅲ 지역 ──
   sheep: { name: '기울기양', art: 'sheep', type: '전기', hp: 50, atk: 46, def: 50, spa: 40, spd: 45, spe: 55, ability: '질주', moves: ['박치기', '기울기 돌진', '오르막 스파크', '가파른 비탈'], evo: [26, 'sheep2'], dex: ['기울기몬', 0.6, 7.8, '털에 정전기가 모일수록 비탈을 더 가파르게 오른다.'] },
@@ -345,14 +345,14 @@ const SP = {
   spider: { name: '평행거미', art: 'spider', type: '벌레', hp: 46, atk: 56, def: 46, spa: 50, spd: 43, spe: 43, ability: '강철피부', moves: ['물기', '대변 실뿜기', '대각선 그물', '평행사변 덫'], evo: [24, 'spider2'], dex: ['사각형몬', 0.5, 8.5, '거미줄의 대각선은 언제나 서로를 이등분한다.'] },
   spider2: { name: '평행독거미', art: 'spider', v: 'red', add: 'spikes', big: 1.15, type: '벌레', hp: 66, atk: 76, def: 62, spa: 73, spd: 65, spe: 66, ability: '맹공', moves: ['독찌르기', '마름모 실', '직사각형 그물', '정사각형 덫'], dex: ['사각형몬', 1.1, 33.5, '대각선이 수직으로 만나는 마름모 그물을 친다.'] },
   fighter: { name: '합동격투가', art: 'fighter', type: '격투', hp: 54, atk: 62, def: 48, spa: 57, spd: 44, spe: 62, ability: '맹공', moves: ['태클', 'SAS 펀치', 'ASA 킥', 'SSS 콤보'], evo: [30, 'fighter2'], dex: ['합동몬', 1.0, 30, '상대와 똑같은 자세를 취하며 싸운다. 합동이 되면 승리라고 믿는다.'] },
-  fighter2: { name: 'RHS대장', art: 'fighter', v: 'deep', add: 'crest', big: 1.15, type: '격투', hp: 72, atk: 84, def: 62, spa: 82, spd: 67, spe: 81, ability: '맹공', moves: ['크로스촙', 'RHA 펀치', 'RHS 킥', '직각 합동 콤보'], dex: ['합동몬', 1.6, 75, '빗변이 같은 상대만 골라 싸운다. 직각삼각형 도장을 운영한다.'] },
+  fighter2: { name: 'RHS대장', art: 'fighter', v: 'deep', add: 'crest', big: 1.15, type: '격투', hp: 72, atk: 84, def: 62, spa: 82, spd: 67, spe: 81, ability: '역전투혼', moves: ['크로스촙', 'RHA 펀치', 'RHS 킥', '직각 합동 콤보'], dex: ['합동몬', 1.6, 75, '빗변이 같은 상대만 골라 싸운다. 직각삼각형 도장을 운영한다.'] },
   // ── Ⅴ 지역 ──
   fish: { name: '닮음붕어', art: 'fish', type: '물', hp: 40, atk: 30, def: 50, spa: 35, spd: 54, spe: 34, ability: '질주', moves: ['튀어오르기', '닮음비 물대포', '확대 축소 빔', 'SAS 소용돌이'], evo: [20, 'fish2'], dex: ['닮음몬', 0.9, 10, '작은 몸과 큰 몸이 꼭 닮았다. 넓이는 닮음비의 제곱으로 커진다.'] },
   fish2: { name: '닮음잉어왕', art: 'fish', v: 'deep', add: 'horns', big: 1.25, type: ['물', '비행'], hp: 76, atk: 80, def: 66, spa: 76, spd: 62, spe: 66, ability: '질주', moves: ['물기', '닮음비 대해일', '확대 파괴광선', '닮음 소용돌이'], dex: ['닮음몬', 6.5, 235, '분노하면 몸이 닮음비 1 : 2로 커진다. 부피는 무려 8배.'] },
   fishr: { name: '빨간 닮음잉어왕', art: 'fish', v: 'red', add: 'horns', big: 1.25, type: ['물', '비행'], hp: 80, atk: 84, def: 70, spa: 81, spd: 64, spe: 80, ability: '질주', moves: ['물기', '닮음비 대해일', '확대 파괴광선', '닮음 소용돌이'], dex: ['닮음몬', 6.5, 235, '직각호수에 나타난 붉은 개체. 누군가 억지로 진화시켰다는 소문이 있다.'] },
   top: { name: '무게중심팽이', art: 'top', type: '에스퍼', hp: 48, atk: 54, def: 50, spa: 54, spd: 49, spe: 47, ability: '정신장벽', moves: ['회전 박치기', '중선 스핀', '2대1 분할', '무게중심 토네이도'], dex: ['무게중심몬', 0.6, 12, '무게중심 한 점으로만 서서 돈다. 중선을 2 : 1로 나누는 곳이 집이다.'] },
   dino: { name: '피타고라돈', art: 'dino', type: '바위', hp: 58, atk: 58, def: 52, spa: 53, spd: 50, spe: 50, ability: '맹공', moves: ['꼬리치기', '빗변 돌진', '직각 짓밟기', 'a²+b²=c² 브레스'], evo: [34, 'dino2'], dex: ['직각몬', 1.2, 59, '등의 판은 모두 직각삼각형이다. 3 : 4 : 5를 가장 좋아한다.'] },
-  dino2: { name: '빗변룡', art: 'dino', v: 'cool', add: 'wings', big: 1.2, type: ['바위', '드래곤'], hp: 80, atk: 82, def: 72, spa: 83, spd: 71, spe: 81, ability: '맹공', moves: ['드래곤크루', '빗변 대돌진', '직각 대지진', '피타고라스 메테오'], dex: ['직각몬', 2.4, 180, '날개를 펼치면 직각삼각형 모양이 된다. 가장 긴 변은 늘 빗변이다.'] },
+  dino2: { name: '빗변룡', art: 'dino', v: 'cool', add: 'wings', big: 1.2, type: ['바위', '드래곤'], hp: 80, atk: 82, def: 72, spa: 83, spd: 71, spe: 81, ability: '역전투혼', moves: ['드래곤크루', '빗변 대돌진', '직각 대지진', '피타고라스 메테오'], dex: ['직각몬', 2.4, 180, '날개를 펼치면 직각삼각형 모양이 된다. 가장 긴 변은 늘 빗변이다.'] },
   catpsy: { name: '증명냥', art: 'catpsy', type: '에스퍼', hp: 48, atk: 58, def: 46, spa: 52, spd: 48, spe: 48, ability: '집중력', moves: ['할퀴기', '그러므로 빔', '왜냐하면 파동', 'Q.E.D. 사이킥'], evo: [30, 'catpsy2'], dex: ['증명몬', 0.5, 6, '이마의 ∴ 무늬가 빛나면 증명이 끝났다는 뜻이다.'] },
   catpsy2: { name: '증명대냥', art: 'catpsy', v: 'deep', add: 'crown', big: 1.15, type: '에스퍼', hp: 66, atk: 80, def: 60, spa: 75, spd: 63, spe: 70, ability: '집중력', moves: ['베어가르기', '귀류법 빔', '대우 파동', '완벽 증명 사이킥'], dex: ['증명몬', 1.1, 32, '어떤 명제든 3초 만에 증명해 낸다. 단, 거짓 명제는 싫어한다.'] },
   // ── Ⅵ 지역 ──
@@ -372,13 +372,13 @@ const SP = {
   zero: { name: '영점새', art: 'zero', type: '노말', hp: 44, atk: 40, def: 50, spa: 45, spd: 54, spe: 46, ability: '정신장벽', moves: ['쪼기', '영점 노래', '만점 기도', '백점 돌진'], evo: [20, 'zero50'], dex: ['시험지몬', 0.3, 1.5, '알에서 막 태어난 사계몬. 아직 0점이지만 공부할수록 점수가 오른다.'] },
   zero50: { name: '50점새', art: 'zero', score: '50', v: 'warm', add: 'crest', big: 1.1, type: ['노말', '비행'], hp: 56, atk: 53, def: 60, spa: 55, spd: 56, spe: 54, ability: '질주', moves: ['날개치기', '반타작 노래', '만점 기도', '50점 돌진'], evo: [40, 'zero2'], dex: ['시험지몬', 0.45, 2.4, '시험지의 절반을 맞힌 사계몬. 틀린 문제를 다시 풀 때마다 깃털이 한 장씩 자란다.'] },
   zero2: { name: '만점새', art: 'zero', score: '100', v: 'gold', add: 'wings', big: 1.2, type: ['노말', '비행'], hp: 66, atk: 64, def: 70, spa: 66, spd: 67, spe: 67, ability: '집중력', moves: ['날개치기', '만점 노래', '100점 기도', '만점 폭격'], dex: ['시험지몬', 0.6, 3.2, '노력한 트레이너에게만 나타나 행운을 나눠 준다고 한다.'] },
-  panda: { name: '꾸벅판다', art: 'panda', type: '노말', hp: 80, atk: 58, def: 60, spa: 60, spd: 66, spe: 56, ability: '강철피부', moves: ['몸통 누르기', '하품 파동', '꿀잠 프레스', '영점 조절'], dex: ['졸음몬', 2.1, 460, '수학 시간에 꾸벅꾸벅 조는 모습이 자주 목격된다. 라디오 소리에 깬다.'] },
+  panda: { name: '꾸벅판다', art: 'panda', type: '노말', hp: 80, atk: 58, def: 60, spa: 60, spd: 66, spe: 56, ability: '재생력', moves: ['몸통 누르기', '하품 파동', '꿀잠 프레스', '영점 조절'], dex: ['졸음몬', 2.1, 460, '수학 시간에 꾸벅꾸벅 조는 모습이 자주 목격된다. 라디오 소리에 깬다.'] },
   turtle: { name: '확률거북', art: 'turtle', type: ['물', '얼음'], hp: 80, atk: 60, def: 66, spa: 61, spd: 69, spe: 61, ability: '정신장벽', moves: ['몸통박치기', '반반 물대포', '여사건 냉동빔', '확률 하이드로'], dex: ['운반몬', 2.5, 220, '일주일에 한 번, 금요일에만 연결동굴 물가에 나타난다. 만날 확률은 7분의 1.'] },
   beastO: { name: '외심수', art: 'beast', glyph: 'O', v: 'red', type: '불', hp: 80, atk: 76, def: 66, spa: 71, spd: 63, spe: 77, ability: '집중력', moves: ['물기', '외접원 화염', '수직이등분 폭염', '외심 대폭발'], dex: ['삼심몬', 2.1, 198, '세 꼭짓점을 이은 원 위를 달린다. 불탄 탑에서 깨어나 전국을 떠돈다.'] },
   beastI: { name: '내심수', art: 'beast', glyph: 'I', v: 'gold', type: '전기', hp: 72, atk: 82, def: 62, spa: 79, spd: 67, spe: 71, ability: '질주', moves: ['물기', '내접원 번개', '각의 이등분 썬더', '내심 대방전'], dex: ['삼심몬', 1.9, 178, '세 변에서 같은 거리를 유지하며 번개처럼 달린다.'] },
   beastG: { name: '무게중심수', art: 'beast', glyph: 'G', v: 'cool', type: '물', hp: 84, atk: 70, def: 74, spa: 73, spd: 78, spe: 66, ability: '정신장벽', moves: ['물기', '중선 오로라', '2대1 하이드로', '무게중심 대해일'], dex: ['삼심몬', 2.0, 187, '중선의 교점에서 태어났다. 물 위를 2 : 1의 보폭으로 달린다.'] },
-  dragon: { name: '백점드래곤', art: 'dragon', type: ['불', '비행'], hp: 92, atk: 90, def: 80, spa: 90, spd: 83, spe: 88, ability: '집중력', moves: ['드래곤 발톱', '만점 브레스', '학기말 파동', '100점 메테오'], dex: ['만점몬', 3.8, 199, '모든 단원을 공부한 트레이너 앞에만 금빛 날개를 펼친다고 전해진다.'] },
-  whale: { name: '무한고래', art: 'whale', type: ['에스퍼', '물'], hp: 96, atk: 80, def: 90, spa: 81, spd: 88, spe: 90, ability: '정신장벽', moves: ['몸통박치기', '무한 에어로', '순환 해일', '무한대 블래스트'], dex: ['잠수몬', 5.2, 216, '바다 동굴 깊은 곳에서 잠든다. 날갯짓 한 번에 순환소수 같은 폭풍이 끝없이 분다.'] },
+  dragon: { name: '백점드래곤', art: 'dragon', type: ['불', '비행'], hp: 92, atk: 90, def: 80, spa: 90, spd: 83, spe: 88, ability: '역전투혼', moves: ['드래곤 발톱', '만점 브레스', '학기말 파동', '100점 메테오'], dex: ['만점몬', 3.8, 199, '모든 단원을 공부한 트레이너 앞에만 금빛 날개를 펼친다고 전해진다.'] },
+  whale: { name: '무한고래', art: 'whale', type: ['에스퍼', '물'], hp: 96, atk: 80, def: 90, spa: 81, spd: 88, spe: 90, ability: '재생력', moves: ['몸통박치기', '무한 에어로', '순환 해일', '무한대 블래스트'], dex: ['잠수몬', 5.2, 216, '바다 동굴 깊은 곳에서 잠든다. 날갯짓 한 번에 순환소수 같은 폭풍이 끝없이 분다.'] },
 };
 const STARTERS = ['root', 'haerong', 'danpung', 'nunmung']; // 계절 순서. 라이벌은 바로 다음 칸(나를 이기는 계절)을 고른다
 const POW = [40, 50, 65, 80], UNLOCK = [1, 1, 9, 17];
@@ -3009,7 +3009,7 @@ function migrateNatures(o) {
     list.forEach((m, i) => {
       if (!m || typeof m !== 'object') return;
       if (!NATURE_BY_NAME[m.nature]) m.nature = legacyNature(m, `${group}:${i}`);
-      m.ability = (SP[m.sp] && SP[m.sp].ability) || (['맹공', '집중력', '강철피부', '정신장벽', '질주'].includes(m.ability) ? m.ability : '맹공');
+      m.ability = (SP[m.sp] && SP[m.sp].ability) || (['맹공', '집중력', '강철피부', '정신장벽', '질주', '재생력', '역전투혼'].includes(m.ability) ? m.ability : '맹공');
     });
   }
   return o;
@@ -3023,7 +3023,7 @@ function calcStats(m) {
   m.spa = Math.floor((b.spa == null ? b.atk : b.spa) * m.lvl / 40) + 5;
   m.spd = Math.floor((b.spd == null ? b.def : b.spd) * m.lvl / 40) + 5;
   m.spe = Math.floor((b.spe == null ? (b.atk + b.def) / 2 : b.spe) * m.lvl / 40) + 5;
-  m.ability = ['맹공', '집중력', '강철피부', '정신장벽', '질주'].includes(m.ability) ? m.ability : (b.ability || '맹공');
+  m.ability = ['맹공', '집중력', '강철피부', '정신장벽', '질주', '재생력', '역전투혼'].includes(m.ability) ? m.ability : (b.ability || '맹공');
   if (m.ability === '질주') m.spe = Math.round(m.spe * 1.1);
   for (const stat of ['atk', 'def', 'spa', 'spd', 'spe']) m[stat] = Math.max(1, Math.round(m[stat] * natureRate(m, stat)));
   const hb = m.held && ITEMS[m.held] && ITEMS[m.held].boost;
@@ -3143,7 +3143,9 @@ const ABILITY_INFO = {
   '집중력': '특수 기술의 피해량이 10% 증가한다.',
   '강철피부': '받는 물리 기술의 피해량이 10% 감소한다.',
   '정신장벽': '받는 특수 기술의 피해량이 10% 감소한다.',
-  '질주': '스피드가 10% 증가한다.'
+  '질주': '스피드가 10% 증가한다.',
+  '재생력': '매 턴이 끝날 때 최대 HP의 1/16을 회복한다.',
+  '역전투혼': 'HP가 최대치의 1/3 이하일 때 주는 피해가 20% 증가한다.'
 };
 function abilityText(m) { const a = m && m.ability; return a ? `${a} · ${ABILITY_INFO[a] || '특성 효과'}` : '특성 미정'; }
 function monRow(m, extra = '') { return `<img src="${icon(m.sp)}" alt=""><span class="grow">${monName(m)} <span class="sm">Lv.${m.lvl} · ${natureText(m)} · ${abilityText(m)}${m.hp <= 0 ? ' · 기절' : m.status ? ' · ' + ST_NAME[m.status] : ''}${m.held && ITEMS[m.held] ? ' · ' + ITEMS[m.held].name : ''}${extra}</span></span>${hpRow(m)}`; }
@@ -4438,6 +4440,8 @@ async function battle(o) {
     if (B.e.hp <= 0) { if (await enemyFainted() === 'win') { result = 'win'; break; } continue; }
     // 턴 끝: 화상 피해
     for (const [m, side] of [[B.p, 'p'], [B.e, 'e']]) if (m.hp > 0 && m.status === 'brn') { await playFx('burn', side, side, 500); await say(`${jo(nameOf(m, side), '은는')} 화상 때문에 아파한다!`, { wait: false }); await setHP(m, m.hp - Math.max(1, Math.floor(m.maxhp / 16))); }
+    // 재생력: 턴 종료 시 최대 HP의 1/16 회복
+    for (const [m, side] of [[B.p, 'p'], [B.e, 'e']]) if (m.hp > 0 && m.ability === '재생력' && m.hp < m.maxhp) { const heal = Math.min(m.maxhp - m.hp, Math.max(1, Math.floor(m.maxhp / 16))); await playFx('heal', side, side, 450); await say(`${nameOf(m, side)}의 재생력! HP를 회복했다!`, { wait: false }); await setHP(m, m.hp + heal); }
     if (B.p.hp <= 0) { if (await playerFainted() === 'lose') { result = 'lose'; break; } continue; }
     if (B.e.hp <= 0) { if (await enemyFainted() === 'win') { result = 'win'; break; } continue; }
   }
@@ -4461,6 +4465,7 @@ function dmgCalc(att, def, power, mult, category = 'physical') {
   let abilityMult = 1;
   if (att.ability === '맹공' && category === 'physical') abilityMult *= 1.1;
   if (att.ability === '집중력' && category === 'special') abilityMult *= 1.1;
+  if (att.ability === '역전투혼' && att.hp > 0 && att.hp <= att.maxhp / 3) abilityMult *= 1.2;
   if (def.ability === '강철피부' && category === 'physical') abilityMult *= .9;
   if (def.ability === '정신장벽' && category === 'special') abilityMult *= .9;
   const base = (att.lvl * .2 + 2) * power * (A / Math.max(1, D)) / 10;
