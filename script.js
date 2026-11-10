@@ -3179,6 +3179,12 @@ const ABILITY_INFO = {
   '역전투혼': 'HP가 최대치의 1/3 이하일 때 주는 피해가 20% 증가한다.'
 };
 function abilityText(m) { const a = m && m.ability; return (a ? a + ' · ' + (ABILITY_INFO[a] || '특성 효과') : '특성 미정') + ' · ' + typeTraitText(m); }
+async function announceBattleAbility(mon) {
+  if (!mon || !mon.ability) return;
+  const ability = String(mon.ability);
+  const detail = ABILITY_INFO[ability];
+  await say(`${monName(mon)}의 특성은 [${ability}]!${detail ? '\\n' + detail : ''}`);
+}
 function monRow(m, extra = '') { return `<img src="${icon(m.sp)}" alt=""><span class="grow">${monName(m)} <span class="sm">Lv.${m.lvl} · ${natureText(m)} · ${abilityText(m)}${m.hp <= 0 ? ' · 기절' : m.status ? ' · ' + ST_NAME[m.status] : ''}${m.held && ITEMS[m.held] ? ' · ' + ITEMS[m.held].name : ''}${extra}</span></span>${hpRow(m)}`; }
 
 // ---------- 퀴즈 ----------
@@ -4026,6 +4032,7 @@ async function onlineRunBattleTurn(turn) {
     const mon = team[index];
     const label = mon && (mon.nick || mon.species || (mon.sp != null && SP[mon.sp] && SP[mon.sp].name)) || '사계몬';
     await say((isLocal ? '내가 ' : '상대가 ') + label + '(으)로 교체했어.');
+    await announceBattleAbility(mon);
   }
   if (outcome.logs.length) await say(outcome.logs.join('\\n'));
   if (outcome.localOut || outcome.opponentOut) {
@@ -4218,6 +4225,8 @@ H.multiplayer = async () => {
       await say(opponentRoster.trainer + '의 사계몬 팀을 확인했어.\n' + opponentRoster.party.map((m, i) => (i + 1) + '. ' + (m.nickname || m.species) + ' Lv.' + m.level + ' · ' + m.types.join('/')).join('\n'));
       if (ONLINE_ROOM) ONLINE_ROOM.playerId = playerId;
       await say('3대3 온라인 대전이 시작됐어! 행동을 선택해 줘. 교체는 공격보다 먼저 처리돼.');
+      await announceBattleAbility(ONLINE_ROOM.localTeam[ONLINE_ROOM.activeLocal || 0]);
+      await announceBattleAbility(ONLINE_ROOM.opponentRoster.party[ONLINE_ROOM.activeOpponent || 0]);
       let turn = 1;
       while (turn <= 500) {
         const result = await onlineRunBattleTurn(turn);
@@ -5085,10 +5094,12 @@ async function battle(o) {
     say(`${o.trainer.title} ${jo(o.trainer.name, '은는')}\n${jo(monName(B.e), '을를')} 내보냈다!`, { wait: false });
     await popMon('e'); hud(); await sleep(500);
   }
+  await announceBattleAbility(B.e);
   await tween(300, k => a.pTrX = -k * 120); a.pTr = false;
   B.part.add(B.p);
   say(`가랏! ${monName(B.p)}!`, { wait: false });
   await popMon('p'); hud(); await sleep(450);
+  await announceBattleAbility(B.p);
   let result;
   while (true) {
     hud();
@@ -5310,6 +5321,7 @@ async function enemyFainted() {
     B.part.add(B.p);
     await tween(250, k => B.a.eTrX = k * 120); B.a.eTr = false;
     await popMon('e'); hud();
+    await announceBattleAbility(B.e);
     return 'next';
   }
   B.a.eTr = true; B.a.eTrX = 120; await tween(300, k => B.a.eTrX = 120 * (1 - k)); hud();
@@ -5379,6 +5391,7 @@ async function switchMon(forced) {
     if (!forced) { await say(`돌아와, ${monName(B.p)}!`, { wait: false }); await tween(250, k => B.a.pScale = 1 - k); B.a.pVis = false; }
     clearVolatile(B.p); B.p = m; B.part.add(m); hud();
     say(`가랏! ${monName(m)}!`, { wait: false }); await popMon('p'); hud(); await sleep(400);
+    await announceBattleAbility(m);
     return true;
   }
 }
