@@ -2034,6 +2034,14 @@ function gateGuard(a, x, y, ox, oy, cond, closed, opened, pal = 'guard', id) {
   c.ent({ id: 'nurse', kind: 'nurse', x: 5, y: 2, dir: 'down', pal: 'nurse' });
   c.ent({ id: 'cenaide', kind: 'eggaide', x: 9, y: 6, dir: 'left', pal: 'prof' });
   c.ent({ id: 'tutor', kind: 'tutor', x: 2, y: 7, dir: 'right', pal: 'elder' });
+  // 6번째 체육관 도시 전용 보건실: 기존 보건실 기능을 유지하면서 온라인 대전·교환 안내 NPC 추가
+  const gc = room('ginkgoCenter', 12, 9, { name: '사계몬 보건실', floor: '#f4e6e6' });
+  gc.rect(3, 3, 8, 3, 'c').set(7, 2, 'h').set(1, 2, 'p').set(10, 2, 'k').rect(1, 5, 2, 5, 't');
+  gc.warp(5, 8, '@ret', 0, 0, { mat: true }); gc.warp(6, 8, '@ret', 0, 0, { mat: true });
+  gc.ent({ id: 'ginkgoNurse', kind: 'nurse', x: 5, y: 2, dir: 'down', pal: 'nurse' });
+  gc.ent({ id: 'ginkgoEgg aide', kind: 'eggaide', x: 9, y: 6, dir: 'left', pal: 'prof' });
+  gc.ent({ id: 'ginkgoTutor', kind: 'tutor', x: 2, y: 7, dir: 'right', pal: 'elder' });
+  gc.ent({ id: 'battleTradeGuide', kind: 'multiplayer', x: 7, y: 6, dir: 'down', pal: 't2' });
   const m = room('mart', 10, 8, { name: '사계 상점', floor: '#e2ecf4' });
   m.rect(2, 3, 2, 5, 'c').rect(5, 3, 8, 3, 'b').rect(5, 5, 8, 5, 'b'); m.warp(4, 7, '@ret', 0, 0, { mat: true }); m.warp(5, 7, '@ret', 0, 0, { mat: true });
   m.ent({ id: 'clerk', kind: 'clerk', x: 1, y: 4, dir: 'right', pal: 'vendor', stock: 'basic' });
@@ -2529,7 +2537,7 @@ routeGen('goldhill', { name: '황금 은행나무 언덕', theme: 'autumn', unit
 // 은행나무시티: 체육관 6 (기하 Ⅱ). 북쪽 겨울 지방은 아직 닫아 둔다
 house('ginkgoH', '은행나무시티 민가', [{ id: 'ginkgoh', kind: 'npc', x: 7, y: 4, dir: 'left', pal: 't1', lines: ['은행잎이 노랗게 물들면 도시 전체가 황금빛이 된단다.', '관장 가온은 닮은 꼴 도형처럼 크기만 다를 뿐, 누구에게나 똑같이 진지하대.', '북쪽 7번 도로부터는 겨울 지방이야. 동백꽃이 피어 있으면 봄 사계몬 동백이가 숨어 있대.'] }]);
 townGen('ginkgo', { name: '은행나무시티', theme: 'autumn', unit: 4, w: 26, h: 20, seed: 1301, exits: ['S', 'N'], blds: [
-  { x: 2, y: 2, w: 6, roof: 'G', d: 3, to: 'gym5', emblem: '6' }, { x: 18, y: 2, w: 4, roof: 'C', d: 2, to: 'center', ret: 1 },
+  { x: 2, y: 2, w: 6, roof: 'G', d: 3, to: 'gym5', emblem: '6' }, { x: 18, y: 2, w: 4, roof: 'C', d: 2, to: 'ginkgoCenter', ret: 1 },
   { x: 18, y: 12, w: 4, roof: 'M', d: 2, to: 'mart', ret: 1, arrive: [4, 6] }, { x: 3, y: 12, w: 4, roof: 'H', d: 1, to: 'ginkgoH' }] });
 API.ginkgo.m.xpMul = 0.8; blossom(API.ginkgo.m, 49, .55);
 gateGuard(API.ginkgo, API.ginkgo.cx, 1, API.ginkgo.cx + 1, 1, () => S.badges[5], '경비원: 북쪽은 겨울 지방으로 가는 7번 도로야.\n은행 배지가 있어야 지나갈 수 있어!', '경비원: 은행 배지! 북쪽 겨울 지방으로 가도 좋아.\n겨울 사계몬은 봄 사계몬에게 약하대!', 'guard', 'ginkgoN');
@@ -3622,6 +3630,24 @@ H.eggaide = async () => {
   return say(S.keys.egg ? '연구소 조수: 알은 잘 있니? 많이 걸으면 태어날 거야.' : '연구소 조수: 영점새가 태어났구나! 공부할수록 50점새, 그리고 만점새로 진화한대.');
 };
 H.clerk = async e => { await say('어서 오세요! 사계 상점입니다.'); return shop(e.stock); };
+H.multiplayer = async () => {
+  await say('안녕! 나는 트레이너 대전과 사계몬 교환을 안내하고 있어.\n원하는 기능을 골라 봐!');
+  const c = await choose([
+    'PvP 대전 · 랜덤 매칭',
+    'PvP 대전 · 친구 초대(트레이너 코드)',
+    '사계몬 교환 · 랜덤 매칭',
+    '사계몬 교환 · 친구 초대(트레이너 코드)',
+    '그만두기'
+  ], { cls: 'start' });
+  if (c < 0 || c === 4) return say('언제든 다시 찾아와!');
+  const labels = [
+    '랜덤 매칭 대전',
+    '트레이너 코드 친구 대전',
+    '랜덤 사계몬 교환',
+    '트레이너 코드 친구 교환'
+  ];
+  return say(`${labels[c]}을 선택했어.\n온라인 연결 기능은 아직 구현 중이야. 지금은 메뉴만 준비되어 있고, 실제 매칭·초대·교환은 다음 단계에서 연결할게!`);
+};
 H.mom = async () => {
   if (!S.party.length) return sayAll(['엄마: 오늘이 바로 그날이구나!', '정박사님이 연구소로 오라고 하셨어. 마을 오른쪽 큰 건물이야.', '참, 메뉴는 START 버튼(Shift 키)으로 열 수 있단다.']);
   await say('엄마: 많이 지쳤구나. 좀 쉬었다 가렴.');
