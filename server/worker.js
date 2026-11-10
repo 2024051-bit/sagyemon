@@ -216,8 +216,11 @@ export class Lobby {
           const state = (await this.ctx.storage.get("battle:" + meta.roomId)) || { ready: [], rosters: [], turn: 1, actions: {}, activeTeam: {} };
           if (!state.activeTeam) state.activeTeam = {};
           if (state.ready.length !== 2 || state.rosters.length !== 2 || !state.started || p.turn !== state.turn || state.actions[meta.playerId]) return;
+          const activeIndex = Number.isInteger(state.activeTeam[meta.playerId]) ? state.activeTeam[meta.playerId] : 0;
+          const activeHp = state.hpState && state.hpState[meta.playerId] && state.hpState[meta.playerId][activeIndex];
+          // 현재 출전 사계몬이 기절했다면 교체만 허용한다.
+          if (p.action === "choose_move" && (!activeHp || activeHp.hp <= 0)) return;
           if (p.action === "switch_mon") {
-            const activeIndex = Number.isInteger(state.activeTeam[meta.playerId]) ? state.activeTeam[meta.playerId] : 0;
             const targetHp = state.hpState && state.hpState[meta.playerId] && state.hpState[meta.playerId][p.teamIndex];
             if (p.teamIndex === activeIndex || !targetHp || targetHp.hp <= 0) return;
           }
@@ -232,13 +235,18 @@ export class Lobby {
               payload: {
                 action: "turn_choices",
                 turn: state.turn,
+                // 선택 결과는 유지하되, 실제 처리 순서는 교체가 항상 먼저다.
                 choices: players.map(id => ({
                   playerId: id,
                   action: state.actions[id].action,
                   ...(state.actions[id].action === "choose_move"
                     ? { moveIndex: state.actions[id].moveIndex }
                     : { teamIndex: state.actions[id].teamIndex })
-                }))
+                })),
+                resolutionOrder: [
+                  ...players.filter(id => state.actions[id].action === "switch_mon"),
+                  ...players.filter(id => state.actions[id].action === "choose_move")
+                ].map(id => ({ playerId: id, action: state.actions[id].action }))
               },
               at: Date.now()
             };
