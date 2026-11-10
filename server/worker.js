@@ -353,6 +353,7 @@ export class Lobby {
           Array.isArray(mon.types) && mon.types.length <= 2 &&
           mon.types.every(type => typeof type === "string" && type.length <= 8) &&
           mon.stats && ["atk", "def", "spa", "spd", "spe"].every(key => Number.isInteger(mon.stats[key]) && mon.stats[key] >= 1 && mon.stats[key] <= 99999) &&
+          (mon.status == null || (mon.status && ["slp", "par", "brn", "conf"].includes(mon.status.type) && Number.isInteger(mon.status.turns) && mon.status.turns >= 0 && mon.status.turns <= 10)) &&
           Array.isArray(mon.moves) && mon.moves.length <= 4 &&
           mon.moves.every(move => move && typeof move.name === "string" && move.name.length <= 20 &&
             typeof move.type === "string" && move.type.length <= 8 &&
