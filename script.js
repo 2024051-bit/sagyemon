@@ -4122,7 +4122,10 @@ async function onlineRunTrade() {
   }
   if (!S.party.length) return say('교환할 사계몬이 없어. 최소 한 마리는 준비해 줘!');
   localIndex = await chooseList({ title: '상대에게 보낼 사계몬 선택', rows: S.party.map(mon => monRow(mon)) });
-  if (localIndex < 0) return say('교환을 취소했어.');
+  if (localIndex < 0) {
+    onlineSend('trade_declined', { id: offer.id });
+    return say('교환을 취소했어.');
+  }
   const outgoing = onlineTradeMonSnapshot(S.party[localIndex]);
   onlineSend('trade_accept', { id: offer.id, phase: 'accepted', mon: outgoing });
   const committed = await onlineWaitPacket('trade_commit', 15000);
