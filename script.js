@@ -3647,7 +3647,7 @@ async function onlineBaseUrl() {
   try { base = localStorage.getItem(ONLINE_URL_KEY) || ''; } catch (e) {}
   if (window.SAGYEMON_ONLINE_URL) base = String(window.SAGYEMON_ONLINE_URL);
   if (!base) {
-    base = (window.prompt('Cloudflare 온라인 서버 주소를 입력해 주세요.\\n예: https://sagyemon-online.example.workers.dev') || '').trim();
+    base = (window.prompt('Cloudflare 온라인 서버 주소를 입력해 주세요.\n예: https://sagyemon-online.example.workers.dev') || '').trim();
     if (!base) return '';
     base = base.replace(/\/+$/, '');
     try { localStorage.setItem(ONLINE_URL_KEY, base); } catch (e) {}
@@ -3695,7 +3695,6 @@ async function onlineConnectRoom(base, room) {
     const ws = new WebSocket(url);
     let settled = false;
     const timer = setTimeout(() => { if (!settled) { settled = true; ws.close(); reject(new Error('websocket_timeout')); } }, 10000);
-    ws.onopen = () => { if (!settled) { settled = true; clearTimeout(timer); resolve(); } };
     ws.onerror = () => { if (!settled) { settled = true; clearTimeout(timer); reject(new Error('websocket_failed')); } };
     ws.onmessage = event => {
       let packet; try { packet = JSON.parse(event.data); } catch (e) { return; }
@@ -3716,7 +3715,7 @@ async function onlineConnectRoom(base, room) {
   });
 }
 H.multiplayer = async () => {
-  await say('안녕! 나는 트레이너 대전과 사계몬 교환을 안내하고 있어.\\n온라인 기능을 선택해 봐!');
+  await say('안녕! 나는 트레이너 대전과 사계몬 교환을 안내하고 있어.\n온라인 기능을 선택해 봐!');
   const c = await choose([
     'PvP 대전 · 랜덤 매칭',
     'PvP 대전 · 친구 초대(트레이너 코드)',
