@@ -213,8 +213,10 @@ export class Lobby {
             ? Number.isInteger(p.moveIndex) && p.moveIndex >= 0 && p.moveIndex <= 3
             : Number.isInteger(p.teamIndex) && p.teamIndex >= 0 && p.teamIndex <= 2;
           if (!Number.isInteger(p.turn) || p.turn < 1 || p.turn > 500 || !validAction) return;
-          const state = (await this.ctx.storage.get("battle:" + meta.roomId)) || { ready: [], rosters: [], turn: 1, actions: {} };
+          const state = (await this.ctx.storage.get("battle:" + meta.roomId)) || { ready: [], rosters: [], turn: 1, actions: {}, activeTeam: {} };
+          if (!state.activeTeam) state.activeTeam = {};
           if (state.ready.length !== 2 || state.rosters.length !== 2 || !state.started || p.turn !== state.turn || state.actions[meta.playerId]) return;
+          if (p.action === "switch_mon" && p.teamIndex === (Number.isInteger(state.activeTeam[meta.playerId]) ? state.activeTeam[meta.playerId] : 0)) return;
           state.actions[meta.playerId] = p.action === "choose_move"
             ? { action: "choose_move", moveIndex: p.moveIndex, at: Date.now() }
             : { action: "switch_mon", teamIndex: p.teamIndex, at: Date.now() };
@@ -236,6 +238,10 @@ export class Lobby {
               },
               at: Date.now()
             };
+            players.forEach(id => {
+              if (state.actions[id].action === "switch_mon") state.activeTeam[id] = state.actions[id].teamIndex;
+              else if (!Number.isInteger(state.activeTeam[id])) state.activeTeam[id] = 0;
+            });
             state.turn += 1;
             state.actions = {};
             await this.ctx.storage.put("battle:" + meta.roomId, state);
