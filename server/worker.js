@@ -386,7 +386,7 @@ export class Lobby {
       }
       return;
     }
-    if (room.mode === "trade" && ["trade_offer", "trade_accept", "trade_declined", "trade_commit", "trade_receipt"].includes(packet.type)) {
+    if (room.mode === "trade" && ["trade_offer", "trade_accept", "trade_declined", "trade_commit", "trade_receipt", "trade_cancel"].includes(packet.type)) {
       const p = packet.payload;
       if (!p) return;
       const packetId = packet.type === "trade_offer" ? p.offer && p.offer.id : p.id;
@@ -420,6 +420,12 @@ export class Lobby {
       if (packet.type === "trade_declined") {
         if (meta.playerId === state.proposer || state.phase !== "offered") return;
         this.broadcast(meta.roomId, ws, packet);
+        await this.ctx.storage.delete(key);
+        return;
+      }
+      if (packet.type === "trade_cancel") {
+        if (meta.playerId !== state.proposer && meta.playerId !== state.receiver) return;
+        this.broadcast(meta.roomId, ws, { type: "trade_cancel", from: meta.playerId, payload: { id: state.offerId } });
         await this.ctx.storage.delete(key);
         return;
       }
