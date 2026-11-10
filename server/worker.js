@@ -408,7 +408,8 @@ export class Lobby {
         this.broadcast(meta.roomId, ws, packet);
         return;
       }
-      if (!state.offerId || p.id !== state.offerId || state.proposer === meta.playerId) return;
+      if (!state.offerId || p.id !== state.offerId ||
+          (state.proposer === meta.playerId && packet.type !== "trade_commit")) return;
       if (packet.type === "trade_declined") {
         this.broadcast(meta.roomId, ws, packet);
         await this.ctx.storage.delete(key);
