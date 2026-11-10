@@ -3686,32 +3686,68 @@ async function onlineWaitForInvite(base, code, playerId) {
   }
   return null;
 }
+// 온라인 방은 실제 전투/교환 연결 단계까지 유지한다. 기존 세이브 데이터와 분리된 런타임 상태다.
+let ONLINE_ROOM = null;
 async function onlineConnectRoom(base, room) {
   if (!room || !room.roomId || !room.token) throw new Error('invalid_room');
+  if (ONLINE_ROOM && ONLINE_ROOM.ws && ONLINE_ROOM.ws.readyState <= WebSocket.OPEN) {
+    try { ONLINE_ROOM.ws.close(1000, 'new room'); } catch (e) {}
+  }
   const wsBase = base.replace(/^https:/i, 'wss:').replace(/^http:/i, 'ws:');
   const url = wsBase + '/api/room/' + encodeURIComponent(room.roomId) +
     '?playerId=' + encodeURIComponent(onlinePlayerId()) + '&token=' + encodeURIComponent(room.token);
   await new Promise((resolve, reject) => {
     const ws = new WebSocket(url);
     let settled = false;
-    const timer = setTimeout(() => { if (!settled) { settled = true; ws.close(); reject(new Error('websocket_timeout')); } }, 10000);
-    ws.onerror = () => { if (!settled) { settled = true; clearTimeout(timer); reject(new Error('websocket_failed')); } };
-    ws.onmessage = event => {
-      let packet; try { packet = JSON.parse(event.data); } catch (e) { return; }
-      if (packet.type === 'peer_joined') say('상대 트레이너가 방에 접속했어!');
-      else if (packet.type === 'peer_left') say('상대 트레이너의 연결이 종료됐어.');
-      else if (packet.type === 'battle_action' || packet.type === 'trade_offer' || packet.type === 'trade_accept') {
-        say('상대방으로부터 온라인 데이터가 도착했어. 게임 내 대전·교환 판정 기능은 아직 연결 전이야.');
-      }
+    const timer = setTimeout(() => {
+      if (!settled) { settled = true; try { ws.close(); } catch (e) {} reject(new Error('websocket_timeout')); }
+    }, 10000);
+    const fail = () => {
+      if (!settled) { settled = true; clearTimeout(timer); reject(new Error('websocket_failed')); }
     };
-    ws.onclose = () => {};
+    ws.onerror = fail;
+    ws.onmessage = event => {
+      let packet;
+      try { packet = JSON.parse(event.data); } catch (e) { return; }
+      if (!ONLINE_ROOM || ONLINE_ROOM.ws !== ws) return;
+      if (packet.type === 'pong' || packet.type === 'connected') return;
+      ONLINE_ROOM.packets.push(packet);
+      if (ONLINE_ROOM.packets.length > 100) ONLINE_ROOM.packets.shift();
+      const waiters = ONLINE_ROOM.waiters.splice(0);
+      waiters.forEach(fn => { try { fn(packet); } catch (e) {} });
+    };
+    ws.onclose = () => {
+      if (ONLINE_ROOM && ONLINE_ROOM.ws === ws) ONLINE_ROOM.closed = true;
+      if (!settled) fail();
+    };
     ws.onopen = () => {
-      if (!settled) { settled = true; clearTimeout(timer); resolve(); }
+      if (!settled) { settled = true; clearTimeout(timer); ONLINE_ROOM = { ws, room, packets: [], waiters: [], closed: false }; resolve(); }
       try { ws.send(JSON.stringify({ type: 'ping' })); } catch (e) {}
     };
-    // 연결 확인 후 현재 빌드에서는 통신 시험만 하고 소켓을 닫는다.
-    const closeTimer = setTimeout(() => { try { ws.close(1000, 'connection check complete'); } catch (e) {} }, 15000);
-    ws.addEventListener('close', () => clearTimeout(closeTimer), { once: true });
+  });
+}
+function onlineSend(type, payload) {
+  const room = ONLINE_ROOM;
+  if (!room || room.closed || !room.ws || room.ws.readyState !== WebSocket.OPEN) throw new Error('online_room_disconnected');
+  room.ws.send(JSON.stringify({ type, payload: payload == null ? null : payload }));
+}
+function onlineWaitPacket(types, timeout = 60000) {
+  const room = ONLINE_ROOM;
+  if (!room || room.closed) return Promise.reject(new Error('online_room_disconnected'));
+  const accepted = new Set(Array.isArray(types) ? types : [types]);
+  const index = room.packets.findIndex(packet => accepted.has(packet.type));
+  if (index >= 0) return Promise.resolve(room.packets.splice(index, 1)[0]);
+  return new Promise((resolve, reject) => {
+    let done = false;
+    const finish = (err, packet) => {
+      if (done) return;
+      done = true; clearTimeout(timer);
+      const i = room.waiters.indexOf(onPacket); if (i >= 0) room.waiters.splice(i, 1);
+      if (err) reject(err); else resolve(packet);
+    };
+    const onPacket = packet => { if (accepted.has(packet.type)) finish(null, packet); };
+    const timer = setTimeout(() => finish(new Error('online_wait_timeout')), timeout);
+    room.waiters.push(onPacket);
   });
 }
 H.multiplayer = async () => {
