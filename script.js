@@ -3120,7 +3120,13 @@ function chooseList({ title, sub = '', rows, cancel = true, start = 0, foot = ''
 }
 function toast(msg) { document.querySelectorAll('.toast').forEach(x => x.remove()); const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; ui.appendChild(t); setTimeout(() => t.remove(), 1600); }
 function hpRow(m) { const r = m.hp / m.maxhp; return `<span class="hpb" style="width:34%"><span>HP</span><span class="bar"><i class="${r > .5 ? '' : r > .2 ? 'mid' : 'low'}" style="width:${r * 100}%"></i></span></span><span class="sm" style="width:16%;text-align:right;font-variant-numeric:tabular-nums">${m.hp}/${m.maxhp}</span>`; }
-function monRow(m, extra = '') { return `<img src="${icon(m.sp)}" alt=""><span class="grow">${monName(m)} <span class="sm">Lv.${m.lvl}${m.hp <= 0 ? ' · 기절' : m.status ? ' · ' + ST_NAME[m.status] : ''}${m.held && ITEMS[m.held] ? ' · ' + ITEMS[m.held].name : ''}${extra}</span></span>${hpRow(m)}`; }
+function natureText(m) {
+  const n = NATURE_BY_NAME[m && m.nature];
+  if (!n) return '성격 미정';
+  const labels = { atk: '공격', def: '방어', spa: '특공', spd: '특방', spe: '스피드' };
+  return n.up ? `${n.name} (+${labels[n.up]} / −${labels[n.down]})` : n.name;
+}
+function monRow(m, extra = '') { return `<img src="${icon(m.sp)}" alt=""><span class="grow">${monName(m)} <span class="sm">Lv.${m.lvl} · ${natureText(m)}${m.hp <= 0 ? ' · 기절' : m.status ? ' · ' + ST_NAME[m.status] : ''}${m.held && ITEMS[m.held] ? ' · ' + ITEMS[m.held].name : ''}${extra}</span></span>${hpRow(m)}`; }
 
 // ---------- 퀴즈 ----------
 let lastQ = null;
@@ -4746,7 +4752,7 @@ function statusCard(m) {
   <div class="st-r"><div class="hpb"><span>HP</span><span class="bar"><i class="${r > .5 ? '' : r > .2 ? 'mid' : 'low'}" style="width:${r * 100}%"></i></span></div><div class="st-hp">${m.hp} / ${m.maxhp}</div>
   <div>상태 / <em>${m.hp <= 0 ? '기절' : m.status ? ST_NAME[m.status] : '보통'}</em></div><div>타입 / ${typeTags(m.sp)}</div>
   <div class="st-box"><div>경험치 <em>${totalXP(m.lvl) + m.xp}</em></div><div>앞으로 <em>${need(m.lvl, m) - m.xp}</em></div><div>에서 <em>Lv.${m.lvl + 1}</em></div></div>
-  <div class="st-st">공격 ${m.atk} · 방어 ${m.def}${SP[m.sp].evo ? ` · Lv.${SP[m.sp].evo[0]} 진화` : ''}</div>
+  <div class="st-st">${natureText(m)}<br>공격 ${m.atk} · 방어 ${m.def} · 특공 ${m.spa} · 특방 ${m.spd} · 스피드 ${m.spe}${SP[m.sp].evo ? ` · Lv.${SP[m.sp].evo[0]} 진화` : ''}</div>
   <div class="st-mv">${mv.map(x => `<div title="${x.type}${x.eff ? ' · ' + EFF_INFO[x.eff][0] : ''}"><i class="tdot" style="background:${TYPE_COL[x.type]}"></i>${x.name}${x.eff ? '<sup>✦</sup>' : ''} <em>${ppLeft(m, x)}/${x.pp}</em></div>`).join('')}</div></div>`, 'statcard');
 }
 // ---------- 메뉴 ----------
