@@ -261,6 +261,8 @@ export class Lobby {
         const validParty = p.roster.party.every(mon =>
           mon && typeof mon.species === "string" && mon.species.length <= 20 &&
           Number.isInteger(mon.level) && mon.level >= 1 && mon.level <= 100 &&
+          Number.isInteger(mon.hp) && Number.isInteger(mon.maxhp) && mon.maxhp >= 1 &&
+          mon.hp >= 1 && mon.hp <= mon.maxhp && mon.maxhp <= 99999 &&
           Array.isArray(mon.types) && mon.types.length <= 2 &&
           mon.types.every(type => typeof type === "string" && type.length <= 8) &&
           Array.isArray(mon.moves) && mon.moves.length <= 4 &&
