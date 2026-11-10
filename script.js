@@ -4110,7 +4110,8 @@ async function onlineRunTrade() {
     if (!response.payload || response.payload.id !== offer.id || response.payload.phase !== 'accepted' || !onlineValidateTradeMon(response.payload.mon)) throw new Error('trade_protocol_mismatch');
     // 먼저 상대의 데이터를 수신하고 서버에 최종 전달한다. 수신 확인 전에는 내 파티를 변경하지 않는다.
     onlineSend('trade_commit', { id: offer.id, mon: offer.mon });
-    const receipt = await onlineWaitPacket('trade_receipt', 15000);
+    const receipt = await onlineWaitPacket(['trade_receipt', 'peer_left'], 15000);
+    if (receipt.type === 'peer_left') throw new Error('trade_peer_disconnected');
     if (!receipt.payload || receipt.payload.id !== offer.id) throw new Error('trade_protocol_mismatch');
     onlineApplyTrade(localIndex, offer.mon, response.payload.mon);
     return say('교환 데이터 전달이 확인됐어. 새로운 사계몬이 동료가 됐어.');
@@ -4136,7 +4137,8 @@ async function onlineRunTrade() {
   }
   const outgoing = onlineTradeMonSnapshot(S.party[localIndex]);
   onlineSend('trade_accept', { id: offer.id, phase: 'accepted', mon: outgoing });
-  const committed = await onlineWaitPacket('trade_commit', 15000);
+  const committed = await onlineWaitPacket(['trade_commit', 'peer_left'], 15000);
+  if (committed.type === 'peer_left') throw new Error('trade_peer_disconnected');
   if (!committed.payload || committed.payload.id !== offer.id || !onlineValidateTradeMon(committed.payload.mon)) throw new Error('trade_protocol_mismatch');
   // 제안자의 최종 전송을 받은 뒤에만 수신자의 파티를 갱신한다.
   onlineApplyTrade(localIndex, outgoing, committed.payload.mon);
