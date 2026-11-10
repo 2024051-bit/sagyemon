@@ -584,6 +584,8 @@ Object.assign(SP, {
   godeum: { name: '고드름이', art: 'gen', gs: { body: 'blob', form: 'icedie', c1: '#a8d8f0', c2: '#e8f8ff', glyph: '', k: 43 }, type: '겨울', hp: 56, atk: 66, def: 70, moves: ['몸통박치기', '고드름 찌르기', '고드름 떨구기', '고드름 비'], dex: ['고드름몬', 0.6, 15, '얼음 동굴 천장에 매달려 산다. 얼음 동굴에서만 나온다.'] },
   sotul: { name: '솜털오리', art: 'gen', gs: { body: 'bird', form: 'duck', c1: '#f0e8d8', c2: '#f8c060', glyph: '', k: 44 }, type: '노말', hp: 70, atk: 60, def: 60, moves: ['몸통박치기', '뒤뚱 박치기', '솜털 휘날리기', '오리 돌진'], dex: ['오리몬', 0.7, 6, '털이 두툼해서 얼음 호수에서도 끄떡없다. 뒤뚱뒤뚱 걷는다.'] },
   dongbaek: { name: '동백이', art: 'gen', gs: { body: 'blob', form: 'sprout', c1: '#d83a4a', c2: '#3a8a4a', glyph: '', k: 45 }, type: '봄', hp: 62, atk: 62, def: 60, moves: ['몸통박치기', '동백 꽃잎', '동백꽃 피우기', '붉은 꽃보라'], dex: ['동백몬', 0.5, 3, '한겨울에 피어나는 동백꽃. 봄 사계몬이라 겨울 사계몬에게 강하다!'] },
+  // 벚꽃 비밀 정원 특별 몬스터 (미리보기 ㉒, 2026-11-10): 봄+여름. 무지개깃(가을+겨울)·황금사슴(겨울+봄)과 함께 사계절 4인방을 모두 상성으로
+  sunlion: { name: '햇꽃사자', art: 'gen', gs: { body: 'quad', form: 'lynx', c1: '#f4c040', c2: '#e86090', glyph: '', k: 46 }, v: 'gold', add: 'crown', big: 1.15, type: ['봄', '여름'], hp: 80, atk: 82, def: 72, moves: ['몸통박치기', '꽃갈기 흔들기', '봄볕 할퀴기', '한낮 포효'], dex: ['사자몬', 1.5, 120, '히든 맵의 특별 몬스터. 햇살처럼 빛나는 황금 털에 꽃잎 왕관을 쓰고 있다. 봄이 여름으로 넘어가는 날에만 나타난다고 한다.'] },
   // 무지개섬 특별 몬스터 (미리보기 ⑭): 도전의 비석에서 2문제 연속 정답이면 나타난다. 잡기 어려움(특별 몬스터 포획률)
   rainbow: { name: '무지개깃', art: 'gen', gs: { body: 'bird', form: 'swift', c1: '#4aa8f0', c2: '#f8d848', glyph: '', k: 20 }, add: 'crest', big: 1.1, type: ['가을', '겨울'], hp: 72, atk: 74, def: 64, moves: ['날개치기', '무지개 단풍', '단풍빛 바람', '일곱빛 오로라'], dex: ['무지개몬', 1.1, 12, '여름 섬에 잠시 쉬어 가는 철새. 단풍빛과 서리빛 깃털이 섞여 있어, 날개를 펴면 무지개처럼 일곱 빛깔이 반짝인다.'] }, // 2026-11-09 여름 → 가을+겨울 (체육관 4·가을 지방 대비, 미리보기 ⑰)
 });
@@ -2528,8 +2530,10 @@ townGen('icelake', { name: '얼음호수시티', theme: 'winter', unit: 81, w: 2
 API.icelake.m.xpMul = 0.8;
 gateGuard(API.icelake, API.icelake.cx, 1, API.icelake.cx + 1, 1, () => false, () => S.badges.every(Boolean) ? '경비원: 배지 8개! 졸업 언덕은 새봄마을 동쪽이야.\nSTART 메뉴 → 날아가기(좌표 종이비행기)로 새봄마을에 가 보렴!' : '경비원: 이 너머는 길이 없어.\n배지 8개를 모으면 새봄마을 동쪽 졸업 언덕으로 가렴!', '', 'guard', 'icelakeN');
 // 졸업 길 (미리보기 ㉑, 2026-11-10): 새봄마을 동쪽 → 졸업 언덕. 사계절 진화형 야생, 전 범위 문제, 동쪽 끝에서 라이벌 마지막
-routeGen('gradroad', { name: '졸업 길', theme: 'town', unit: 0, w: 42, h: 21, cx: 1, pond: 1, wild: ['kkokko', 'queenbung', 'wangmae', 'keunjip', 'bam2', 'gom', 'seal', 'nunkkot'], lv: [40, 43], ends: [['W', 10], ['E', 9]], trainers: 3, items: [['fpotion', 1], ['hpotion', 2], ['ball', 3]], hidden: [['fpotion', 1]], flowers: 8, seed: 211 });
-API.gradroad.m.units = [11, 1, 13, 21, '2a', 23, 31, '2b', 33, 41, 3, 43, 51, 52, 53, 4, '5a', '5b', 71, 72, 73, 81, 6, 83]; API.gradroad.m.wild.grad = 'E'; API.gradroad.m.xpMul = 0.8;
+routeGen('gradroad', { name: '졸업 길', theme: 'town', unit: 0, w: 42, h: 21, cx: 1, pond: 1, wild: ['kkokko', 'queenbung', 'wangmae', 'keunjip', 'bam2', 'gom', 'seal', 'nunkkot'], lv: [41, 45], ends: [['W', 10], ['E', 9]], trainers: 3, items: [['fpotion', 1], ['hpotion', 2], ['ball', 3]], hidden: [['fpotion', 1]], flowers: 8, seed: 211 });
+API.gradroad.m.units = [11, 1, 13, 21, '2a', 23, 31, '2b', 33, 41, 3, 43, 51, 52, 53, 4, '5a', '5b', 71, 72, 73, 81, 6, 83]; API.gradroad.m.wild.grad = 'E';
+// 4인방 전 레벨업 장소 (2026-11-10 선생님 요청): 야생 Lv 41~45, 체력 1.3배, 경험치 1.5배(0.8 → 1.2), 풀숲 만남 2배(11% → 22%)
+API.gradroad.m.xpMul = 1.2; API.gradroad.m.wildHp = 1.25 * 1.3; /* HPMUL.wild(1.25) × 1.3. HPMUL은 아래에서 정의돼 여기서 못 씀 */ API.gradroad.m.encRate = .22;
 blossom(API.gradroad.m, 3, .5); openSecrets(API.gradroad, API.gradroad.m.exits.W[2], API.gradroad.m.exits.W[3]);
 API.gradroad.ev(API.gradroad.m.exits.E[2], API.gradroad.m.exits.E[3], 'rival5', () => rivalBattle(5)); // 동쪽 출구 바로 앞(꼭 지나는 칸)
 API.icelake.sign(API.icelake.cx + 2, 7, '얼음호수시티\n꽁꽁 언 호수 위에 세운 도시');
@@ -2663,6 +2667,19 @@ townGen('gradhill', { name: '졸업 언덕', theme: 'town', unit: 0, w: 24, h: 2
   { x: 18, y: 12, w: 4, roof: 'M', d: 2, to: 'mart', ret: 1, arrive: [4, 6] }, { x: 13, y: 12, w: 4, roof: 'H', d: 1, to: 'gradH' }] });
 API.gradhill.m.units = ALL_UNITS; API.gradhill.m.xpMul = 0.8; blossom(API.gradhill.m, 5, .6);
 API.gradhill.sign(API.gradhill.cx - 2, 7, '졸업 언덕\n사계절 여행을 마친 트레이너만 오르는 언덕');
+// 마지막 히든 맵 '벚꽃 비밀 정원' (미리보기 ㉒, 2026-11-10): 새봄마을 연못 위 오래된 벚나무 아래 길(배지 8개) → 정원. 비석 2연속 정답(전 범위) → 햇꽃사자 Lv 45
+routeGen('garden', { name: '벚꽃 비밀 정원', theme: 'town', unit: 0, w: 22, h: 18, cx: 1, pond: 1, wild: ['queenbung', 'wanggaegul', 'kkotsaem', 'wangmae', 'keunjip'], lv: [42, 45], ends: [['S', 11]], trainers: 0, items: [['fpotion', 2], ['ball', 3]], hidden: [['fpotion', 1]], flowers: 10, seed: 227 });
+{
+  const g = API.garden, gm = g.m, [gx, gy, gax, gay] = gm.exits.S; g.set(gx, gy, 'T');
+  gm.units = ALL_UNITS; gm.xpMul = 0.8; blossom(gm, 9, .8); openSecrets(g, gax, gay);
+  let best = [gax, gay], bd = -1; const seen = new Map([[gax + ',' + gay, 0]]), q = [[gax, gay]];
+  while (q.length) { const [x, y] = q.shift(), d = seen.get(x + ',' + y); if (d > bd && g.get(x, y) === '.' && !gm.ents.some(e => Math.abs(e.x - x) + Math.abs(e.y - y) < 3) && !gm.hidden.some(h => Math.abs(h.x - x) + Math.abs(h.y - y) < 3)) { bd = d; best = [x, y]; } for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, k = nx + ',' + ny; if (seen.has(k) || !['.', ',', '*', '='].includes(g.get(nx, ny))) continue; seen.set(k, d + 1); q.push([nx, ny]); } }
+  g.ent({ id: 'stele3', kind: 'stele', x: best[0], y: best[1], dir: 'down', cfg: { flag: 'sunlion', sp: 'sunlion', lv: 45, units: () => ALL_UNITS, hint: '꽃잎 왕관의 사자가 모습을 드러내리라', glow: '비석이 벚꽃빛으로 빛난다!', come: '벚꽃잎 사이로 햇꽃사자가 걸어 나왔다!', gone: '햇꽃사자는 벚꽃잎 속으로 사라져 버렸다…' } });
+  // 새봄마을 오래된 벚나무(14, 9)의 뿌리 사이 길 ↔ 정원 입구 옆 굴
+  API.town.ent({ id: 'holeT', kind: 'hole', x: 14, y: 9, dir: 'down', to: 'garden', tx: gax, ty: gay, tdir: 'up', cond: () => S.badges.every(Boolean), locked: '오래된 벚나무다. 뿌리 사이로 따뜻한 바람이 새어 나온다…\n(배지 8개를 모으면 무슨 일이 생길 것 같다)', ask: '오래된 벚나무 뿌리 사이에 길이 열려 있다!\n안쪽에서 벚꽃잎이 날려 온다… 들어가 볼까?', first: 'gardenVisit', firstLines: ['(벚나무 뿌리 사이 길을 지나자 벚꽃이 흐드러진 비밀 정원이 펼쳐졌다!)', '(정원 깊은 곳에 오래된 비석이 서 있다고 한다.)'] });
+  const bx = ['.', ',', '*', '='].includes(g.get(gax + 1, gay)) ? gax + 1 : gax - 1;
+  g.ent({ id: 'holeG', kind: 'hole', x: bx, y: gay, dir: 'down', to: 'town', tx: 14, ty: 10, tdir: 'down', ask: '새봄마을로 돌아가는 벚나무 길이다. 돌아갈까?' });
+}
 link('town', 'E', 'gradroad', 'W'); link('gradroad', 'E', 'gradhill', 'W'); // 새봄마을 동쪽 → 졸업 길 → 졸업 언덕 (2026-11-10 선생님 요청: 다시 봄으로. 얼음호수시티에서는 좌표 종이비행기로)
 // 체육관 문 연결: townGen 에서 gym 방 출구를 설정
 // ================= 연결 =================
@@ -2981,7 +2998,7 @@ const stgMul = s => s >= 0 ? (2 + s) / 2 : 2 / (2 - s);
 
 // ---------- 포획 확률표 (기획서 4.2): 정답일 때 상대 체력에 따라 60/80/95%, 특별 몬스터는 40/60/80% ----------
 // 정답인데 놓치면 그 몬스터는 다음 정답에서 반드시 잡힌다 (e.pity)
-const RARE = new Set(['xdragon', 'zero', 'fishr', 'rainbow', 'deer']); // 희귀한 계열 (특별 몬스터 포획률)
+const RARE = new Set(['xdragon', 'zero', 'fishr', 'rainbow', 'deer', 'sunlion']); // 희귀한 계열 (특별 몬스터 포획률)
 const isSpecialMon = sp => LEGENDS.includes(sp) || RARE.has(lineInfo(sp).root);
 const CATCH_LABEL = sp => isSpecialMon(sp) ? '어려움' : '보통';
 function catchChance(e) {
@@ -3326,7 +3343,7 @@ function onArrive() {
   if (S.keys.egg && S.egg > 0) { S.egg--; if (S.egg === 0) { run(hatchEgg); return; } }
   if (checkSight()) return;
   const wild = t === ',' ? CUR.wild : (t === '~' ? CUR.water : null);
-  if (wild && S.party.length && Math.random() < (t === '~' ? .08 : .11)) run(() => wildBattle(wild));
+  if (wild && S.party.length && Math.random() < (t === '~' ? .08 : (CUR.encRate || .11))) run(() => wildBattle(wild)); // encRate: 지도마다 풀숲 만남 확률 (졸업 길 22%)
 }
 async function hatchEgg() {
   await sayAll(['……오잉!?', '수상한 알이 흔들리기 시작했다…!']);
@@ -3776,6 +3793,7 @@ H.stele = async e => {
 };
 // 굴·구멍: 말을 걸면 다른 지도로 (히든 맵 입구·출구)
 H.hole = async e => {
+  if (e.cond && !e.cond()) return say(e.locked); // 아직 열리지 않은 입구 (새봄마을 벚나무: 배지 8개)
   await say(e.ask, { wait: false });
   if (!await yesno()) return;
   SFX.sel(); await warpTo(e.to, e.tx, e.ty, e.tdir);
@@ -4254,7 +4272,7 @@ async function wildBattle(w) {
   // grad: 입구 쪽은 낮은 레벨, 'N'은 북쪽·'E'는 동쪽 끝으로 갈수록 높은 레벨 (±1)
   if (w.grad) { const k = w.grad === 'E' ? P.x / (CUR.w - 1) : 1 - P.y / (CUR.h - 1); lv = clamp(w.lv[0] + Math.round((w.lv[1] - w.lv[0]) * k) + R(-1, 1), w.lv[0], w.lv[1]); }
   if (SP[sp].evo && lv >= SP[sp].evo[0] && Math.random() < .4) sp = evolveFor(sp, lv);
-  await battle({ kind: 'wild', team: [mkMon(sp, lv, false, HPMUL.wild)] });
+  await battle({ kind: 'wild', team: [mkMon(sp, lv, false, CUR.wildHp || HPMUL.wild)] }); // wildHp: 지도마다 야생 체력 배율 (졸업 길 1.3배)
 }
 async function popMon(side) {
   const a = B.a; SFX.ball();
