@@ -3555,14 +3555,30 @@ H.tutor = async () => {
     if (toIndex !== fromIndex) { const [picked] = m.moves.splice(fromIndex, 1); m.moves.splice(toIndex, 0, picked); save(); }
     return say(toIndex === fromIndex ? '기술 순서는 그대로 두었단다.' : `${jo(monName(m), '은는')} 기술 순서를 바꿨어! 비용은 무료란다.`);
   }
-  const from = {}; for (const k in SP) if (SP[k].evo) from[SP[k].evo[1]] = k;
-  const chain = []; for (let s2 = m.sp, g = 0; s2 && g < 5; s2 = from[s2], g++) chain.push(s2);
+  // 현재 종부터 진화 전 단계까지 거슬러 올라가며, 레벨 조건을 만족한 기술을 모은다.
+  // 순환 참조와 누락된 learn 배열을 방어하고, 진화 계열 밖의 기술은 섞이지 않게 한다.
+  const from = Object.create(null);
+  for (const [key, data] of Object.entries(SP)) {
+    if (data && data.evo && data.evo[1] && !from[data.evo[1]]) from[data.evo[1]] = key;
+  }
+  const chain = [], visited = new Set();
+  for (let s2 = m.sp; s2 && SP[s2] && !visited.has(s2) && chain.length < 12; s2 = from[s2]) {
+    visited.add(s2); chain.push(s2);
+  }
+  const known = new Set(m.moves);
   const cand = [];
-  for (const s2 of chain) for (const l of SP[s2].learn) if (l.lv <= m.lvl && !m.moves.includes(l.name) && !cand.includes(l.name) && MOVES[l.name]) cand.push(l.name);
+  for (const s2 of chain) {
+    const learnset = Array.isArray(SP[s2].learn) ? SP[s2].learn : [];
+    for (const l of learnset) {
+      if (!l || !Number.isFinite(Number(l.lv)) || Number(l.lv) > Number(m.lvl)) continue;
+      if (typeof l.name !== 'string' || known.has(l.name) || !MOVES[l.name]) continue;
+      known.add(l.name); cand.push(l.name);
+    }
+  }
   if (!cand.length) return say(`기술 떠올리기 선생님: ${jo(monName(m), '이가')} 떠올릴 기술이 없구나.`);
   const row = n => { const x = MOVES[n]; return `<span class="grow">${n}${x.eff ? ` <span class="sm">(${EFF_INFO[x.eff][0]})</span>` : ''}<br><span class="sm"><b class="ty" style="background:${TYPE_COL[x.type]}">${x.type}</b> 사용 횟수 ${x.pp}</span></span>`; };
   const j = await chooseList({ title: `${jo(monName(m), '이가')} 떠올릴 기술`, sub: `지금 기술: ${m.moves.join(', ')}`, rows: cand.map(row), foot: 'A: 고르기 · B: 그만두기' });
-  if (j < 0) return say('기술 떠올리기 선생님: 언제든 다시 오렴.');
+  if (!Number.isInteger(j) || j < 0 || j >= cand.length) return say('기술 떠올리기 선생님: 언제든 다시 오렴.');
   const RECALL_COST = 1000;
   if (S.money < RECALL_COST) return say(`기술 떠올리기 선생님: 기술을 되살리려면 1,000원이 필요하단다. 지금은 ${S.money}원 있구나.`);
   const r = await quiz(pickUnit(), { title: '기술 떠올리기! 맞히면 성공' });
