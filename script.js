@@ -3795,9 +3795,17 @@ H.multiplayer = async () => {
     }
     await say('상대 트레이너를 찾았어!\n상대: ' + ((room.opponent && room.opponent.displayName) || '트레이너') + '\n방 연결을 확인하고 있어.');
     await onlineConnectRoom(base, room);
-    return say(mode === 'battle'
-      ? '온라인 대전 방 연결을 확인했어! 다만 실제 전투 화면과 서버 판정은 아직 연결되지 않았어.'
-      : '온라인 교환 방 연결을 확인했어! 다만 사계몬 소유권 검증과 실제 교환 확정은 아직 구현되지 않았어.');
+    if (mode === 'battle') {
+      // 양쪽 접속 확인만 수행한다. 전투 명령/피해 판정은 아직 게임 로직에 연결하지 않는다.
+      onlineSend('battle_action', { action: 'ready', protocol: 1 });
+      await say('대전 방에 접속했어! 상대 트레이너의 준비를 확인하고 있어.');
+      const ready = await onlineWaitPacket('battle_action', 60000);
+      if (!ready || !ready.payload || ready.payload.action !== 'ready' || ready.payload.protocol !== 1) {
+        throw new Error('battle_protocol_mismatch');
+      }
+      return say('두 트레이너의 접속이 확인됐어!\n다음 단계에서 실제 사계몬 대전 화면과 턴 진행을 연결할게.');
+    }
+    return say('온라인 교환 방 연결을 확인했어! 다만 사계몬 소유권 검증과 실제 교환 확정은 아직 구현되지 않았어.');
   } catch (error) {
     const messages = {
       Failed_to_fetch: '서버에 연결할 수 없어. 주소와 서버 배포 상태를 확인해 줘.',
