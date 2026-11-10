@@ -212,7 +212,7 @@ export class Lobby {
           if (!Number.isInteger(p.turn) || p.turn < 1 || p.turn > 500 ||
               !Number.isInteger(p.moveIndex) || p.moveIndex < 0 || p.moveIndex > 3) return;
           const state = (await this.ctx.storage.get("battle:" + meta.roomId)) || { ready: [], rosters: [], turn: 1, actions: {} };
-          if (state.ready.length !== 2 || p.turn !== state.turn || state.actions[meta.playerId]) return;
+          if (state.ready.length !== 2 || state.rosters.length !== 2 || p.turn !== state.turn || state.actions[meta.playerId]) return;
           state.actions[meta.playerId] = { moveIndex: p.moveIndex, at: Date.now() };
           const players = room.players.map(x => x.playerId);
           if (players.every(id => state.actions[id])) {
