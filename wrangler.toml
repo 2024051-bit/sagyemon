@@ -1,0 +1,15 @@
+name = "sagyemon-online"
+main = "server/worker.js"
+compatibility_date = "2026-11-10"
+
+[[durable_objects.bindings]]
+name = "LOBBY"
+class_name = "Lobby"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Lobby"]
+
+[vars]
+# 배포 전에 실제 게임 사이트 주소로 바꾸세요.
+ALLOWED_ORIGIN = "https://YOUR-GAME-DOMAIN.example"
