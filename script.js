@@ -3825,6 +3825,65 @@ function onlineValidateRosterPreview(packet) {
   };
 }
 
+async function onlineRunBattleTurn(turn) {
+  const room = ONLINE_ROOM;
+  if (!room || !Array.isArray(room.localTeam) || !room.opponentRoster) throw new Error('battle_protocol_mismatch');
+  if (!Number.isInteger(room.activeLocal)) room.activeLocal = 0;
+  if (!Number.isInteger(room.activeOpponent)) room.activeOpponent = 0;
+  const active = room.localTeam[room.activeLocal];
+  let action = null;
+  if (!active || active.hp <= 0) {
+    await say('현재 사계몬이 기절했어. 먼저 교체해야 해!');
+    action = 'switch_mon';
+  } else {
+    const selected = await choose(['기술 사용', '사계몬 교체'], { cls: 'start', cancel: false });
+    action = selected === 1 ? 'switch_mon' : 'choose_move';
+  }
+  let submitted;
+  if (action === 'switch_mon') {
+    const indexes = room.localTeam.map((mon, index) => mon && mon.hp > 0 && index !== room.activeLocal ? index : -1).filter(index => index >= 0);
+    if (!indexes.length) {
+      if (!active || active.hp <= 0) return { finished: true, result: 'lose' };
+      await say('교체할 사계몬이 없어. 기술을 선택할게.');
+      action = 'choose_move';
+    } else {
+      const pick = await choose(indexes.map(index => {
+        const mon = room.localTeam[index];
+        return (index + 1) + '. ' + (mon.nick || (SP[mon.sp] && SP[mon.sp].name) || '사계몬') + ' · HP ' + mon.hp + '/' + mon.maxhp;
+      }), { cls: 'start', cancel: false });
+      submitted = { action: 'switch_mon', teamIndex: indexes[pick] };
+    }
+  }
+  if (action === 'choose_move') {
+    const moves = movesOf(active).slice(0, 4);
+    if (!moves.length) throw new Error('battle_protocol_mismatch');
+    const pick = await choose(moves.map(move => move.name + ' · ' + move.type + ' · 위력 ' + move.power), { cls: 'start', cancel: false });
+    submitted = { action: 'choose_move', moveIndex: pick };
+  }
+  onlineSend('battle_action', { turn, ...submitted });
+  await say('턴 ' + turn + ': 상대의 행동을 기다리는 중이야.');
+  const packet = await onlineWaitPacket('battle_action', 60000);
+  const payload = packet && packet.payload;
+  if (!payload || payload.action !== 'turn_choices' || payload.turn !== turn || !Array.isArray(payload.choices) || payload.choices.length !== 2 || !Array.isArray(payload.resolutionOrder)) throw new Error('battle_protocol_mismatch');
+  const ownId = room.playerId || onlinePlayerId();
+  if (!payload.choices.some(choice => choice.playerId === ownId)) throw new Error('battle_protocol_mismatch');
+  for (const step of payload.resolutionOrder) {
+    const choice = payload.choices.find(item => item.playerId === step.playerId);
+    if (!choice || choice.action !== step.action) throw new Error('battle_protocol_mismatch');
+    if (choice.action === 'switch_mon') {
+      if (choice.playerId === ownId) room.activeLocal = choice.teamIndex;
+      else room.activeOpponent = choice.teamIndex;
+    }
+  }
+  if (submitted.action === 'switch_mon') {
+    const mon = room.localTeam[room.activeLocal];
+    await say('교체! ' + (mon.nick || (SP[mon.sp] && SP[mon.sp].name) || '사계몬') + '이(가) 전투에 나섰어.');
+  } else {
+    await say('양쪽 행동을 확인했어. 공격 실행과 피해 판정은 아직 연결 중이야.');
+  }
+  return { finished: false, choices: payload.choices, resolutionOrder: payload.resolutionOrder };
+}
+
 function onlineSendHpUpdate(teamIndex, mon) {
   if (!Number.isInteger(teamIndex) || teamIndex < 0 || teamIndex > 2 || !mon ||
       !Number.isInteger(mon.hp) || !Number.isInteger(mon.maxhp) ||
@@ -3922,7 +3981,11 @@ H.multiplayer = async () => {
       if (!startedPacket || !startedPacket.payload || startedPacket.payload.protocol !== 2 || startedPacket.payload.firstTurn !== 1) throw new Error('battle_protocol_mismatch');
       await say('두 트레이너의 접속이 확인됐어!');
       await say(opponentRoster.trainer + '의 사계몬 팀을 확인했어.\n' + opponentRoster.party.map((m, i) => (i + 1) + '. ' + (m.nickname || m.species) + ' Lv.' + m.level + ' · ' + m.types.join('/')).join('\n'));
-      return say('서버가 양쪽 팀을 확인하고 대전 시작을 승인했어! 실제 전투 화면과 기술 효과 판정은 다음 단계에서 연결해야 해.');
+      if (ONLINE_ROOM) ONLINE_ROOM.playerId = playerId;
+      await say('3대3 온라인 대전이 시작됐어! 행동을 선택해 줘. 교체는 공격보다 먼저 처리돼.');
+      const firstTurn = await onlineRunBattleTurn(1);
+      if (firstTurn.finished) return say('출전할 수 있는 사계몬이 없어 대전이 종료됐어.');
+      return say('첫 턴의 행동이 양쪽에 전달됐어. 교체를 먼저 반영했으며, 실제 공격 피해 계산은 다음 단계에서 연결할게.');
     }
     return say('온라인 교환 방 연결을 확인했어! 다만 사계몬 소유권 검증과 실제 교환 확정은 아직 구현되지 않았어.');
   } catch (error) {
