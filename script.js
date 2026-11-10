@@ -3138,7 +3138,15 @@ function natureText(m) {
   const labels = { atk: '공격', def: '방어', spa: '특공', spd: '특방', spe: '스피드' };
   return n.up ? `${n.name} (+${labels[n.up]} / −${labels[n.down]})` : n.name;
 }
-function monRow(m, extra = '') { return `<img src="${icon(m.sp)}" alt=""><span class="grow">${monName(m)} <span class="sm">Lv.${m.lvl} · ${natureText(m)}${m.hp <= 0 ? ' · 기절' : m.status ? ' · ' + ST_NAME[m.status] : ''}${m.held && ITEMS[m.held] ? ' · ' + ITEMS[m.held].name : ''}${extra}</span></span>${hpRow(m)}`; }
+const ABILITY_INFO = {
+  '맹공': '물리 기술의 피해량이 10% 증가한다.',
+  '집중력': '특수 기술의 피해량이 10% 증가한다.',
+  '강철피부': '받는 물리 기술의 피해량이 10% 감소한다.',
+  '정신장벽': '받는 특수 기술의 피해량이 10% 감소한다.',
+  '질주': '스피드가 10% 증가한다.'
+};
+function abilityText(m) { const a = m && m.ability; return a ? `${a} · ${ABILITY_INFO[a] || '특성 효과'}` : '특성 미정'; }
+function monRow(m, extra = '') { return `<img src="${icon(m.sp)}" alt=""><span class="grow">${monName(m)} <span class="sm">Lv.${m.lvl} · ${natureText(m)} · ${abilityText(m)}${m.hp <= 0 ? ' · 기절' : m.status ? ' · ' + ST_NAME[m.status] : ''}${m.held && ITEMS[m.held] ? ' · ' + ITEMS[m.held].name : ''}${extra}</span></span>${hpRow(m)}`; }
 
 // ---------- 퀴즈 ----------
 let lastQ = null;
