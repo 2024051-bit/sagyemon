@@ -386,7 +386,7 @@ export class Lobby {
       }
       return;
     }
-    if (room.mode === "trade" && ["trade_offer", "trade_accept", "trade_declined", "trade_commit"].includes(packet.type)) {
+    if (room.mode === "trade" && ["trade_offer", "trade_accept", "trade_declined", "trade_commit", "trade_receipt"].includes(packet.type)) {
       const p = packet.payload;
       if (!p) return;
       const packetId = packet.type === "trade_offer" ? p.offer && p.offer.id : p.id;
@@ -434,6 +434,10 @@ export class Lobby {
             !Array.isArray(mon.moves) || mon.moves.length > 4 || !mon.moves.every(x => typeof x === "string" && x.length <= 20)) return;
         state.committed = true;
         await this.ctx.storage.put(key, state);
+        this.broadcast(meta.roomId, ws, packet);
+        return;
+      }
+      if (packet.type === "trade_receipt" && meta.playerId !== state.proposer && state.committed) {
         this.broadcast(meta.roomId, ws, packet);
         await this.ctx.storage.delete(key);
         return;
