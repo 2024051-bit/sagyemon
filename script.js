@@ -4111,20 +4111,29 @@ async function onlineRunTrade() {
     offer = { id: onlinePlayerId() + '_' + Date.now().toString(36), mon: onlineTradeMonSnapshot(S.party[localIndex]) };
     onlineSend('trade_offer', { offer });
     await say('교환 제안을 보냈어. 상대의 응답을 기다릴게.');
-    const response = await onlineWaitPacket(['trade_accept', 'trade_declined', 'peer_left'], 60000);
+    let response;
+    try {
+      response = await onlineWaitPacket(['trade_accept', 'trade_declined', 'trade_cancel', 'peer_left'], 60000);
+    } catch (error) {
+      try { onlineSend('trade_cancel', { id: offer.id, reason: 'offer_timeout' }); } catch (e) {}
+      throw error;
+    }
     if (response.type === 'peer_left') throw new Error('trade_peer_disconnected');
+    if (response.type === 'trade_cancel') return say('상대 또는 서버가 교환을 취소했어.');
     if (response.type === 'trade_declined') return say('상대가 교환을 거절했어.');
     if (!response.payload || response.payload.id !== offer.id || response.payload.phase !== 'accepted' || !onlineValidateTradeMon(response.payload.mon)) throw new Error('trade_protocol_mismatch');
     // 먼저 상대의 데이터를 수신하고 서버에 최종 전달한다. 수신 확인 전에는 내 파티를 변경하지 않는다.
     onlineSend('trade_commit', { id: offer.id, mon: offer.mon });
-    const receipt = await onlineWaitPacket(['trade_receipt', 'peer_left'], 15000);
+    const receipt = await onlineWaitPacket(['trade_receipt', 'trade_cancel', 'peer_left'], 15000);
     if (receipt.type === 'peer_left') throw new Error('trade_peer_disconnected');
+    if (receipt.type === 'trade_cancel') return say('교환이 취소됐어. 파티는 변경하지 않았어.');
     if (!receipt.payload || receipt.payload.id !== offer.id) throw new Error('trade_protocol_mismatch');
     onlineApplyTrade(localIndex, offer.mon, response.payload.mon);
     return say('교환 데이터 전달이 확인됐어. 새로운 사계몬이 동료가 됐어.');
   }
-  const packet = await onlineWaitPacket(['trade_offer', 'peer_left'], 60000);
+  const packet = await onlineWaitPacket(['trade_offer', 'trade_cancel', 'peer_left'], 60000);
   if (packet.type === 'peer_left') throw new Error('trade_peer_disconnected');
+  if (packet.type === 'trade_cancel') return say('상대 또는 서버가 교환을 취소했어.');
   offer = packet && packet.payload && packet.payload.offer;
   if (!offer || typeof offer.id !== 'string' || offer.id.length > 100 || !onlineValidateTradeMon(offer.mon)) throw new Error('trade_protocol_mismatch');
   await say('상대가 교환을 제안했어.\n' + monName(offer.mon) + ' · Lv.' + offer.mon.lvl);
@@ -4144,8 +4153,15 @@ async function onlineRunTrade() {
   }
   const outgoing = onlineTradeMonSnapshot(S.party[localIndex]);
   onlineSend('trade_accept', { id: offer.id, phase: 'accepted', mon: outgoing });
-  const committed = await onlineWaitPacket(['trade_commit', 'peer_left'], 15000);
+  let committed;
+  try {
+    committed = await onlineWaitPacket(['trade_commit', 'trade_cancel', 'peer_left'], 15000);
+  } catch (error) {
+    try { onlineSend('trade_cancel', { id: offer.id, reason: 'commit_timeout' }); } catch (e) {}
+    throw error;
+  }
   if (committed.type === 'peer_left') throw new Error('trade_peer_disconnected');
+  if (committed.type === 'trade_cancel') return say('상대가 교환을 취소했어.');
   if (!committed.payload || committed.payload.id !== offer.id || !onlineValidateTradeMon(committed.payload.mon)) throw new Error('trade_protocol_mismatch');
   // 제안자의 최종 전송을 받은 뒤에만 수신자의 파티를 갱신한다.
   onlineApplyTrade(localIndex, outgoing, committed.payload.mon);
