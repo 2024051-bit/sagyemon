@@ -3488,7 +3488,7 @@ H.tutor = async () => {
     if (fromIndex < 0) return say('기술 순서 변경을 취소했다.');
     const toIndex = await chooseList({ title: '어느 위치로 옮길까?', sub: '선택한 기술을 이 위치로 이동해요', rows: m.moves.map((n, k) => `<span class="grow">${k + 1}번 자리 · ${n}</span>`), start: fromIndex });
     if (toIndex < 0) return say('기술 순서 변경을 취소했다.');
-    if (toIndex !== fromIndex) { const [picked] = m.moves.splice(fromIndex, 1); m.moves.splice(toIndex, 0, picked); save(); hud(); }
+    if (toIndex !== fromIndex) { const [picked] = m.moves.splice(fromIndex, 1); m.moves.splice(toIndex, 0, picked); save(); }
     return say(toIndex === fromIndex ? '기술 순서는 그대로 두었단다.' : `${jo(monName(m), '은는')} 기술 순서를 바꿨어! 비용은 무료란다.`);
   }
   const from = {}; for (const k in SP) if (SP[k].evo) from[SP[k].evo[1]] = k;
@@ -3505,7 +3505,7 @@ H.tutor = async () => {
   if (!r.ok) return say('기술 떠올리기 선생님: 아쉽구나! 해설을 읽고 다시 도전하렴. 돈은 받지 않았단다.');
   await say(`기술 떠올리기 선생님: 좋아! ${jo(monName(m), '이가')} ${jo(cand[j], '을를')} 떠올리기 시작했다…!`);
   const learned = await learnMove(m, cand[j]);
-  if (learned) { S.money -= RECALL_COST; await say('기술 회상 비용 1,000원을 냈다!'); }
+  if (learned) { S.money -= RECALL_COST; save(); await say('기술 회상 비용 1,000원을 냈다!'); }
   else await say('기술을 배우지 않아 비용은 받지 않았단다.');
 };
 H.eggaide = async () => {
