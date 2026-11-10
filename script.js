@@ -709,6 +709,15 @@ function secOf(n, type) {
   for (const k2 in COVER) { const [ct, cn] = COVER[k2]; if (!MOVES[cn]) MOVES[cn] = { name: cn, type: ct, power: 85, pp: 10, sec: secOf(cn, ct) }; }
   MOVES['발버둥'] = { name: '발버둥', type: '노말', power: 30, pp: 0, struggle: true };
 }
+// 기술 분류·명중률·우선도 기본값. 타입 기반 분류는 기술별 데이터가 정착되기 전의 초기 규칙.
+{
+  const PHYSICAL_TYPES = new Set(['노말', '격투', '비행', '독', '땅', '바위', '벌레', '고스트', '강철']);
+  for (const mv of Object.values(MOVES)) {
+    mv.category = mv.eff ? 'status' : (PHYSICAL_TYPES.has(mv.type) ? 'physical' : 'special');
+    if (mv.accuracy == null) mv.accuracy = 100;
+    if (mv.priority == null) mv.priority = 0;
+  }
+}
 // 상태이상은 쓰지 않는다 (기획서 4.7): 상태이상 기술은 능력치를 내리는 기술로 바꾸고, 공격 기술에 붙은 상태이상은 없앤다
 {
   const TO = { sleep: 'atkdn', par: 'defdn', burn: 'atkdn', conf: 'defdn' };
@@ -4416,11 +4425,14 @@ async function battle(o) {
   return result;
 }
 async function setHP(m, v) { m.hp = clamp(Math.round(v), 0, m.maxhp); hud(); await sleep(400); }
-function dmgCalc(att, def, power, mult) {
-  const A = att.atk * stgMul((att.stg || {}).atk || 0) * (att.status === 'brn' ? .75 : 1), D = def.def * stgMul((def.stg || {}).def || 0);
-  const base = (att.lvl * .2 + 2) * power * (A / D) / 10; return Math.max(1, Math.round(base * mult * (.85 + Math.random() * .15)));
+function dmgCalc(att, def, power, mult, category = 'physical') {
+  const atkKey = category === 'special' ? 'spa' : 'atk', defKey = category === 'special' ? 'spd' : 'def';
+  const A = (att[atkKey] || att.atk) * stgMul((att.stg || {})[atkKey] || (att.stg || {}).atk || 0) * (att.status === 'brn' && category === 'physical' ? .75 : 1);
+  const D = (def[defKey] || def.def) * stgMul((def.stg || {})[defKey] || (def.stg || {}).def || 0);
+  const base = (att.lvl * .2 + 2) * power * (A / Math.max(1, D)) / 10;
+  return Math.max(1, Math.round(base * mult * (.85 + Math.random() * .15)));
 }
-function stab(sp, type) { return spTypes(sp).includes(type) && type !== '노말' ? 1.2 : 1; }
+function stab(sp, type) { return spTypes(sp).includes(type) ? 1.5 : 1; }
 // 효과: 공격하는 "기술의 타입"과 맞는 "상대 사계몬의 타입"으로 정해진다
 async function effMsg(m) { if (m > 1) await say('효과가 굉장했다!'); else if (m <= .2) await say('효과가 거의 없는 것 같다…'); else if (m < 1) await say('효과가 별로인 듯하다…'); }
 const nameOf = (m, side) => side === 'p' ? monName(m) : `${B.o.kind === 'wild' ? '야생 ' : isWildKind(B.o.kind) ? '' : '상대 '}${monName(m)}`;
@@ -4485,7 +4497,7 @@ async function doMove(user, target, mv, side, { fast }) {
   if (tside === 'e') { B.a.eBlink = true; await tween(380, k => B.a.eX = Math.sin(k * Math.PI * 4) * 4); B.a.eBlink = false; B.a.eX = 0; }
   else { B.a.pBlink = true; await tween(380, k => B.a.pX = Math.sin(k * Math.PI * 4) * 4); B.a.pBlink = false; B.a.pX = 0; }
   const mult = (side === 'p' ? PDMG : (EDMG[B.o.kind] || 1)) * eff * stab(user.sp, mv.type) * (fast ? 1.5 : 1);
-  const dmg = dmgCalc(user, target, mv.power, mult);
+  const dmg = dmgCalc(user, target, mv.power, mult, mv.category);
   await setHP(target, target.hp - dmg);
   if (fast) await say('급소에 맞았다!');
   await effMsg(eff);
