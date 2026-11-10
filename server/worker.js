@@ -385,8 +385,55 @@ export class Lobby {
       }
       return;
     }
-    if (room.mode === "trade" && ["trade_offer", "trade_accept"].includes(packet.type)) {
-      // 교환은 아직 소유권 검증/원자적 이전이 없으므로 검증 없는 패킷을 확정으로 처리하지 않는다.
+    if (room.mode === "trade" && ["trade_offer", "trade_accept", "trade_declined", "trade_commit"].includes(packet.type)) {
+      const p = packet.payload;
+      if (!p || typeof p.id !== "string" || p.id.length < 8 || p.id.length > 100) return;
+      const key = "trade:" + meta.roomId;
+      const state = (await this.ctx.storage.get(key)) || { offerId: null, proposer: null, accepted: false, committed: false };
+      if (packet.type === "trade_offer") {
+        const mon = p.offer && p.offer.mon;
+        if (state.offerId || !p.offer || p.offer.id !== p.id && p.id !== undefined ||
+            !mon || !Number.isInteger(mon.sp) || mon.sp < 0 || !Number.isInteger(mon.lvl) ||
+            mon.lvl < 1 || mon.lvl > 100 || !Number.isInteger(mon.hp) ||
+            !Number.isInteger(mon.maxhp) || mon.maxhp < 1 || mon.hp < 0 || mon.hp > mon.maxhp ||
+            !Array.isArray(mon.moves) || mon.moves.length > 4 || !mon.moves.every(x => typeof x === "string" && x.length <= 20)) return;
+        state.offerId = p.offer.id;
+        state.proposer = meta.playerId;
+        state.accepted = false;
+        state.committed = false;
+        await this.ctx.storage.put(key, state);
+        this.broadcast(meta.roomId, ws, packet);
+        return;
+      }
+      if (!state.offerId || p.id !== state.offerId || state.proposer === meta.playerId) return;
+      if (packet.type === "trade_declined") {
+        this.broadcast(meta.roomId, ws, packet);
+        await this.ctx.storage.delete(key);
+        return;
+      }
+      if (packet.type === "trade_accept" && p.phase === "accepted") {
+        const mon = p.mon;
+        if (!mon || !Number.isInteger(mon.sp) || mon.sp < 0 || !Number.isInteger(mon.lvl) ||
+            mon.lvl < 1 || mon.lvl > 100 || !Number.isInteger(mon.hp) ||
+            !Number.isInteger(mon.maxhp) || mon.maxhp < 1 || mon.hp < 0 || mon.hp > mon.maxhp ||
+            !Array.isArray(mon.moves) || mon.moves.length > 4 || !mon.moves.every(x => typeof x === "string" && x.length <= 20)) return;
+        state.accepted = true;
+        await this.ctx.storage.put(key, state);
+        this.broadcast(meta.roomId, ws, packet);
+        return;
+      }
+      if (packet.type === "trade_commit" && meta.playerId === state.proposer && state.accepted && !state.committed) {
+        const mon = p.mon;
+        if (!mon || !Number.isInteger(mon.sp) || mon.sp < 0 || !Number.isInteger(mon.lvl) ||
+            mon.lvl < 1 || mon.lvl > 100 || !Number.isInteger(mon.hp) ||
+            !Number.isInteger(mon.maxhp) || mon.maxhp < 1 || mon.hp < 0 || mon.hp > mon.maxhp ||
+            !Array.isArray(mon.moves) || mon.moves.length > 4 || !mon.moves.every(x => typeof x === "string" && x.length <= 20)) return;
+        state.committed = true;
+        await this.ctx.storage.put(key, state);
+        this.broadcast(meta.roomId, ws, packet);
+        await this.ctx.storage.delete(key);
+        return;
+      }
       return;
     }
   }
