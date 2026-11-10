@@ -172,6 +172,12 @@ export class Lobby {
     this.ctx.acceptWebSocket(server, [roomId]);
     server.serializeAttachment({ roomId, playerId });
     server.send(JSON.stringify({ type: "connected", roomId, mode: room.mode }));
+    // 방에 먼저 들어와 있던 상대에게 새 참가자의 접속을 알린다.
+    for (const peer of this.ctx.getWebSockets(roomId)) {
+      if (peer !== server && peer.readyState === WebSocket.OPEN) {
+        try { peer.send(JSON.stringify({ type: "peer_joined", playerId })); } catch {}
+      }
+    }
     return new Response(null, { status: 101, webSocket: client });
   }
   webSocketMessage(ws, message) {
