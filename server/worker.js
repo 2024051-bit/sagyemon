@@ -295,7 +295,8 @@ export class Lobby {
         const state = (await this.ctx.storage.get("battle:" + meta.roomId)) || { ready: [], rosters: [], rosterData: {}, hpState: {}, turn: 1, actions: {} };
         if (!state.rosterData) state.rosterData = {};
         if (!state.hpState) state.hpState = {};
-        if (!state.rosters.includes(meta.playerId)) state.rosters.push(meta.playerId);
+        if (state.started || state.rosters.includes(meta.playerId)) return;
+        state.rosters.push(meta.playerId);
         state.rosterData[meta.playerId] = p.roster.party;
         state.hpState[meta.playerId] = p.roster.party.map(mon => ({ hp: mon.hp, maxhp: mon.maxhp }));
         const starting = state.rosters.length === 2 && !state.started;
