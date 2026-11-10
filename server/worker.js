@@ -216,7 +216,11 @@ export class Lobby {
           const state = (await this.ctx.storage.get("battle:" + meta.roomId)) || { ready: [], rosters: [], turn: 1, actions: {}, activeTeam: {} };
           if (!state.activeTeam) state.activeTeam = {};
           if (state.ready.length !== 2 || state.rosters.length !== 2 || !state.started || p.turn !== state.turn || state.actions[meta.playerId]) return;
-          if (p.action === "switch_mon" && p.teamIndex === (Number.isInteger(state.activeTeam[meta.playerId]) ? state.activeTeam[meta.playerId] : 0)) return;
+          if (p.action === "switch_mon") {
+            const activeIndex = Number.isInteger(state.activeTeam[meta.playerId]) ? state.activeTeam[meta.playerId] : 0;
+            const targetHp = state.hpState && state.hpState[meta.playerId] && state.hpState[meta.playerId][p.teamIndex];
+            if (p.teamIndex === activeIndex || !targetHp || targetHp.hp <= 0) return;
+          }
           state.actions[meta.playerId] = p.action === "choose_move"
             ? { action: "choose_move", moveIndex: p.moveIndex, at: Date.now() }
             : { action: "switch_mon", teamIndex: p.teamIndex, at: Date.now() };
@@ -264,6 +268,9 @@ export class Lobby {
         if (!member || member.maxhp !== p.maxhp) return;
         if (!state.hpState) state.hpState = {};
         if (!state.hpState[meta.playerId]) state.hpState[meta.playerId] = state.rosterData[meta.playerId].map(mon => ({ hp: mon.hp, maxhp: mon.maxhp }));
+        const previousHp = state.hpState[meta.playerId][p.teamIndex];
+        // 현재 온라인 전투 프로토콜에는 회복 판정이 없으므로 HP 갱신은 감소만 허용한다.
+        if (!previousHp || p.hp > previousHp.hp) return;
         state.hpState[meta.playerId][p.teamIndex] = { hp: p.hp, maxhp: p.maxhp };
         await this.ctx.storage.put("battle:" + meta.roomId, state);
         this.broadcast(meta.roomId, ws, {
