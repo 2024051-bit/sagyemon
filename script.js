@@ -3958,12 +3958,20 @@ async function onlineRunBattleTurn(turn) {
   const ownId = room.playerId || onlinePlayerId();
   if (!payload.choices.some(choice => choice.playerId === ownId)) throw new Error('battle_protocol_mismatch');
   const outcome = onlineBattleApplyTurn(room, payload, ownId);
-  if (submitted.action === 'switch_mon') {
-    const mon = room.localTeam[room.activeLocal];
-    await say('교체! ' + (mon.nick || (SP[mon.sp] && SP[mon.sp].name) || '사계몬') + '이(가) 전투에 나섰어.');
+  for (const choice of payload.choices) {
+    if (choice.action !== 'switch_mon') continue;
+    const isLocal = choice.playerId === ownId;
+    const team = isLocal ? room.localTeam : room.opponentRoster.party;
+    const index = isLocal ? room.activeLocal : room.activeOpponent;
+    const mon = team[index];
+    const label = mon && (mon.nick || mon.species || (mon.sp != null && SP[mon.sp] && SP[mon.sp].name)) || '사계몬';
+    await say((isLocal ? '내가 ' : '상대가 ') + label + '(으)로 교체했어.');
   }
   if (outcome.logs.length) await say(outcome.logs.join('\\n'));
-  if (outcome.localOut || outcome.opponentOut) return { finished: true, result: outcome.localOut ? 'lose' : 'win' };
+  if (outcome.localOut || outcome.opponentOut) {
+    const result = outcome.localOut && outcome.opponentOut ? 'draw' : outcome.localOut ? 'lose' : 'win';
+    return { finished: true, result };
+  }
   return { finished: false, choices: payload.choices, resolutionOrder: payload.resolutionOrder };
 }
 
@@ -4070,7 +4078,7 @@ H.multiplayer = async () => {
       while (turn <= 500) {
         const result = await onlineRunBattleTurn(turn);
         if (result.finished) {
-          await say(result.result === 'win' ? '축하해! 온라인 대전에서 승리했어!' : '아쉽지만 온라인 대전에서 패배했어.');
+          await say(result.result === 'draw' ? '양쪽 사계몬이 모두 기절했어. 무승부야!' : result.result === 'win' ? '축하해! 온라인 대전에서 승리했어!' : '아쉽지만 온라인 대전에서 패배했어.');
           return;
         }
         turn++;
