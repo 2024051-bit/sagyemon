@@ -4124,7 +4124,13 @@ async function onlineRunTrade() {
     if (!response.payload || response.payload.id !== offer.id || response.payload.phase !== 'accepted' || !onlineValidateTradeMon(response.payload.mon)) throw new Error('trade_protocol_mismatch');
     // 먼저 상대의 데이터를 수신하고 서버에 최종 전달한다. 수신 확인 전에는 내 파티를 변경하지 않는다.
     onlineSend('trade_commit', { id: offer.id, mon: offer.mon });
-    const receipt = await onlineWaitPacket(['trade_receipt', 'trade_cancel', 'peer_left'], 15000);
+    let receipt;
+    try {
+      receipt = await onlineWaitPacket(['trade_receipt', 'trade_cancel', 'peer_left'], 15000);
+    } catch (error) {
+      try { onlineSend('trade_cancel', { id: offer.id, reason: 'receipt_timeout' }); } catch (e) {}
+      throw error;
+    }
     if (receipt.type === 'peer_left') throw new Error('trade_peer_disconnected');
     if (receipt.type === 'trade_cancel') return say('교환이 취소됐어. 파티는 변경하지 않았어.');
     if (!receipt.payload || receipt.payload.id !== offer.id) throw new Error('trade_protocol_mismatch');
