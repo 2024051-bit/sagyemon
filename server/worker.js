@@ -208,15 +208,34 @@ export class Lobby {
           return;
         }
         // 실제 행동은 서버 턴 동기화가 준비된 이후에만 받을 수 있다.
-        if (p.action === "choose_move") {
-          if (!Number.isInteger(p.turn) || p.turn < 1 || p.turn > 500 ||
-              !Number.isInteger(p.moveIndex) || p.moveIndex < 0 || p.moveIndex > 3) return;
+        if (p.action === "choose_move" || p.action === "switch_mon") {
+          const validAction = p.action === "choose_move"
+            ? Number.isInteger(p.moveIndex) && p.moveIndex >= 0 && p.moveIndex <= 3
+            : Number.isInteger(p.teamIndex) && p.teamIndex >= 0 && p.teamIndex <= 2;
+          if (!Number.isInteger(p.turn) || p.turn < 1 || p.turn > 500 || !validAction) return;
           const state = (await this.ctx.storage.get("battle:" + meta.roomId)) || { ready: [], rosters: [], turn: 1, actions: {} };
           if (state.ready.length !== 2 || state.rosters.length !== 2 || !state.started || p.turn !== state.turn || state.actions[meta.playerId]) return;
-          state.actions[meta.playerId] = { moveIndex: p.moveIndex, at: Date.now() };
+          state.actions[meta.playerId] = p.action === "choose_move"
+            ? { action: "choose_move", moveIndex: p.moveIndex, at: Date.now() }
+            : { action: "switch_mon", teamIndex: p.teamIndex, at: Date.now() };
           const players = room.players.map(x => x.playerId);
           if (players.every(id => state.actions[id])) {
-            const result = { type: "battle_action", from: "server", payload: { action: "turn_choices", turn: state.turn, choices: players.map(id => ({ playerId: id, moveIndex: state.actions[id].moveIndex })) }, at: Date.now() };
+            const result = {
+              type: "battle_action",
+              from: "server",
+              payload: {
+                action: "turn_choices",
+                turn: state.turn,
+                choices: players.map(id => ({
+                  playerId: id,
+                  action: state.actions[id].action,
+                  ...(state.actions[id].action === "choose_move"
+                    ? { moveIndex: state.actions[id].moveIndex }
+                    : { teamIndex: state.actions[id].teamIndex })
+                }))
+              },
+              at: Date.now()
+            };
             state.turn += 1;
             state.actions = {};
             await this.ctx.storage.put("battle:" + meta.roomId, state);
