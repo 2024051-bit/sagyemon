@@ -4512,6 +4512,7 @@ async function playerMove(mv) {
     SFX.lvl(); await say('콤보 발동! 문제 없이 공격한다!', { wait: false }); await sleep(700);
     usePP(B.p, mv);
     await say(`${monName(B.p)}의 ${mv.name}!`, { wait: false }); await sleep(350); hud();
+    if (enemyActsBefore(mv)) { B.enemyActed = true; await enemyTurn(); if (B.p.hp <= 0 || B.e.hp <= 0) return; }
     await doMove(B.p, B.e, mv, 'p', { fast: false });
     return;
   }
