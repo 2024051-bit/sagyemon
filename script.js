@@ -3803,7 +3803,7 @@ function onlineRosterPreview(selectedIndexes, sourceParty = S.party) {
       stats: Object.fromEntries(['atk', 'def', 'spa', 'spd', 'spe'].map(key => [key, clamp(Math.floor(Number(m[key]) || 1), 1, 99999)])),
       types: spTypes(m.sp).slice(0, 2),
       ability: String(m.ability || '').slice(0, 12),
-      status: null,
+      status: m.status ? { type: String(m.status).slice(0, 4), turns: Math.max(0, Math.floor(Number(m.slp) || 0)) } : (m.conf ? { type: 'conf', turns: Math.max(0, Math.floor(Number(m.conf) || 0)) } : null),
       moves: movesOf(m).slice(0, 4).map(move => ({
         name: move.name, type: move.type, power: move.power,
         category: move.category, accuracy: move.accuracy,
@@ -3822,8 +3822,8 @@ function onlineValidateRosterPreview(packet) {
   return {
     trainer: String(data.trainer || '트레이너').slice(0, 16),
     party: data.party.map(mon => {
-      if (!mon || typeof mon.species !== 'string' || mon.species.length > 20 || !Number.isFinite(mon.level) || mon.level < 1 || mon.level > 100 || !Number.isInteger(mon.hp) || !Number.isInteger(mon.maxhp) || mon.maxhp < 1 || mon.hp < 1 || mon.hp > mon.maxhp || !mon.stats || !['atk', 'def', 'spa', 'spd', 'spe'].every(k => Number.isInteger(mon.stats[k]) && mon.stats[k] >= 1 && mon.stats[k] <= 99999) || !Array.isArray(mon.moves) || mon.moves.length > 4 || !mon.moves.every(m => m && typeof m.name === 'string' && m.name.length <= 20 && typeof m.type === 'string' && m.type.length <= 8 && Number.isInteger(m.power) && m.power >= 0 && m.power <= 300 && ['physical', 'special', 'status'].includes(m.category) && Number.isFinite(m.accuracy) && m.accuracy >= 1 && m.accuracy <= 100 && Number.isInteger(m.priority) && m.priority >= -5 && m.priority <= 5 && (m.eff == null || typeof m.eff === 'string') && (m.sec == null || (Array.isArray(m.sec) && m.sec.length === 2 && typeof m.sec[0] === 'string' && Number.isFinite(m.sec[1]) && m.sec[1] >= 0 && m.sec[1] <= 1)) && typeof m.charge === 'boolean' && typeof m.struggle === 'boolean' && Number.isInteger(m.pp) && m.pp >= 0 && m.pp <= 99 && Number.isInteger(m.maxpp) && m.maxpp >= 0 && m.maxpp <= 99 && m.pp <= m.maxpp) || !Array.isArray(mon.types) || mon.types.length > 2 || !mon.types.every(t => typeof t === 'string')) throw new Error('battle_protocol_mismatch');
-      return { species: mon.species.slice(0, 20), nickname: String(mon.nickname || '').slice(0, 8), level: Math.floor(mon.level), hp: mon.hp, maxhp: mon.maxhp, stats: { atk: mon.stats.atk, def: mon.stats.def, spa: mon.stats.spa, spd: mon.stats.spd, spe: mon.stats.spe }, types: mon.types.map(t => String(t).slice(0, 8)), ability: String(mon.ability || '').slice(0, 12), moves: mon.moves.map(m => ({ name: m.name.slice(0, 20), type: m.type.slice(0, 8), power: m.power, category: m.category, accuracy: m.accuracy, priority: m.priority, eff: m.eff || null, sec: m.sec || null, charge: m.charge, struggle: m.struggle, pp: m.pp, maxpp: m.maxpp })) };
+      if (!mon || typeof mon.species !== 'string' || mon.species.length > 20 || !Number.isFinite(mon.level) || mon.level < 1 || mon.level > 100 || !Number.isInteger(mon.hp) || !Number.isInteger(mon.maxhp) || mon.maxhp < 1 || mon.hp < 1 || mon.hp > mon.maxhp || !mon.stats || !['atk', 'def', 'spa', 'spd', 'spe'].every(k => Number.isInteger(mon.stats[k]) && mon.stats[k] >= 1 && mon.stats[k] <= 99999) || (mon.status != null && (!mon.status || !['slp', 'par', 'brn', 'conf'].includes(mon.status.type) || !Number.isInteger(mon.status.turns) || mon.status.turns < 0 || mon.status.turns > 10)) || !Array.isArray(mon.moves) || mon.moves.length > 4 || !mon.moves.every(m => m && typeof m.name === 'string' && m.name.length <= 20 && typeof m.type === 'string' && m.type.length <= 8 && Number.isInteger(m.power) && m.power >= 0 && m.power <= 300 && ['physical', 'special', 'status'].includes(m.category) && Number.isFinite(m.accuracy) && m.accuracy >= 1 && m.accuracy <= 100 && Number.isInteger(m.priority) && m.priority >= -5 && m.priority <= 5 && (m.eff == null || typeof m.eff === 'string') && (m.sec == null || (Array.isArray(m.sec) && m.sec.length === 2 && typeof m.sec[0] === 'string' && Number.isFinite(m.sec[1]) && m.sec[1] >= 0 && m.sec[1] <= 1)) && typeof m.charge === 'boolean' && typeof m.struggle === 'boolean' && Number.isInteger(m.pp) && m.pp >= 0 && m.pp <= 99 && Number.isInteger(m.maxpp) && m.maxpp >= 0 && m.maxpp <= 99 && m.pp <= m.maxpp) || !Array.isArray(mon.types) || mon.types.length > 2 || !mon.types.every(t => typeof t === 'string')) throw new Error('battle_protocol_mismatch');
+      return { species: mon.species.slice(0, 20), nickname: String(mon.nickname || '').slice(0, 8), level: Math.floor(mon.level), hp: mon.hp, maxhp: mon.maxhp, stats: { atk: mon.stats.atk, def: mon.stats.def, spa: mon.stats.spa, spd: mon.stats.spd, spe: mon.stats.spe }, types: mon.types.map(t => String(t).slice(0, 8)), ability: String(mon.ability || '').slice(0, 12), status: mon.status ? { type: mon.status.type, turns: mon.status.turns } : null, moves: mon.moves.map(m => ({ name: m.name.slice(0, 20), type: m.type.slice(0, 8), power: m.power, category: m.category, accuracy: m.accuracy, priority: m.priority, eff: m.eff || null, sec: m.sec || null, charge: m.charge, struggle: m.struggle, pp: m.pp, maxpp: m.maxpp })) };
     })
   };
 }
@@ -4006,6 +4006,13 @@ async function onlineRunBattleTurn(turn) {
   const ownId = room.playerId || onlinePlayerId();
   if (!payload.choices.some(choice => choice.playerId === ownId)) throw new Error('battle_protocol_mismatch');
   const outcome = onlineBattleApplyTurn(room, payload, ownId);
+  const activeStatus = room.localTeam[room.activeLocal] && room.localTeam[room.activeLocal].status;
+  if (activeStatus) {
+    const statusNames = { slp: '잠듦', par: '마비', brn: '화상', conf: '혼란' };
+    await say('내 사계몬 상태: ' + (statusNames[activeStatus.type] || '상태 이상') + (activeStatus.turns > 0 ? ' · 남은 턴 ' + activeStatus.turns : ''));
+  } else await say('내 사계몬 상태: 보통');
+  const enemyStatus = room.opponentRoster.party[room.activeOpponent] && room.opponentRoster.party[room.activeOpponent].status;
+  if (enemyStatus) await say('상대 사계몬에게도 ' + ({ slp: '잠듦', par: '마비', brn: '화상', conf: '혼란' }[enemyStatus.type] || '상태 이상') + ' 상태가 적용 중이야.');
   for (const choice of payload.choices) {
     if (choice.action !== 'switch_mon') continue;
     const isLocal = choice.playerId === ownId;
