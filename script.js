@@ -3835,9 +3835,11 @@ H.multiplayer = async () => {
       const previewPacket = await onlineWaitPacket('battle_state', 15000);
       if (!previewPacket || !previewPacket.payload || previewPacket.payload.action !== 'roster_preview') throw new Error('battle_protocol_mismatch');
       const opponentRoster = onlineValidateRosterPreview({ payload: previewPacket.payload.roster });
+      const startedPacket = await onlineWaitPacket('battle_started', 15000);
+      if (!startedPacket || !startedPacket.payload || startedPacket.payload.protocol !== 1 || startedPacket.payload.firstTurn !== 1) throw new Error('battle_protocol_mismatch');
       await say('두 트레이너의 접속이 확인됐어!');
       await say(opponentRoster.trainer + '의 사계몬 팀을 확인했어.\n' + opponentRoster.party.map((m, i) => (i + 1) + '. ' + (m.nickname || m.species) + ' Lv.' + m.level + ' · ' + m.types.join('/')).join('\n'));
-      return say('팀 미리보기까지 완료했어! 실제 전투 화면과 턴 판정은 다음 단계에서 연결해야 해.');
+      return say('서버가 양쪽 팀을 확인하고 대전 시작을 승인했어! 실제 전투 화면과 기술 효과 판정은 다음 단계에서 연결해야 해.');
     }
     return say('온라인 교환 방 연결을 확인했어! 다만 사계몬 소유권 검증과 실제 교환 확정은 아직 구현되지 않았어.');
   } catch (error) {
