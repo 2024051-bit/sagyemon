@@ -3803,6 +3803,7 @@ function onlineRosterPreview(selectedIndexes, sourceParty = S.party) {
       stats: Object.fromEntries(['atk', 'def', 'spa', 'spd', 'spe'].map(key => [key, clamp(Math.floor(Number(m[key]) || 1), 1, 99999)])),
       types: spTypes(m.sp).slice(0, 2),
       ability: String(m.ability || '').slice(0, 12),
+      status: null,
       moves: movesOf(m).slice(0, 4).map(move => ({
         name: move.name, type: move.type, power: move.power,
         category: move.category, accuracy: move.accuracy,
@@ -3856,6 +3857,11 @@ function onlineBattleApplyMove(room, side, move) {
     const before = attacker.hp; attacker.hp = Math.min(attacker.maxhp, attacker.hp + Math.ceil(attacker.maxhp / 2));
     return { healed: attacker.hp - before };
   }
+  if (['sleep', 'par', 'burn', 'conf'].includes(e)) {
+    if (defender.status) return { status: '이미 상태 이상' };
+    defender.status = e === 'sleep' ? { type: 'slp', turns: 2 + Math.floor(onlineBattleRandom(room) * 2) } : { type: e, turns: e === 'conf' ? 3 : 0 };
+    return { status: ({ sleep: '잠듦', par: '마비', burn: '화상', conf: '혼란' })[e] + ' 발생' };
+  }
   if (e === 'atkup') as.atk = Math.min(6, as.atk + 1);
   else if (e === 'defup') as.def = Math.min(6, as.def + 1);
   else if (e === 'bulk') { as.atk = Math.min(6, as.atk + 1); as.def = Math.min(6, as.def + 1); }
@@ -3877,10 +3883,15 @@ function onlineBattleApplyMove(room, side, move) {
   if (dtTrait.resist === move.type) bonus *= .95;
   const mult = effect(move.type, dt) * (at.includes(move.type) ? 1.5 : 1);
   const level = attacker.lvl || attacker.level || 1;
+  if (attacker.status && attacker.status.type === 'brn' && move.category === 'physical') bonus *= .9;
   const base = (level * .2 + 2) * move.power * (A / Math.max(1, D)) / 10;
   const damage = Math.max(1, Math.round(base * mult * bonus * (.85 + onlineBattleRandom(room) * .15)));
   defender.hp = Math.max(0, defender.hp - damage);
-  return { damage, typeMult: mult };
+  if (defender.hp > 0 && !defender.status && Array.isArray(move.sec) && onlineBattleRandom(room) < move.sec[1]) {
+    const kind = move.sec[0];
+    if (['sleep', 'par', 'burn', 'conf'].includes(kind)) defender.status = { type: kind === 'sleep' ? 'slp' : kind, turns: kind === 'sleep' ? 2 + Math.floor(onlineBattleRandom(room) * 2) : kind === 'conf' ? 3 : 0 };
+  }
+  return { damage, typeMult: mult, inflicted: defender.status && defender.status.type };
 }
 function onlineBattleApplyTurn(room, payload, ownId) {
   if (!Number.isInteger(payload.seed) || payload.seed <= 0 || payload.seed > 2147483647) throw new Error('battle_protocol_mismatch');
@@ -3912,17 +3923,39 @@ function onlineBattleApplyTurn(room, payload, ownId) {
     }
     return { c, local, mon, move: selected.move };
   }).sort((a,b) => (b.move.priority || 0) - (a.move.priority || 0) ||
-    Number((b.mon.spe || b.mon.stats && b.mon.stats.spe) || 1) - Number((a.mon.spe || a.mon.stats && a.mon.stats.spe) || 1) ||
+    Number((b.mon.spe || b.mon.stats && b.mon.stats.spe) || 1) * (b.mon.status && b.mon.status.type === 'par' ? .75 : 1) - Number((a.mon.spe || a.mon.stats && a.mon.stats.spe) || 1) * (a.mon.status && a.mon.status.type === 'par' ? .75 : 1) ||
     String(a.c.playerId).localeCompare(String(b.c.playerId)));
   const logs = [];
   for (const a of attacks) {
     const target = a.local ? room.opponentRoster.party[room.activeOpponent] : room.localTeam[room.activeLocal];
     if (!a.mon || a.mon.hp <= 0 || !target || target.hp <= 0) continue;
+    if (a.mon.status && a.mon.status.type === 'slp') {
+      a.mon.status.turns = Math.max(0, a.mon.status.turns - 1);
+      if (a.mon.status.turns === 0) a.mon.status = null;
+      else { logs.push(a.move.name + ' · 잠들어 있어 행동할 수 없어!'); continue; }
+    }
+    if (a.mon.status && a.mon.status.type === 'par' && onlineBattleRandom(room) < .25) { logs.push(a.move.name + ' · 마비로 움직이지 못했어!'); continue; }
+    if (a.mon.status && a.mon.status.type === 'conf') {
+      a.mon.status.turns -= 1;
+      if (onlineBattleRandom(room) < 1/3) {
+        const selfDamage = Math.max(1, Math.round((a.mon.level || a.mon.lvl || 1) * 1.5));
+        a.mon.hp = Math.max(0, a.mon.hp - selfDamage);
+        logs.push(a.move.name + ' · 혼란으로 자신에게 ' + selfDamage + ' 피해!');
+        if (a.mon.status.turns <= 0) a.mon.status = null;
+        continue;
+      }
+      if (a.mon.status.turns <= 0) a.mon.status = null;
+    }
     const r = onlineBattleApplyMove(room, a.local ? 'local' : 'opponent', a.move);
     if (r && r.missed) logs.push(a.move.name + ' 빗나갔다!');
     else if (r && r.damage != null) logs.push(a.move.name + ' · ' + r.damage + ' 피해');
     else if (r && r.healed != null) logs.push(a.move.name + ' · HP ' + r.healed + ' 회복');
     else if (r && r.status) logs.push(a.move.name + ' · ' + r.status);
+    if (r && r.inflicted) logs.push((a.local ? room.opponentRoster.party[room.activeOpponent] : room.localTeam[room.activeLocal]).species + '에게 상태 이상이 발생했어!');
+  }
+  room.localTeam.forEach((m,i) => { if (m.hp !== before[i]) onlineSendHpUpdate(i,m); });
+  for (const team of [room.localTeam, room.opponentRoster.party]) for (const mon of team) {
+    if (mon.hp > 0 && mon.status && mon.status.type === 'brn') mon.hp = Math.max(0, mon.hp - Math.max(1, Math.floor(mon.maxhp / 16)));
   }
   room.localTeam.forEach((m,i) => { if (m.hp !== before[i]) onlineSendHpUpdate(i,m); });
   return { logs, localOut: room.localTeam.every(m => m.hp <= 0), opponentOut: room.opponentRoster.party.every(m => m.hp <= 0) };
