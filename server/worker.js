@@ -253,6 +253,27 @@ export class Lobby {
         }
         return;
       }
+      if (packet.type === "battle_state" && packet.payload && packet.payload.action === "hp_update") {
+        const p = packet.payload;
+        if (!Number.isInteger(p.teamIndex) || p.teamIndex < 0 || p.teamIndex > 2 ||
+            !Number.isInteger(p.hp) || !Number.isInteger(p.maxhp) || p.maxhp < 1 ||
+            p.hp < 0 || p.hp > p.maxhp || p.maxhp > 99999) return;
+        const state = await this.ctx.storage.get("battle:" + meta.roomId);
+        if (!state || !state.started || !state.rosterData || !state.rosterData[meta.playerId]) return;
+        const member = state.rosterData[meta.playerId][p.teamIndex];
+        if (!member || member.maxhp !== p.maxhp) return;
+        if (!state.hpState) state.hpState = {};
+        if (!state.hpState[meta.playerId]) state.hpState[meta.playerId] = state.rosterData[meta.playerId].map(mon => ({ hp: mon.hp, maxhp: mon.maxhp }));
+        state.hpState[meta.playerId][p.teamIndex] = { hp: p.hp, maxhp: p.maxhp };
+        await this.ctx.storage.put("battle:" + meta.roomId, state);
+        this.broadcast(meta.roomId, ws, {
+          type: "battle_state",
+          from: meta.playerId,
+          payload: { action: "hp_update", teamIndex: p.teamIndex, hp: p.hp, maxhp: p.maxhp },
+          at: Date.now()
+        });
+        return;
+      }
       if (packet.type === "battle_state") {
         const p = packet.payload;
         if (!p || p.action !== "roster_preview" || !p.roster || p.roster.protocol !== 1 ||
@@ -271,8 +292,12 @@ export class Lobby {
           (mon.ability == null || (typeof mon.ability === "string" && mon.ability.length <= 12))
         );
         if (!validParty) return;
-        const state = (await this.ctx.storage.get("battle:" + meta.roomId)) || { ready: [], rosters: [], turn: 1, actions: {} };
+        const state = (await this.ctx.storage.get("battle:" + meta.roomId)) || { ready: [], rosters: [], rosterData: {}, hpState: {}, turn: 1, actions: {} };
+        if (!state.rosterData) state.rosterData = {};
+        if (!state.hpState) state.hpState = {};
         if (!state.rosters.includes(meta.playerId)) state.rosters.push(meta.playerId);
+        state.rosterData[meta.playerId] = p.roster.party;
+        state.hpState[meta.playerId] = p.roster.party.map(mon => ({ hp: mon.hp, maxhp: mon.maxhp }));
         const starting = state.rosters.length === 2 && !state.started;
         if (starting) state.started = true;
         await this.ctx.storage.put("battle:" + meta.roomId, state);
