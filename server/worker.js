@@ -392,52 +392,65 @@ export class Lobby {
       const packetId = packet.type === "trade_offer" ? p.offer && p.offer.id : p.id;
       if (typeof packetId !== "string" || packetId.length < 8 || packetId.length > 100) return;
       const key = "trade:" + meta.roomId;
-      const state = (await this.ctx.storage.get(key)) || { offerId: null, proposer: null, accepted: false, committed: false };
+      let state = await this.ctx.storage.get(key);
+      if (state && state.expiresAt && Date.now() > state.expiresAt) {
+        await this.ctx.storage.delete(key);
+        state = null;
+      }
       if (packet.type === "trade_offer") {
         const mon = p.offer && p.offer.mon;
-        if (state.offerId || !p.offer ||
-            !mon || !Number.isInteger(mon.sp) || mon.sp < 0 || !Number.isInteger(mon.lvl) ||
-            mon.lvl < 1 || mon.lvl > 100 || !Number.isInteger(mon.hp) ||
-            !Number.isInteger(mon.maxhp) || mon.maxhp < 1 || mon.hp < 0 || mon.hp > mon.maxhp ||
-            !Array.isArray(mon.moves) || mon.moves.length > 4 || !mon.moves.every(x => typeof x === "string" && x.length <= 20)) return;
-        state.offerId = p.offer.id;
-        state.proposer = meta.playerId;
-        state.accepted = false;
-        state.committed = false;
-        await this.ctx.storage.put(key, state);
+        if (state || !p.offer || !mon || !Number.isInteger(mon.sp) || mon.sp < 0 ||
+            !Number.isInteger(mon.lvl) || mon.lvl < 1 || mon.lvl > 100 ||
+            !Number.isInteger(mon.hp) || !Number.isInteger(mon.maxhp) ||
+            mon.maxhp < 1 || mon.hp < 0 || mon.hp > mon.maxhp ||
+            !Array.isArray(mon.moves) || mon.moves.length > 4 ||
+            !mon.moves.every(x => typeof x === "string" && x.length <= 20)) return;
+        state = {
+          offerId: p.offer.id,
+          proposer: meta.playerId,
+          receiver: null,
+          phase: "offered",
+          expiresAt: Date.now() + 120000
+        };
+        await this.ctx.storage.put(key, state, { expirationTtl: 120 });
         this.broadcast(meta.roomId, ws, packet);
         return;
       }
-      if (!state.offerId || p.id !== state.offerId ||
-          (state.proposer === meta.playerId && packet.type !== "trade_commit")) return;
+      if (!state || p.id !== state.offerId || Date.now() > state.expiresAt) return;
       if (packet.type === "trade_declined") {
+        if (meta.playerId === state.proposer || state.phase !== "offered") return;
         this.broadcast(meta.roomId, ws, packet);
         await this.ctx.storage.delete(key);
         return;
       }
-      if (packet.type === "trade_accept" && p.phase === "accepted") {
+      if (packet.type === "trade_accept" && meta.playerId !== state.proposer && state.phase === "offered" && p.phase === "accepted") {
         const mon = p.mon;
-        if (!mon || !Number.isInteger(mon.sp) || mon.sp < 0 || !Number.isInteger(mon.lvl) ||
-            mon.lvl < 1 || mon.lvl > 100 || !Number.isInteger(mon.hp) ||
-            !Number.isInteger(mon.maxhp) || mon.maxhp < 1 || mon.hp < 0 || mon.hp > mon.maxhp ||
-            !Array.isArray(mon.moves) || mon.moves.length > 4 || !mon.moves.every(x => typeof x === "string" && x.length <= 20)) return;
-        state.accepted = true;
-        await this.ctx.storage.put(key, state);
+        if (!mon || !Number.isInteger(mon.sp) || mon.sp < 0 ||
+            !Number.isInteger(mon.lvl) || mon.lvl < 1 || mon.lvl > 100 ||
+            !Number.isInteger(mon.hp) || !Number.isInteger(mon.maxhp) ||
+            mon.maxhp < 1 || mon.hp < 0 || mon.hp > mon.maxhp ||
+            !Array.isArray(mon.moves) || mon.moves.length > 4 ||
+            !mon.moves.every(x => typeof x === "string" && x.length <= 20)) return;
+        state.receiver = meta.playerId;
+        state.phase = "accepted";
+        await this.ctx.storage.put(key, state, { expirationTtl: 120 });
         this.broadcast(meta.roomId, ws, packet);
         return;
       }
-      if (packet.type === "trade_commit" && meta.playerId === state.proposer && state.accepted && !state.committed) {
+      if (packet.type === "trade_commit" && meta.playerId === state.proposer && state.phase === "accepted") {
         const mon = p.mon;
-        if (!mon || !Number.isInteger(mon.sp) || mon.sp < 0 || !Number.isInteger(mon.lvl) ||
-            mon.lvl < 1 || mon.lvl > 100 || !Number.isInteger(mon.hp) ||
-            !Number.isInteger(mon.maxhp) || mon.maxhp < 1 || mon.hp < 0 || mon.hp > mon.maxhp ||
-            !Array.isArray(mon.moves) || mon.moves.length > 4 || !mon.moves.every(x => typeof x === "string" && x.length <= 20)) return;
-        state.committed = true;
-        await this.ctx.storage.put(key, state);
+        if (!mon || !Number.isInteger(mon.sp) || mon.sp < 0 ||
+            !Number.isInteger(mon.lvl) || mon.lvl < 1 || mon.lvl > 100 ||
+            !Number.isInteger(mon.hp) || !Number.isInteger(mon.maxhp) ||
+            mon.maxhp < 1 || mon.hp < 0 || mon.hp > mon.maxhp ||
+            !Array.isArray(mon.moves) || mon.moves.length > 4 ||
+            !mon.moves.every(x => typeof x === "string" && x.length <= 20)) return;
+        state.phase = "committed";
+        await this.ctx.storage.put(key, state, { expirationTtl: 120 });
         this.broadcast(meta.roomId, ws, packet);
         return;
       }
-      if (packet.type === "trade_receipt" && meta.playerId !== state.proposer && state.committed) {
+      if (packet.type === "trade_receipt" && meta.playerId === state.receiver && state.phase === "committed") {
         this.broadcast(meta.roomId, ws, packet);
         await this.ctx.storage.delete(key);
         return;
