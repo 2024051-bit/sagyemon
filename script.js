@@ -2972,6 +2972,38 @@ function xpYield(sp, L, trainer, Lp = L) {
   const ref = (totalXP(Lp + 1) - totalXP(Lp)) / battlesPerLv(Lp), late = S && S.badges[0] ? ((typeof CUR !== 'undefined' && CUR && CUR.xpMul) || XP_LATE) : 1;
   return Math.max(1, Math.round(ref * Math.min(1.5, Math.sqrt(L / Lp)) * stageMul(sp) * (trainer ? 1.5 : 1) * late));
 }
+// ---------- 성격: 공격·방어·특수공격·특수방어·스피드 중 하나 +10%, 다른 하나 -10% ----------
+const NATURES = [
+  ['노력', null, null], ['외로움', 'atk', 'def'], ['용감', 'atk', 'spe'], ['고집', 'atk', 'spa'], ['개구쟁이', 'atk', 'spd'],
+  ['대담', 'def', 'atk'], ['온순', null, null], ['무사태평', 'def', 'spe'], ['장난꾸러기', 'def', 'spa'], ['촐랑', 'def', 'spd'],
+  ['겁쟁이', 'spe', 'atk'], ['성급', 'spe', 'def'], ['성실', null, null], ['명랑', 'spe', 'spa'], ['천진난만', 'spe', 'spd'],
+  ['조심', 'spa', 'atk'], ['의젓', 'spa', 'def'], ['냉정', 'spa', 'spe'], ['수줍음', null, null], ['덜렁', 'spa', 'spd'],
+  ['차분', 'spd', 'atk'], ['온화', 'spd', 'def'], ['건방', 'spd', 'spe'], ['신중', 'spd', 'spa'], ['변덕', null, null]
+].map(([name, up, down]) => ({ name, up, down }));
+const NATURE_BY_NAME = Object.fromEntries(NATURES.map(n => [n.name, n]));
+const randomNature = () => NATURES[Math.floor(Math.random() * NATURES.length)].name;
+function natureRate(m, stat) {
+  const n = NATURE_BY_NAME[m && m.nature];
+  return !n || !n.up || !n.down ? 1 : n.up === stat ? 1.1 : n.down === stat ? .9 : 1;
+}
+// 이전 저장의 성격은 몬스터 정보와 보관 위치로 결정해 불러올 때마다 바뀌지 않게 한다.
+function legacyNature(m, slot) {
+  const key = `${m.sp || ''}|${m.lvl || 0}|${m.nick || ''}|${slot}`;
+  let h = 2166136261;
+  for (let i = 0; i < key.length; i++) { h ^= key.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return NATURES[(h >>> 0) % NATURES.length].name;
+}
+function migrateNatures(o) {
+  if (!o || typeof o !== 'object') return o;
+  for (const [group, list] of [['party', o.party], ['box', o.box]]) {
+    if (!Array.isArray(list)) continue;
+    list.forEach((m, i) => {
+      if (!m || typeof m !== 'object') return;
+      if (!NATURE_BY_NAME[m.nature]) m.nature = legacyNature(m, `${group}:${i}`);
+    });
+  }
+  return o;
+}
 function calcStats(m) {
   const b = SP[m.sp], old = m.maxhp;
   m.maxhp = Math.round((Math.floor(b.hp * m.lvl / 25) + m.lvl + (m.owned ? 20 : 10)) * (m.owned ? 1.15 : (m.hpMul || 1)));
@@ -2980,7 +3012,7 @@ function calcStats(m) {
   if (hb) { if (hb.hp) m.maxhp = Math.round(m.maxhp * hb.hp); if (hb.atk) m.atk = Math.round(m.atk * hb.atk); if (hb.def) m.def = Math.round(m.def * hb.def); }
   if (old === undefined) m.hp = m.maxhp; else m.hp = clamp(m.hp + (m.maxhp - old), 0, m.maxhp);
 }
-function mkMon(sp, lvl, owned = false, hpMul = 1) { const m = { sp, lvl, owned, xp: 0, hpMul }; calcStats(m); return m; }
+function mkMon(sp, lvl, owned = false, hpMul = 1) { const m = { sp, lvl, owned, xp: 0, hpMul, nature: randomNature() }; calcStats(m); return m; }
 const monName = m => m.nick || SP[m.sp].name;
 const cleanName = v => String(v || '').replace(/[<>&"'`]/g, '').trim().slice(0, 8);
 // 알고 있는 기술 (최대 4개). 예전 저장이나 상대 사계몬은 레벨에 맞는 최근 기술 4개
@@ -3218,9 +3250,9 @@ async function unpackSave(code) {
   else throw new Error('code');
   const o = JSON.parse(new TextDecoder().decode(bytes));
   if (!o || o.v !== 3 || !Array.isArray(o.party)) throw new Error('code');
-  return o;
+  return migrateNatures(o);
 }
-function loadSave() { try { const s = localStorage.getItem(SAVE_KEY); const o = s ? JSON.parse(s) : null; return o && o.v === 3 ? o : null; } catch (e) { return null; } }
+function loadSave() { try { const s = localStorage.getItem(SAVE_KEY); const o = s ? JSON.parse(s) : null; return o && o.v === 3 ? migrateNatures(o) : null; } catch (e) { return null; } }
 
 // ---------- 지도 처리 ----------
 const ROOF = { H: '#c8643a', C: '#d84a4a', M: '#3a6ad8', B: '#7a5ab0' };
@@ -4630,7 +4662,7 @@ async function throwBall(ok, it, id) {
     if (ratio > .5) await say('(체력을 더 깎으면 잡힐 확률이 올라가요!)');
     return 'used'; }
   a.stars = true; SFX.catch(); await say(`신난다! ${jo(monName(e), '을를')} 잡았다!`); a.stars = false;
-  const m = mkMon(e.sp, e.lvl, true); m.hp = Math.max(1, Math.round(m.maxhp * ratio)); m.xp = 0;
+  const m = mkMon(e.sp, e.lvl, true); m.nature = e.nature || m.nature; m.hp = Math.max(1, Math.round(m.maxhp * ratio)); m.xp = 0;
   const first = !S.caught[e.sp]; S.caught[e.sp] = 1;
   a.ball = null;
   S.seen[e.sp] = 1;
