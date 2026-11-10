@@ -219,7 +219,13 @@ export class Lobby {
           const activeIndex = Number.isInteger(state.activeTeam[meta.playerId]) ? state.activeTeam[meta.playerId] : 0;
           const activeHp = state.hpState && state.hpState[meta.playerId] && state.hpState[meta.playerId][activeIndex];
           // 현재 출전 사계몬이 기절했다면 교체만 허용한다.
-          if (p.action === "choose_move" && (!activeHp || activeHp.hp <= 0)) return;
+          if (p.action === "choose_move") {
+            if (!activeHp || activeHp.hp <= 0) return;
+            const activeMon = state.rosterData && state.rosterData[meta.playerId] && state.rosterData[meta.playerId][activeIndex];
+            const selectedMove = activeMon && activeMon.moves && activeMon.moves[p.moveIndex];
+            const hasUsableMove = activeMon && activeMon.moves && activeMon.moves.some(move => move.pp > 0);
+            if (!selectedMove || (hasUsableMove && selectedMove.pp <= 0) || (!hasUsableMove && p.moveIndex !== 0)) return;
+          }
           if (p.action === "switch_mon") {
             const targetHp = state.hpState && state.hpState[meta.playerId] && state.hpState[meta.playerId][p.teamIndex];
             if (p.teamIndex === activeIndex || !targetHp || targetHp.hp <= 0) return;
@@ -227,6 +233,11 @@ export class Lobby {
           state.actions[meta.playerId] = p.action === "choose_move"
             ? { action: "choose_move", moveIndex: p.moveIndex, at: Date.now() }
             : { action: "switch_mon", teamIndex: p.teamIndex, at: Date.now() };
+          if (p.action === "choose_move") {
+            const activeMon = state.rosterData[meta.playerId][activeIndex];
+            const selectedMove = activeMon.moves[p.moveIndex];
+            if (selectedMove && selectedMove.pp > 0) selectedMove.pp -= 1;
+          }
           const players = room.players.map(x => x.playerId);
           if (players.every(id => state.actions[id])) {
             const result = {
@@ -351,7 +362,9 @@ export class Lobby {
             Number.isInteger(move.priority) && move.priority >= -5 && move.priority <= 5 &&
             (move.eff == null || typeof move.eff === "string") &&
             (move.sec == null || (Array.isArray(move.sec) && move.sec.length === 2 && typeof move.sec[0] === "string" && Number.isFinite(move.sec[1]) && move.sec[1] >= 0 && move.sec[1] <= 1)) &&
-            typeof move.charge === "boolean" && typeof move.struggle === "boolean") &&
+            typeof move.charge === "boolean" && typeof move.struggle === "boolean" &&
+             Number.isInteger(move.pp) && move.pp >= 0 && move.pp <= 99 &&
+             Number.isInteger(move.maxpp) && move.maxpp >= 0 && move.maxpp <= 99 && move.pp <= move.maxpp) &&
           (mon.nickname == null || (typeof mon.nickname === "string" && mon.nickname.length <= 8)) &&
           (mon.ability == null || (typeof mon.ability === "string" && mon.ability.length <= 12))
         );
