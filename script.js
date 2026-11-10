@@ -3630,8 +3630,93 @@ H.eggaide = async () => {
   return say(S.keys.egg ? '연구소 조수: 알은 잘 있니? 많이 걸으면 태어날 거야.' : '연구소 조수: 영점새가 태어났구나! 공부할수록 50점새, 그리고 만점새로 진화한대.');
 };
 H.clerk = async e => { await say('어서 오세요! 사계 상점입니다.'); return shop(e.stock); };
+// 온라인 서버 주소와 플레이어 식별자는 세이브 데이터와 분리해 관리한다.
+const ONLINE_URL_KEY = 'sagyemon_online_url_v1';
+const ONLINE_PLAYER_KEY = 'sagyemon_online_player_v1';
+function onlinePlayerId() {
+  let id = '';
+  try { id = localStorage.getItem(ONLINE_PLAYER_KEY) || ''; } catch (e) {}
+  if (!/^[a-zA-Z0-9_-]{8,80}$/.test(id)) {
+    id = (crypto && crypto.randomUUID) ? crypto.randomUUID().replace(/-/g, '') : 'player_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    try { localStorage.setItem(ONLINE_PLAYER_KEY, id); } catch (e) {}
+  }
+  return id;
+}
+async function onlineBaseUrl() {
+  let base = '';
+  try { base = localStorage.getItem(ONLINE_URL_KEY) || ''; } catch (e) {}
+  if (window.SAGYEMON_ONLINE_URL) base = String(window.SAGYEMON_ONLINE_URL);
+  if (!base) {
+    base = (window.prompt('Cloudflare 온라인 서버 주소를 입력해 주세요.\\n예: https://sagyemon-online.example.workers.dev') || '').trim();
+    if (!base) return '';
+    base = base.replace(/\/+$/, '');
+    try { localStorage.setItem(ONLINE_URL_KEY, base); } catch (e) {}
+  }
+  return base.replace(/\/+$/, '');
+}
+async function onlineRequest(base, path, options = {}) {
+  const response = await fetch(base + path, {
+    method: options.method || 'GET',
+    headers: options.body ? { 'content-type': 'application/json' } : {},
+    body: options.body ? JSON.stringify(options.body) : undefined,
+    cache: 'no-store'
+  });
+  let data = {};
+  try { data = await response.json(); } catch (e) {}
+  if (!response.ok) throw new Error(data.error || 'server_error');
+  return data;
+}
+const onlineSleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+async function onlineWaitForMatch(base, mode, playerId, ticket) {
+  const end = Date.now() + 60_000;
+  while (Date.now() < end) {
+    const state = await onlineRequest(base, '/api/queue/status?ticket=' + encodeURIComponent(ticket) + '&playerId=' + encodeURIComponent(playerId));
+    if (state.state === 'matched') return state;
+    await onlineSleep(2000);
+  }
+  await onlineRequest(base, '/api/queue/leave', { method: 'POST', body: { ticket, playerId } }).catch(() => {});
+  return null;
+}
+async function onlineWaitForInvite(base, code, playerId) {
+  const end = Date.now() + 10 * 60_000;
+  while (Date.now() < end) {
+    const state = await onlineRequest(base, '/api/invite/status?code=' + encodeURIComponent(code) + '&playerId=' + encodeURIComponent(playerId));
+    if (state.state === 'matched') return state;
+    await onlineSleep(2000);
+  }
+  return null;
+}
+async function onlineConnectRoom(base, room) {
+  if (!room || !room.roomId || !room.token) throw new Error('invalid_room');
+  const wsBase = base.replace(/^https:/i, 'wss:').replace(/^http:/i, 'ws:');
+  const url = wsBase + '/api/room/' + encodeURIComponent(room.roomId) +
+    '?playerId=' + encodeURIComponent(onlinePlayerId()) + '&token=' + encodeURIComponent(room.token);
+  await new Promise((resolve, reject) => {
+    const ws = new WebSocket(url);
+    let settled = false;
+    const timer = setTimeout(() => { if (!settled) { settled = true; ws.close(); reject(new Error('websocket_timeout')); } }, 10000);
+    ws.onopen = () => { if (!settled) { settled = true; clearTimeout(timer); resolve(); } };
+    ws.onerror = () => { if (!settled) { settled = true; clearTimeout(timer); reject(new Error('websocket_failed')); } };
+    ws.onmessage = event => {
+      let packet; try { packet = JSON.parse(event.data); } catch (e) { return; }
+      if (packet.type === 'peer_joined') say('상대 트레이너가 방에 접속했어!');
+      else if (packet.type === 'peer_left') say('상대 트레이너의 연결이 종료됐어.');
+      else if (packet.type === 'battle_action' || packet.type === 'trade_offer' || packet.type === 'trade_accept') {
+        say('상대방으로부터 온라인 데이터가 도착했어. 게임 내 대전·교환 판정 기능은 아직 연결 전이야.');
+      }
+    };
+    ws.onclose = () => {};
+    ws.onopen = () => {
+      if (!settled) { settled = true; clearTimeout(timer); resolve(); }
+      try { ws.send(JSON.stringify({ type: 'ping' })); } catch (e) {}
+    };
+    // 연결 확인 후 현재 빌드에서는 통신 시험만 하고 소켓을 닫는다.
+    const closeTimer = setTimeout(() => { try { ws.close(1000, 'connection check complete'); } catch (e) {} }, 15000);
+    ws.addEventListener('close', () => clearTimeout(closeTimer), { once: true });
+  });
+}
 H.multiplayer = async () => {
-  await say('안녕! 나는 트레이너 대전과 사계몬 교환을 안내하고 있어.\n원하는 기능을 골라 봐!');
+  await say('안녕! 나는 트레이너 대전과 사계몬 교환을 안내하고 있어.\\n온라인 기능을 선택해 봐!');
   const c = await choose([
     'PvP 대전 · 랜덤 매칭',
     'PvP 대전 · 친구 초대(트레이너 코드)',
@@ -3640,13 +3725,57 @@ H.multiplayer = async () => {
     '그만두기'
   ], { cls: 'start' });
   if (c < 0 || c === 4) return say('언제든 다시 찾아와!');
-  const labels = [
-    '랜덤 매칭 대전',
-    '트레이너 코드 친구 대전',
-    '랜덤 사계몬 교환',
-    '트레이너 코드 친구 교환'
-  ];
-  return say(`${labels[c]}을 선택했어.\n온라인 연결 기능은 아직 구현 중이야. 지금은 메뉴만 준비되어 있고, 실제 매칭·초대·교환은 다음 단계에서 연결할게!`);
+  const mode = c < 2 ? 'battle' : 'trade';
+  const isFriend = c === 1 || c === 3;
+  const playerId = onlinePlayerId();
+  try {
+    const base = await onlineBaseUrl();
+    if (!base) return say('서버 주소 입력을 취소했어. 나중에 다시 찾아와!');
+    const health = await onlineRequest(base, '/api/health');
+    if (!health.ok) throw new Error('server_unavailable');
+    let room = null;
+    if (isFriend) {
+      if (c === 1 || c === 3) {
+        const action = await choose(['친구에게 보낼 코드 만들기', '친구 코드 입력하기', '돌아가기'], { cls: 'start' });
+        if (action < 0 || action === 2) return say('친구 초대를 취소했어.');
+        if (action === 0) {
+          const invite = await onlineRequest(base, '/api/invite/create', { method: 'POST', body: { mode, playerId, displayName: S.name || '트레이너' } });
+          await say('친구에게 이 트레이너 코드를 알려 줘!\n' + invite.code + '\n친구가 참가할 때까지 최대 10분 기다릴게.');
+          room = await onlineWaitForInvite(base, invite.code, playerId);
+          if (!room) return say('10분 동안 친구가 참가하지 않아 초대를 종료했어.');
+        } else {
+          const code = (window.prompt('친구에게 받은 트레이너 코드 6자리를 입력해 주세요.') || '').trim().toUpperCase();
+          if (!code) return say('친구 코드 입력을 취소했어.');
+          room = await onlineRequest(base, '/api/invite/join', { method: 'POST', body: { code, playerId, displayName: S.name || '트레이너' } });
+        }
+      }
+    } else {
+      const joined = await onlineRequest(base, '/api/queue/join', { method: 'POST', body: { mode, playerId, displayName: S.name || '트레이너' } });
+      if (joined.state === 'matched') room = joined;
+      else {
+        await say('랜덤 매칭 대기열에 참가했어. 최대 1분 동안 상대를 찾아볼게.');
+        room = await onlineWaitForMatch(base, mode, playerId, joined.ticket);
+        if (!room) return say('1분 동안 상대를 찾지 못했어. 다시 시도해 줘!');
+      }
+    }
+    await say('상대 트레이너를 찾았어!\n상대: ' + ((room.opponent && room.opponent.displayName) || '트레이너') + '\n방 연결을 확인하고 있어.');
+    await onlineConnectRoom(base, room);
+    return say(mode === 'battle'
+      ? '온라인 대전 방 연결을 확인했어! 다만 실제 전투 화면과 서버 판정은 아직 연결되지 않았어.'
+      : '온라인 교환 방 연결을 확인했어! 다만 사계몬 소유권 검증과 실제 교환 확정은 아직 구현되지 않았어.');
+  } catch (error) {
+    const messages = {
+      Failed_to_fetch: '서버에 연결할 수 없어. 주소와 서버 배포 상태를 확인해 줘.',
+      server_error: '온라인 서버에서 오류가 발생했어.',
+      invite_not_found: '친구 코드가 없거나 만료됐어.',
+      invite_already_used: '이미 사용된 친구 코드야.',
+      ticket_expired: '매칭 대기 시간이 만료됐어.',
+      websocket_failed: '온라인 방 연결에 실패했어.',
+      websocket_timeout: '온라인 방 연결 시간이 초과됐어.'
+    };
+    const key = String(error && error.message || 'server_error').replace(/[^a-zA-Z_]/g, '_');
+    return say('온라인 기능을 사용할 수 없어.\n' + (messages[key] || ('오류: ' + (error.message || 'server_error'))) + '\n서버 주소와 배포 상태를 확인해 줘.');
+  }
 };
 H.mom = async () => {
   if (!S.party.length) return sayAll(['엄마: 오늘이 바로 그날이구나!', '정박사님이 연구소로 오라고 하셨어. 마을 오른쪽 큰 건물이야.', '참, 메뉴는 START 버튼(Shift 키)으로 열 수 있단다.']);
