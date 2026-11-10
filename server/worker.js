@@ -215,7 +215,7 @@ export class Lobby {
           if (!Number.isInteger(p.turn) || p.turn < 1 || p.turn > 500 || !validAction) return;
           const state = (await this.ctx.storage.get("battle:" + meta.roomId)) || { ready: [], rosters: [], turn: 1, actions: {}, activeTeam: {} };
           if (!state.activeTeam) state.activeTeam = {};
-          if (state.ready.length !== 2 || state.rosters.length !== 2 || !state.started || p.turn !== state.turn || state.actions[meta.playerId]) return;
+          if (state.ready.length !== 2 || state.rosters.length !== 2 || !state.started || state.ended || p.turn !== state.turn || state.actions[meta.playerId]) return;
           const activeIndex = Number.isInteger(state.activeTeam[meta.playerId]) ? state.activeTeam[meta.playerId] : 0;
           const activeHp = state.hpState && state.hpState[meta.playerId] && state.hpState[meta.playerId][activeIndex];
           // 현재 출전 사계몬이 기절했다면 교체만 허용한다.
@@ -308,6 +308,24 @@ export class Lobby {
           payload: { action: "hp_update", teamIndex: p.teamIndex, hp: p.hp, maxhp: p.maxhp },
           at: Date.now()
         });
+        if (state.rosters.length === 2) {
+          const exhausted = state.rosters.map(id => ({
+            id,
+            out: Array.isArray(state.hpState[id]) && state.hpState[id].every(mon => mon.hp <= 0)
+          }));
+          if (exhausted.some(x => x.out)) {
+            state.ended = true;
+            const remaining = exhausted.filter(x => !x.out);
+            state.winnerId = remaining.length === 1 ? remaining[0].id : null;
+            await this.ctx.storage.put("battle:" + meta.roomId, state);
+            this.broadcast(meta.roomId, null, {
+              type: "battle_action",
+              from: "server",
+              payload: { action: "battle_ended", winnerId: state.winnerId, turn: state.lastResolvedTurn || state.turn - 1 },
+              at: Date.now()
+            });
+          }
+        }
         return;
       }
       if (packet.type === "battle_state") {
