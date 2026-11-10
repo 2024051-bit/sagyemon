@@ -3476,10 +3476,21 @@ async function reviewNote() {
 }
 // 기술 떠올리기 선생님 (보건실): 잊은 기술이나 예전에 배울 수 있던 기술을 다시 배우게 해 준다
 H.tutor = async () => {
-  await sayAll(['기술 떠올리기 선생님: 나는 잊어버린 기술을 다시 떠올리게 해 주는 선생님이란다.', '수학 문제 하나를 맞히면, 예전에 배웠던(배울 수 있었던) 기술을\n다시 떠올리게 도와주지!']);
-  const i = await chooseList({ title: '누구의 기술을 떠올릴까?', sub: '진화 전 모습의 기술도 떠올릴 수 있어요', rows: S.party.map(m => monRow(m)) });
+  await sayAll(['기술 떠올리기 선생님: 기술을 되살리거나 순서를 정리해 주마.', '기술 회상은 1,000원이고, 기술 순서 변경은 무료란다!']);
+  const mode = await chooseList({ title: '무엇을 할까?', rows: ['잊은 기술 떠올리기 <span class="sm">(1,000원)</span>', '기술 순서 바꾸기 <span class="sm">(무료)</span>'] });
+  if (mode < 0) return say('기술 떠올리기 선생님: 언제든 다시 오렴.');
+  const i = await chooseList({ title: mode === 0 ? '누구의 기술을 떠올릴까?' : '누구의 기술 순서를 바꿀까?', sub: '사계몬을 선택해 주세요', rows: S.party.map(m => monRow(m)) });
   if (i < 0) return say('기술 떠올리기 선생님: 언제든 다시 오렴.');
   const m = S.party[i]; movesOf(m);
+  if (mode === 1) {
+    if (m.moves.length < 2) return say(`${jo(monName(m), '은는')} 기술이 2개 이상 있어야 순서를 바꿀 수 있단다.`);
+    const fromIndex = await chooseList({ title: '순서를 바꿀 기술', rows: m.moves.map((n, k) => `<span class="grow">${k + 1}. ${n}</span>`) });
+    if (fromIndex < 0) return say('기술 순서 변경을 취소했다.');
+    const toIndex = await chooseList({ title: '어느 위치로 옮길까?', sub: '선택한 기술을 이 위치로 이동해요', rows: m.moves.map((n, k) => `<span class="grow">${k + 1}번 자리 · ${n}</span>`), start: fromIndex });
+    if (toIndex < 0) return say('기술 순서 변경을 취소했다.');
+    if (toIndex !== fromIndex) { const [picked] = m.moves.splice(fromIndex, 1); m.moves.splice(toIndex, 0, picked); save(); hud(); }
+    return say(toIndex === fromIndex ? '기술 순서는 그대로 두었단다.' : `${jo(monName(m), '은는')} 기술 순서를 바꿨어! 비용은 무료란다.`);
+  }
   const from = {}; for (const k in SP) if (SP[k].evo) from[SP[k].evo[1]] = k;
   const chain = []; for (let s2 = m.sp, g = 0; s2 && g < 5; s2 = from[s2], g++) chain.push(s2);
   const cand = [];
