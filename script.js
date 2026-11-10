@@ -2988,7 +2988,7 @@ function natureRate(m, stat) {
 }
 // 이전 저장의 성격은 몬스터 정보와 보관 위치로 결정해 불러올 때마다 바뀌지 않게 한다.
 function legacyNature(m, slot) {
-  const key = `${m.sp || ''}|${m.lvl || 0}|${m.nick || ''}|${slot}`;
+  const key = `${m.sp || ''}|${m.lvl || 0}|${m.nick || ''}|${m.xp || 0}`;
   let h = 2166136261;
   for (let i = 0; i < key.length; i++) { h ^= key.charCodeAt(i); h = Math.imul(h, 16777619); }
   return NATURES[(h >>> 0) % NATURES.length].name;
@@ -3007,7 +3007,13 @@ function migrateNatures(o) {
 function calcStats(m) {
   const b = SP[m.sp], old = m.maxhp;
   m.maxhp = Math.round((Math.floor(b.hp * m.lvl / 25) + m.lvl + (m.owned ? 20 : 10)) * (m.owned ? 1.15 : (m.hpMul || 1)));
-  m.atk = Math.floor(b.atk * m.lvl / 40) + 5; m.def = Math.floor(b.def * m.lvl / 40) + 5;
+  m.atk = Math.floor(b.atk * m.lvl / 40) + 5;
+  m.def = Math.floor(b.def * m.lvl / 40) + 5;
+  // 특수 능력치와 스피드의 종족값은 개별 밸런스 데이터 도입 전까지 기존 공격·방어를 기준으로 산출
+  m.spa = Math.floor(b.atk * m.lvl / 40) + 5;
+  m.spd = Math.floor(b.def * m.lvl / 40) + 5;
+  m.spe = Math.floor(((b.atk + b.def) / 2) * m.lvl / 40) + 5;
+  for (const stat of ['atk', 'def', 'spa', 'spd', 'spe']) m[stat] = Math.max(1, Math.round(m[stat] * natureRate(m, stat)));
   const hb = m.held && ITEMS[m.held] && ITEMS[m.held].boost;
   if (hb) { if (hb.hp) m.maxhp = Math.round(m.maxhp * hb.hp); if (hb.atk) m.atk = Math.round(m.atk * hb.atk); if (hb.def) m.def = Math.round(m.def * hb.def); }
   if (old === undefined) m.hp = m.maxhp; else m.hp = clamp(m.hp + (m.maxhp - old), 0, m.maxhp);
