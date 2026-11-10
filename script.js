@@ -3776,6 +3776,8 @@ function onlineRosterPreview(selectedIndexes) {
       species: Number.isInteger(m.sp) && SP[m.sp] ? SP[m.sp].name : '알 수 없음',
       nickname: String(m.nick || '').slice(0, 8),
       level: clamp(Math.floor(Number(m.lvl) || 1), 1, 100),
+      hp: clamp(Math.floor(Number(m.hp) || 0), 0, 99999),
+      maxhp: clamp(Math.floor(Number(m.maxhp) || 0), 1, 99999),
       types: spTypes(m.sp).slice(0, 2),
       ability: String(m.ability || '').slice(0, 12),
       moves: movesOf(m).slice(0, 4).map(move => move.name)
@@ -3788,8 +3790,8 @@ function onlineValidateRosterPreview(packet) {
   return {
     trainer: String(data.trainer || '트레이너').slice(0, 16),
     party: data.party.map(mon => {
-      if (!mon || typeof mon.species !== 'string' || mon.species.length > 20 || !Number.isFinite(mon.level) || mon.level < 1 || mon.level > 100 || !Array.isArray(mon.moves) || mon.moves.length > 4 || !mon.moves.every(m => typeof m === 'string') || !Array.isArray(mon.types) || mon.types.length > 2 || !mon.types.every(t => typeof t === 'string')) throw new Error('battle_protocol_mismatch');
-      return { species: mon.species.slice(0, 20), nickname: String(mon.nickname || '').slice(0, 8), level: Math.floor(mon.level), types: mon.types.map(t => String(t).slice(0, 8)), ability: String(mon.ability || '').slice(0, 12), moves: mon.moves.map(m => String(m).slice(0, 20)) };
+      if (!mon || typeof mon.species !== 'string' || mon.species.length > 20 || !Number.isFinite(mon.level) || mon.level < 1 || mon.level > 100 || !Number.isInteger(mon.hp) || !Number.isInteger(mon.maxhp) || mon.maxhp < 1 || mon.hp < 1 || mon.hp > mon.maxhp || !Array.isArray(mon.moves) || mon.moves.length > 4 || !mon.moves.every(m => typeof m === 'string') || !Array.isArray(mon.types) || mon.types.length > 2 || !mon.types.every(t => typeof t === 'string')) throw new Error('battle_protocol_mismatch');
+      return { species: mon.species.slice(0, 20), nickname: String(mon.nickname || '').slice(0, 8), level: Math.floor(mon.level), hp: mon.hp, maxhp: mon.maxhp, types: mon.types.map(t => String(t).slice(0, 8)), ability: String(mon.ability || '').slice(0, 12), moves: mon.moves.map(m => String(m).slice(0, 20)) };
     })
   };
 }
