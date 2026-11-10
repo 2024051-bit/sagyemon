@@ -212,7 +212,7 @@ export class Lobby {
           if (!Number.isInteger(p.turn) || p.turn < 1 || p.turn > 500 ||
               !Number.isInteger(p.moveIndex) || p.moveIndex < 0 || p.moveIndex > 3) return;
           const state = (await this.ctx.storage.get("battle:" + meta.roomId)) || { ready: [], rosters: [], turn: 1, actions: {} };
-          if (state.ready.length !== 2 || state.rosters.length !== 2 || p.turn !== state.turn || state.actions[meta.playerId]) return;
+          if (state.ready.length !== 2 || state.rosters.length !== 2 || !state.started || p.turn !== state.turn || state.actions[meta.playerId]) return;
           state.actions[meta.playerId] = { moveIndex: p.moveIndex, at: Date.now() };
           const players = room.players.map(x => x.playerId);
           if (players.every(id => state.actions[id])) {
@@ -243,8 +243,11 @@ export class Lobby {
         if (!validParty) return;
         const state = (await this.ctx.storage.get("battle:" + meta.roomId)) || { ready: [], rosters: [], turn: 1, actions: {} };
         if (!state.rosters.includes(meta.playerId)) state.rosters.push(meta.playerId);
+        const starting = state.rosters.length === 2 && !state.started;
+        if (starting) state.started = true;
         await this.ctx.storage.put("battle:" + meta.roomId, state);
         this.broadcast(meta.roomId, ws, { type: "battle_state", from: meta.playerId, payload: p, at: Date.now() });
+        if (starting) this.broadcast(meta.roomId, null, { type: "battle_started", from: "server", payload: { protocol: 1, firstTurn: 1 }, at: Date.now() });
         return;
       }
       return;
