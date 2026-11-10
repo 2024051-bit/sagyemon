@@ -2231,7 +2231,7 @@ const GYMS = [
     tr: [T2('체육관 관원', '하얀', 't2', [['somnun', 38], ['seolyeo', 38]], '눈밭에서는 내가 최고야!', '눈이 녹아 버렸다…'), T2('체육관 관원', '고요', 't4', [['nungurum', 39]], '함박눈처럼 조용히 덮쳐 주지!', '눈이 그쳤다…'), T2('체육관 관원', '설화', 't3', [['seolyeo', 39], ['nunkkot', 40]], '관장님께 가려면 나부터 넘어라!', '눈꽃이 흩어졌다…')] },
   // 체육관 8 (겨울 · 확률과 통계): 야생 = 중1 자료의 정리(81), 관원 = 중2 확률(6), 관장 = 중3 대푯값·산포도(83) (미리보기 ⑲)
   { label: '얼음', town: 'icelake', floor: '#dce8f4', name: '한결', badge: '얼음 배지', unit: 6, lunit: 83, team: [['godeum', 42], ['seal', 43], ['nungurum', 44]], reward: [['ball', 5]], key: null, cheer: 1,
-    intro: ['얼음 체육관에 온 걸 환영해. 나는 관장 한결.', '자료는 거짓말을 하지 않아. 네 실력도 숫자로 보여 줘!'], win: '네 정답률은… 내 예상보다 훨씬 높았어. 네가 이겼어!', after: '배지 8개를 모두 모았구나! 졸업 언덕으로 가는 길은 지금 준비 중이래. 조금만 기다려 줘!',
+    intro: ['얼음 체육관에 온 걸 환영해. 나는 관장 한결.', '자료는 거짓말을 하지 않아. 네 실력도 숫자로 보여 줘!'], win: '네 정답률은… 내 예상보다 훨씬 높았어. 네가 이겼어!', after: '배지 8개를 모두 모았구나! 졸업 언덕은 네가 처음 출발한 새봄마을 동쪽이야.\nSTART 메뉴의 날아가기(좌표 종이비행기)로 새봄마을에 가서 동쪽 문으로 가렴!',
     tr: [T2('체육관 관원', '빙판', 't1', [['sotul', 40], ['godeum', 40]], '얼음판 위에서 미끄러지지 마!', '미끄러져 버렸다…'), T2('체육관 관원', '눈금', 't4', [['seal', 41]], '내 승률을 계산해 볼까?', '계산이 틀렸다…'), T2('체육관 관원', '호수', 't2', [['nungurum', 41], ['godeum', 42]], '관장님께 가려면 나부터 넘어라!', '호수 얼음이 깨졌다…')] },
 ];
 GYMS.forEach((G, n) => gymRoom(n, G));
@@ -2350,8 +2350,8 @@ API.hide1.m.warps[API.hide1.get(14, 1)].x = 13; API.hide1.m.warps[API.hide1.get(
   [[2, 1], [18, 1], [19, 1], [18, 8], [14, 9]].forEach(([x, y]) => a.set(x, y, 'Y'));
   a.sign(12, 12, '새봄마을\n봄바람이 처음 부는 곳');
   gateGuard(a, 10, 1, 11, 1, () => S.party.length > 0, '연구소 조수: 잠깐! 사계몬 없이 풀숲에 들어가면 위험해!\n오른쪽 연구소의 정박사님께 먼저 가 봐.', '연구소 조수: 북쪽 1번 도로를 지나면 분수마을이야. 조심해!', 'guard', 'aide');
-  // 졸업 언덕(4인방·챔피언)을 다시 만들 때까지 닫아 둔다 (2026-11-09: 지금 동쪽은 예전 바탕 파일의 리그로 이어짐)
-  gateGuard(a, 20, 7, 19, 6, () => false, () => S.badges.every(Boolean) ? '경비원: 배지 8개! 대단하구나.\n졸업 언덕으로 가는 길은 지금 공사 중이야. 조금만 기다려 줘!' : '경비원: 동쪽은 졸업 언덕으로 가는 길이야.\n배지 8개를 모두 모은 트레이너만 갈 수 있어!', '경비원: 배지 8개! 졸업 언덕으로 가는 길이 열렸다!');
+  // 동쪽: 배지 8개면 졸업 길 → 졸업 언덕 (미리보기 ㉑, 2026-11-10)
+  gateGuard(a, 20, 7, 19, 6, () => S.badges.every(Boolean), '경비원: 동쪽은 졸업 언덕으로 가는 졸업 길이야.\n배지 8개를 모두 모은 트레이너만 갈 수 있어!', '경비원: 배지 8개! 사계절을 다 돌고 다시 봄으로 왔구나.\n졸업 길이 열렸다. 4인방과 챔피언이 기다리고 있어!');
   a.ent({ id: 'tkid', kind: 'npc', x: 7, y: 11, dir: 'down', pal: 'kid', wander: true, lines: ['START(Shift 키)를 누르면 메뉴가 열려!', '"오답노트"에 틀린 문제가 다 모인대. 시험 전에 꼭 봐!', '1번 도로 풀숲에는 봄 사계몬이 잔뜩 있대!', '턱이 진 언덕은 위에서 아래로 뛰어내릴 수만 있어. 돌아가는 길을 찾아봐!', '여름 사계몬은 봄 사계몬에게 강하대! 1번 도로 풀숲에 수박거북이 가끔 나온대.'] });
 }
 // 1번 도로 / 벚꽃마을(지도 id는 bunsu 그대로) / 2번 도로
@@ -2521,12 +2521,17 @@ API.route8w.m.wild.grad = 'N'; API.route8w.m.xpMul = 0.8; openSecrets(API.route8
 routeGen('icecave', { name: '얼음 동굴', theme: 'cave', unit: 81, w: 36, h: 21, fill: .65, cave: true, dark: true, wild: ['godeum', 'godeum', 'nungurum', 'seolyeo', 'eodug'], lv: [38, 40], ends: [['W', 8], ['E', 11]], trainers: 2, items: [['hpotion', 2], ['ball', 2]], hidden: [['fpotion', 1]], seed: 101 });
 API.icecave.m.wild.grad = 'E'; API.icecave.m.xpMul = 0.8;
 // 얼음호수시티: 체육관 8 (확률과 통계). 북쪽(졸업 언덕 쪽)은 아직 닫아 둔다
-house('icelakeH', '얼음호수시티 민가', [{ id: 'icelakeh', kind: 'npc', x: 7, y: 4, dir: 'left', pal: 't1', lines: ['겨울이면 호수가 꽁꽁 얼어서 썰매를 타지.', '관장 한결은 무엇이든 자료로 모아 그래프로 그린대.', '배지 8개를 모으면 새봄마을 동쪽 졸업 언덕으로 갈 수 있대!'] }]);
+house('icelakeH', '얼음호수시티 민가', [{ id: 'icelakeh', kind: 'npc', x: 7, y: 4, dir: 'left', pal: 't1', lines: ['겨울이면 호수가 꽁꽁 얼어서 썰매를 타지.', '관장 한결은 무엇이든 자료로 모아 그래프로 그린대.', '배지 8개를 모으면 새봄마을 동쪽 졸업 언덕에 갈 수 있대! 좌표 종이비행기로 날아가면 금방이야.'] }]);
 townGen('icelake', { name: '얼음호수시티', theme: 'winter', unit: 81, w: 26, h: 20, seed: 1501, exits: ['W', 'N'], blds: [
   { x: 2, y: 2, w: 6, roof: 'G', d: 3, to: 'gym7', emblem: '8' }, { x: 18, y: 2, w: 4, roof: 'C', d: 2, to: 'center', ret: 1 },
   { x: 18, y: 12, w: 4, roof: 'M', d: 2, to: 'mart', ret: 1, arrive: [4, 6] }, { x: 3, y: 12, w: 4, roof: 'H', d: 1, to: 'icelakeH' }] });
 API.icelake.m.xpMul = 0.8;
-gateGuard(API.icelake, API.icelake.cx, 1, API.icelake.cx + 1, 1, () => false, '경비원: 이 너머는 아직 길이 없어.\n배지 8개를 모았다면 새봄마을 동쪽 졸업 언덕으로 가렴!', '', 'guard', 'icelakeN');
+gateGuard(API.icelake, API.icelake.cx, 1, API.icelake.cx + 1, 1, () => false, () => S.badges.every(Boolean) ? '경비원: 배지 8개! 졸업 언덕은 새봄마을 동쪽이야.\nSTART 메뉴 → 날아가기(좌표 종이비행기)로 새봄마을에 가 보렴!' : '경비원: 이 너머는 길이 없어.\n배지 8개를 모으면 새봄마을 동쪽 졸업 언덕으로 가렴!', '', 'guard', 'icelakeN');
+// 졸업 길 (미리보기 ㉑, 2026-11-10): 새봄마을 동쪽 → 졸업 언덕. 사계절 진화형 야생, 전 범위 문제, 동쪽 끝에서 라이벌 마지막
+routeGen('gradroad', { name: '졸업 길', theme: 'town', unit: 0, w: 42, h: 21, cx: 1, pond: 1, wild: ['kkokko', 'queenbung', 'wangmae', 'keunjip', 'bam2', 'gom', 'seal', 'nunkkot'], lv: [40, 43], ends: [['W', 10], ['E', 9]], trainers: 3, items: [['fpotion', 1], ['hpotion', 2], ['ball', 3]], hidden: [['fpotion', 1]], flowers: 8, seed: 211 });
+API.gradroad.m.units = [11, 1, 13, 21, '2a', 23, 31, '2b', 33, 41, 3, 43, 51, 52, 53, 4, '5a', '5b', 71, 72, 73, 81, 6, 83]; API.gradroad.m.wild.grad = 'E'; API.gradroad.m.xpMul = 0.8;
+blossom(API.gradroad.m, 3, .5); openSecrets(API.gradroad, API.gradroad.m.exits.W[2], API.gradroad.m.exits.W[3]);
+API.gradroad.ev(API.gradroad.m.exits.E[2], API.gradroad.m.exits.E[3], 'rival5', () => rivalBattle(5)); // 동쪽 출구 바로 앞(꼭 지나는 칸)
 API.icelake.sign(API.icelake.cx + 2, 7, '얼음호수시티\n꽁꽁 언 호수 위에 세운 도시');
 // 도로 트레이너는 맵당 2명 (2026-11-08 학생 예상 시간 줄이기). 지도 모양이 그대로이도록 만든 뒤에 몬스터가 많은 트레이너를 뺀다
 [['route1', ['route1t2']], ['route2', ['route2t2', 'route2t3']], ['route3', ['route3t0', 'route3t2']], ['tidecave', ['tidecavet2']],
@@ -2634,14 +2639,14 @@ routeGen('dunes', { name: '모래언덕', theme: 'plain', unit: '2b', w: 40, h: 
 API.dunes.rect(3, 1, 3, API.dunes.m.h - 2, 'T').set(3, 8, 'x'); relocate(API.dunes, 1);
 routeGen('cape', { name: '바람곶', theme: 'lake', unit: 4, w: 36, h: 21, wild: ['tri', 'spider', 'owl', 'fighter', 'bird2'], lv: [20, 23], ends: [['N', 18]], trainers: 4, items: [['hpotion', 2], ['hball', 2], ['revive', 1]], hidden: [['ether', 1]], cx: 2, pond: 1, seed: 641, signText: '바람곶\n바닷바람이 거센 곶. 강한 트레이너가 수련 중!', secretItem: [['hball', 1], ['protractor', 1]] });
 routeGen('highland', { name: '하늘 오솔길', theme: 'tower', unit: 0, w: 34, h: 26, wild: ['bird2', 'dog2', 'fighter2', 'ghost2', 'rock2'], lv: [33, 37], ends: [['S', 17]], trainers: 5, items: [['hpotion', 2], ['candy', 1], ['revive', 2]], hidden: [['ether', 1], ['hball', 2]], cx: 2, seed: 659, signText: '하늘 오솔길\n전 단원 복습의 길', secretItem: [['hball', 1], ['compass', 1]] });
-// 학기말 4인방 & 챔피언
+// 졸업 4인방 & 챔피언 (미리보기 ㉑, 2026-11-10): 사계절 4인방, 2마리씩, 관장 수준(HPMUL·EDMG elite = leader). 지면 처음부터
+const ALL_UNITS = [11, 1, 13, 21, '2a', 23, 31, '2b', 33, 41, 3, 43, 51, 52, 53, 4, '5a', '5b', 71, 72, 73, 81, 6, 83]; // 중학교 수학 전 범위
 const ELITES = [
-  { name: '순환', title: '학기말 4인방', units: [1, '2a'], team: [['snake2', 39], ['bat2', 40], ['rock2', 40], ['cat2', 41]], floor: '#e0ecd8', pal: 'E0', line: ['나는 4인방 첫 번째, 순환.', 'Ⅰ단원과 Ⅱ-1단원은 기본 중의 기본! 흔들리지 마라.'], lose: '기본이 탄탄하구나. 다음 방으로 가라.' },
-  { name: '기울기', title: '학기말 4인방', units: ['2b', 3], team: [['croc2', 40], ['sheep2', 41], ['bird2', 41], ['dog2', 42]], floor: '#f0f0d0', pal: 'E1', line: ['4인방 두 번째, 기울기.', '부등식과 연립방정식, 그리고 함수! 그래프 한 장이면 모든 게 보이지.'], lose: '너의 그래프는 끝까지 증가하는구나.' },
-  { name: '합동', title: '학기말 4인방', units: [4, '5a'], team: [['tri2', 41], ['spider2', 41], ['fighter2', 42], ['fish2', 43]], floor: '#e4e4f4', pal: 'E2', line: ['4인방 세 번째, 합동.', '도형의 성질과 닮음. 증명해 봐라!'], lose: 'RHA, RHS… 그리고 너의 승리. 증명 끝.' },
-  { name: '운명', title: '학기말 4인방', units: ['5b', 6], team: [['dino2', 42], ['coin2', 42], ['octo2', 43], ['dice2', 44]], floor: '#f2e0f2', pal: 'E3', line: ['4인방 마지막, 운명.', '피타고라스와 확률. 너의 승률을 계산해 볼까?'], lose: '계산 결과… 너의 승률은 1이었다. 챔피언이 기다린다.' },
-];
-ELITES.forEach((E, i) => {
+  { name: '다온', title: '봄의 4인방', units: [11, 1, 13, 21, '2a', 23], team: [['kkotsaem', 44], ['wanggaegul', 45]], floor: '#fbe6ee', pal: 'E0', line: ['졸업 전당에 온 걸 환영해. 나는 봄의 4인방 다온.', '봄은 모든 것의 시작. 수와 식, 기초부터 단단한지 볼까?'], lose: '기초가 탄탄하구나. 다음 방으로 가렴.' },
+  { name: '시원', title: '여름의 4인방', units: [31, '2b', 33, 41, 3, 43], team: [['wangmae', 44], ['wangppul', 45]], floor: '#e2f2dc', pal: 'E1', line: ['여름의 4인방 시원이다.', '한여름 햇볕처럼 뜨겁게! x가 정해지면 답도 정해진다!'], lose: '소나기처럼 시원한 승부였어.' },
+  { name: '가람', title: '가을의 4인방', units: [51, 52, 53, 4, '5a', '5b'], team: [['song', 44], ['bam2', 45]], floor: '#f6e4cc', pal: 'E2', line: ['가을의 4인방 가람.', '단풍잎 모양도 결국 도형이야. 증명해 봐!'], lose: '증명 끝. 너의 승리야.' },
+  { name: '은설', title: '겨울의 4인방', units: [71, 72, 73, 81, 6, 83], team: [['seal', 44], ['nunkkot', 45]], floor: '#e4eef8', pal: 'E3', line: ['마지막 4인방, 겨울의 은설.', '눈송이 하나도 확률로 떨어진다. 너의 승률을 계산해 볼까?'], lose: '계산 결과… 너의 승률은 1이었어. 챔피언이 기다린다.' },
+];ELITES.forEach((E, i) => {
   const a = room('league' + (i + 1), 10, 10, { name: `4인방의 방 ${i + 1}`, floor: E.floor, unit: E.units[0], units: E.units });
   a.set(1, 3, 'q').set(8, 3, 'q').set(1, 6, 'q').set(8, 6, 'q');
   a.warp(4, 1, i < 3 ? 'league' + (i + 2) : 'champroom', 4, 8, { door: true });
@@ -2649,6 +2654,16 @@ ELITES.forEach((E, i) => {
   a.ent({ id: 'elite' + i, kind: 'elite', i, x: 4, y: 2, cx: 4, cy: 2, ox: 6, oy: 2, dir: 'down', pal: E.pal, open: () => S.flags['elite' + i] });
 });
 { const a = room('champroom', 10, 10, { name: '챔피언의 방', floor: '#f6e6c8', unit: 0 }); a.set(1, 3, 'q').set(8, 3, 'q').set(1, 6, 'q').set(8, 6, 'q').rect(3, 4, 6, 8, 'r'); a.ent({ id: 'champ', kind: 'champ', x: 4, y: 2, dir: 'down', pal: 'champ' }); }
+// 첫 4인방 방의 나가는 문: 다온을 이긴 뒤에는 안내원이 막는다 (나가서 보건실 회복 못 하게. 지면 기록이 지워져 다시 열림)
+for (const [x, ox] of [[4, 2], [5, 7]]) gateGuard(API.league1, x, 8, ox, 8, () => !S.flags.elite0, '안내원: 졸업 전당은 한 번 들어오면 챔피언까지 쭉 가야 해!\n(지면 처음부터 다시 도전해요)', '안내원: 졸업 전당에 온 걸 환영해! 4인방을 이길 때마다 다음 방 문이 열려.\n한 번이라도 지면 처음부터 다시야. 회복은 가방 아이템으로!', 'guard', 'leagueGuard' + x);
+// 졸업 언덕 (미리보기 ㉑): 졸업 길 동쪽. 가운데 큰 건물 = 졸업 전당(4인방 첫 방)
+house('gradH', '졸업 언덕 쉼터', [{ id: 'gradh', kind: 'npc', x: 7, y: 4, dir: 'left', pal: 't2', lines: ['사계절을 모두 돌아 여기까지 왔구나!', '4인방은 봄, 여름, 가을, 겨울 순서래. 다음 상대의 계절을 미리 생각해 두렴.', '챔피언 만점은 중학교 수학 전 범위에서 문제를 낸대!'] }]);
+townGen('gradhill', { name: '졸업 언덕', theme: 'town', unit: 0, w: 24, h: 20, seed: 1601, exits: ['W'], blds: [
+  { x: 8, y: 2, w: 8, roof: 'G', d: 4, to: 'league1', emblem: '★' }, { x: 2, y: 12, w: 4, roof: 'C', d: 2, to: 'center', ret: 1 },
+  { x: 18, y: 12, w: 4, roof: 'M', d: 2, to: 'mart', ret: 1, arrive: [4, 6] }, { x: 13, y: 12, w: 4, roof: 'H', d: 1, to: 'gradH' }] });
+API.gradhill.m.units = ALL_UNITS; API.gradhill.m.xpMul = 0.8; blossom(API.gradhill.m, 5, .6);
+API.gradhill.sign(API.gradhill.cx - 2, 7, '졸업 언덕\n사계절 여행을 마친 트레이너만 오르는 언덕');
+link('town', 'E', 'gradroad', 'W'); link('gradroad', 'E', 'gradhill', 'W'); // 새봄마을 동쪽 → 졸업 길 → 졸업 언덕 (2026-11-10 선생님 요청: 다시 봄으로. 얼음호수시티에서는 좌표 종이비행기로)
 // 체육관 문 연결: townGen 에서 gym 방 출구를 설정
 // ================= 연결 =================
 link('town', 'N', 'route1', 'S'); link('route1', 'N', 'bunsu', 'S'); link('bunsu', 'N', 'route2', 'S'); link('route2', 'N', 'cycle', 'S');
@@ -2662,7 +2677,7 @@ link('func', 'E', 'route7', 'W'); link('route7', 'E', 'pita', 'W'); link('pita',
 link('prob', 'N', 'den', 'S');
 link('route1', 'W', 'meadow', 'E'); link('route2', 'E', 'grove', 'W'); link('forest', 'E', 'dunes', 'W'); link('dunes', 'S', 'route4', 'E'); link('route6', 'S', 'cape', 'N'); link('route27', 'N', 'highland', 'S');
 
-link('town', 'E', 'route27', 'W'); link('route27', 'E', 'vroad', 'S'); link('vroad', 'N', 'plateau', 'S'); link('plateau', 'W', 'silver', 'E'); link('silver', 'N', 'summit', 'S');
+link('route27', 'E', 'vroad', 'S'); // 새봄마을 동쪽은 졸업 길로 (예전 27번 도로 연결은 지움) link('vroad', 'N', 'plateau', 'S'); link('plateau', 'W', 'silver', 'E'); link('silver', 'N', 'summit', 'S');
 // ---------- 세계 지도 배치 (도로·마을·동굴을 출구끼리 맞붙여 놓는다) ----------
 const WORLD = {};
 {
@@ -2910,8 +2925,9 @@ function chSprite(palName, dir) {
 }
 
 // ---------- 사계몬 수치 ----------
-const HPMUL = { wild: 1.25, trainer: 1.35, rival: 1.4, boss: 1.45, leader: 1.5, elite: 1.55, champ: 1.6, legend: 1.7, roam: 1.6 };
-const EDMG = { wild: .62, trainer: .7, rival: .75, boss: .75, leader: .8, elite: .85, champ: .9, legend: .8, roam: .8 };
+// 4인방(elite)은 관장과 같은 수준 (미리보기 ㉑, 2026-11-10 선생님 요청: 1.55 → 1.5, .85 → .8). 챔피언은 그대로 어렵게
+const HPMUL = { wild: 1.25, trainer: 1.35, rival: 1.4, boss: 1.45, leader: 1.5, elite: 1.5, champ: 1.6, legend: 1.7, roam: 1.6 };
+const EDMG = { wild: .62, trainer: .7, rival: .75, boss: .75, leader: .8, elite: .8, champ: .9, legend: .8, roam: .8 };
 const PDMG = .78;
 // ---------- 경험치 곡선: 모든 사계몬이 하나의 곡선을 쓴다 (기획서 3.4, Q21). 레벨 n까지의 누적 경험치 = n³ ----------
 function totalXP(n) { n = Math.max(1, Math.min(100, n)); return n ** 3; }
@@ -3511,18 +3527,18 @@ async function rivalBattle(n) {
     2: [`${RIVAL_NAME}: 또 너냐! 벚꽃마을에서 진 뒤로, 이번엔 한 문제씩 제대로 읽고 풀기로 했어.`, '…어두워서 길 찾느라 고생했지? 그래도 승부는 승부다!'],
     3: [`${RIVAL_NAME}: …기다렸다. 너한테 두 번 지고 나서 오답노트를 쓰기 시작했어.`, '틀린 문제를 다시 풀어 보니까… 진짜로 실력이 늘더라. 이번엔 진짜 실력으로 간다!'],
     4: [`${RIVAL_NAME}: 왔구나. 오답노트가 거의 다 비었어. 틀렸던 문제를 전부 다시 풀었거든.`, '이번엔 내가 이길 차례다! 겨울 관장 앞에서 제대로 붙어 보자!'], // 미리보기 ⑲: 7번 도로 북쪽 끝 (체육관 7 앞)
-    5: [`${RIVAL_NAME}: …기다렸다.`, '찍기만 해서는 안 된다는 거, 너한테 지고 나서 알았어. 그래서 오답노트를 썼지.', '이번엔 진짜 실력으로 간다!'],
+    5: [`${RIVAL_NAME}: …기다렸다. 여기가 졸업 언덕 바로 앞이야.`, '처음엔 찍기만 하던 내가 오답노트를 다 풀고 여기까지 왔어. 다 너 덕분이야.', '그래도 승부는 승부! 졸업 전에 마지막으로 진짜 승부다!'], // 미리보기 ㉑: 졸업 길 동쪽 끝
   }[n];
   await sayAll(L);
   // 체육관 2개마다 한 번 (미리보기 ⑬, Q47): 1 = 벚꽃마을(체육관 1 앞), 2 = 파도동굴 출구(체육관 3 앞). 첫 몬스터는 관장보다 2레벨 낮게
-  const rb = rivalSp(1), team = { 1: [['piyak', 7], [evolveFor(rb, 9), 9]], 2: [['kkiruk', 21], ['keunjip', 22], [evolveFor(rb, 24), 24]], 3: [['gom', 32], ['jam', 32], [evolveFor(rb, 34), 34]], 4: [['seolyeo', 39], ['seal', 39], [evolveFor(rb, 41), 41]], 5: [['bat2', 37], ['croc2', 37], ['catpsy2', 38], ['ghost2', 38], [rivalSp(5), 41]] }[n].map(([sp, lv]) => mkMon(sp, lv, false, HPMUL.rival));
+  const rb = rivalSp(1), team = { 1: [['piyak', 7], [evolveFor(rb, 9), 9]], 2: [['kkiruk', 21], ['keunjip', 22], [evolveFor(rb, 24), 24]], 3: [['gom', 32], ['jam', 32], [evolveFor(rb, 34), 34]], 4: [['seolyeo', 39], ['seal', 39], [evolveFor(rb, 41), 41]], 5: [['wanggaegul', 42], ['bam2', 42], ['seal', 43], [evolveFor(rb, 44), 44]] }[n].map(([sp, lv]) => mkMon(sp, lv, false, HPMUL.rival));
   // 문제: 지금까지 지나온 영역에서 골고루 (복습 보스, Q48)
-  const units = { 1: [11, 1, 13], 2: [11, 1, 13, 21, '2a', 23, 31, '2b', 33], 3: [11, 1, 13, 21, '2a', 23, 31, '2b', 33, 41, 3, 43], 4: [11, 1, 13, 21, '2a', 23, 31, '2b', 33, 41, 3, 43, 51, 52, 53, 4, '5a', '5b'] }[n];
+  const units = { 1: [11, 1, 13], 2: [11, 1, 13, 21, '2a', 23, 31, '2b', 33], 3: [11, 1, 13, 21, '2a', 23, 31, '2b', 33, 41, 3, 43], 4: [11, 1, 13, 21, '2a', 23, 31, '2b', 33, 41, 3, 43, 51, 52, 53, 4, '5a', '5b'], 5: ALL_UNITS }[n];
   const r = await battle({ kind: 'rival', team, units, trainer: { title: '라이벌', name: RIVAL_NAME, pal: 'rival', lose: { 1: '칫… 다음엔 안 진다!', 2: '…천천히 읽었는데도 졌네. 찍는 것만으론 안 된다는 건 알겠어.', 3: '…인정. 오답노트를 써도 아직 네가 한 수 위야.', 4: '…알았어. 넌 진짜야.', 5: '…인정. 넌 진짜 강해. 챔피언한테도 꼭 이겨라!' }[n] }, money: n * 700 });
   if (r !== 'win') S.flags['rival' + n] = 0;
   else {
-    await say({ 1: `${RIVAL_NAME}: 흥! 오늘은 봐준다. 다음에 보자!`, 2: `${RIVAL_NAME}: 소나기항구는 바로 앞이야. 여울 관장한테 지기만 해 봐!`, 3: `${RIVAL_NAME}: 단풍마을은 바로 앞이야. 노을 관장한테 지기만 해 봐!`, 4: `${RIVAL_NAME}: 위층에 보스가 있어. …조심해.`, 5: `${RIVAL_NAME}: 학기말 고원은 위쪽이야. 가라!` }[n]);
-    if (n <= 4) { // 보상: 힌트 카드 1장 (Q49)
+    await say({ 1: `${RIVAL_NAME}: 흥! 오늘은 봐준다. 다음에 보자!`, 2: `${RIVAL_NAME}: 소나기항구는 바로 앞이야. 여울 관장한테 지기만 해 봐!`, 3: `${RIVAL_NAME}: 단풍마을은 바로 앞이야. 노을 관장한테 지기만 해 봐!`, 4: `${RIVAL_NAME}: 눈꽃마을은 바로 앞이야. 서리 관장한테 지기만 해 봐!`, 5: `${RIVAL_NAME}: 졸업 언덕은 바로 앞이야. 가라!` }[n]);
+    if (n <= 5) { // 보상: 힌트 카드 1장 (Q49)
       if ((S.hints || 0) < HINT_MAX) { S.hints = (S.hints || 0) + 1; SFX.lvl(); await say(`${jo(RIVAL_NAME, '이가')} 힌트 카드 1장을 던져 주고 갔다!\n(가진 카드 ${S.hints}장 / 최대 ${HINT_MAX}장)`); }
       else await say(`${jo(RIVAL_NAME, '이가')} 힌트 카드를 주려 했지만, 이미 ${HINT_MAX}장을 가지고 있다.`);
     }
@@ -3572,9 +3588,7 @@ async function awardBadge(n) {
   pop.remove();
   for (const [it, k] of G.reward) await giveItem(it, k);
   if (G.key) await giveKey(G.key, KEYS[G.key].desc);
-  if (n === 6) { S.flags.takeover = 1; }
-  if (G.after) await say(`관장 ${G.name}: ${G.after}`);
-  if (n === 7) await sayAll(['관장 운수: 이제 수학마을 동쪽 27번 도로로 가 봐. 학기말 고원이 기다려!', '(정박사님이 연구소로 와 달라고 했다는 소식이 들린다.)']);
+  if (G.after) await say(`관장 ${G.name}: ${G.after}`); // (예전 바탕 파일의 체육관 7·8 뒤 이야기 이벤트는 2026-11-10 지움)
 }
 H.shrine = async () => {
   if (S.badges[7]) return say('장로: 확률을 믿되, 계산을 믿어라. 언제나 정진하거라.');
@@ -3793,13 +3807,15 @@ H.elite = async e => {
   await sayAll(E.line.map(l => `${E.title} ${E.name}: ${l}`));
   const r = await battle({ kind: 'elite', team: E.team.map(([sp, lv]) => mkMon(sp, lv, false, HPMUL.elite)), trainer: { title: E.title, name: E.name, pal: E.pal, lose: E.lose }, money: 4000, units: E.units });
   if (r === 'win') { S.flags['elite' + e.i] = 1; await say('(뒤쪽 문이 열렸다!)'); }
+  else for (let i = 0; i < 4; i++) delete S.flags['elite' + i]; // 지면 처음부터 (미리보기 ㉑)
 };
 H.champ = async () => {
-  await sayAll([S.champ ? '챔피언 만점: 다시 왔구나! 실력이 녹슬지 않았는지 볼까?' : '챔피언 만점: 4인방을 모두 넘다니… 기다리고 있었다.', '나는 학기말 챔피언 만점. 이번 승부에서는\n중2 수학 모든 단원의 문제가 나온다!']);
+  await sayAll([S.champ ? '챔피언 만점: 다시 왔구나! 실력이 녹슬지 않았는지 볼까?' : '챔피언 만점: 사계절을 모두 돌아 4인방까지 넘다니… 기다리고 있었다.', '나는 졸업 챔피언 만점. 이번 승부에서는\n중학교 수학 전 범위의 문제가 나온다. 마지막 문제다!']);
   const third = STARTERS.find(s => s !== S.starter && s !== rivalSp(1));
-  const team = [['owl', 44], ['top', 44], ['dice2', 45], ['xdragon2', 46], ['fish2', 46], [SP[SP[third].evo[1]].evo[1], 48]].map(([sp, lv]) => mkMon(sp, lv, false, HPMUL.champ));
-  const r = await battle({ kind: 'champ', team, trainer: { title: '챔피언', name: '만점', pal: 'champ', lose: '…훌륭하다. 네가 바로 새로운 학기말 챔피언이야!' }, money: 10000, unit: 0 });
-  if (r !== 'win') return;
+  // 미리보기 ㉑: 사계절 4마리, 마지막은 나도 라이벌도 고르지 않은 첫 몬스터의 최종 진화형. 챔피언은 어렵게(HPMUL·EDMG champ)
+  const team = [['queenbung', 45], ['keunjip', 46], ['jam', 46], [SP[SP[third].evo[1]].evo[1], 47]].map(([sp, lv]) => mkMon(sp, lv, false, HPMUL.champ));
+  const r = await battle({ kind: 'champ', team, trainer: { title: '챔피언', name: '만점', pal: 'champ', lose: '…훌륭하다. 네가 바로 새로운 졸업 챔피언이야!' }, money: 10000, units: ALL_UNITS });
+  if (r !== 'win') { for (let i = 0; i < 4; i++) delete S.flags['elite' + i]; return; } // 지면 처음부터
   const first = !S.champ; S.champ = (S.champ || 0) + 1;
   for (let i = 0; i < 4; i++) delete S.flags['elite' + i];
   await ending(first);
@@ -5137,7 +5153,7 @@ async function ending(first) {
   scene = 'evo'; EVO = { intro: true, t0: performance.now(), done: true }; // 첫 몬스터 4마리
   const tot = Object.values(S.stats).reduce((a, [n, ok]) => [a[0] + n, a[1] + ok], [0, 0]);
   SFX.badge();
-  await sayAll([first ? `전당 등록을 축하합니다!!\n${jo(S.name, '은는')} 새로운 챔피언이 되었다!` : `${jo(S.name, '은는')} 챔피언 방어에 성공했다!`, `지금까지 푼 문제 ${tot[0]}개, 정답률 ${tot[0] ? Math.round(tot[1] / tot[0] * 100) : 0}%!\n잡은 사계몬 ${Object.keys(S.caught).length}종!`, '정박사: 봄·여름·가을·겨울, 사계절 여행을 모두 마쳤구나!\n졸업을 축하한다!', '(이제 성적표가 나옵니다. 화면을 캡처해서 제출하세요!)']);
+  await sayAll([first ? `전당 등록을 축하합니다!!\n${jo(S.name, '은는')} 새로운 챔피언이 되었다!` : `${jo(S.name, '은는')} 챔피언 방어에 성공했다!`, `지금까지 푼 문제 ${tot[0]}개, 정답률 ${tot[0] ? Math.round(tot[1] / tot[0] * 100) : 0}%!\n잡은 사계몬 ${Object.keys(S.caught).length}종!`, '정박사: 봄·여름·가을·겨울, 사계절 여행을 모두 마쳤구나!\n졸업을 축하한다!', '(이제 성적표가 나옵니다. 화면을 캡처하거나 이미지로 저장해서 제출하세요!)']);
   hideTb(); await reportMenu();
   scene = 'world';
 }
