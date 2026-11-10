@@ -3795,6 +3795,34 @@ function onlineValidateRosterPreview(packet) {
     })
   };
 }
+
+function onlineSendHpUpdate(teamIndex, mon) {
+  if (!Number.isInteger(teamIndex) || teamIndex < 0 || teamIndex > 2 || !mon ||
+      !Number.isInteger(mon.hp) || !Number.isInteger(mon.maxhp) ||
+      mon.maxhp < 1 || mon.hp < 0 || mon.hp > mon.maxhp) {
+    throw new Error('battle_protocol_mismatch');
+  }
+  onlineSend('battle_state', {
+    action: 'hp_update',
+    teamIndex,
+    hp: mon.hp,
+    maxhp: mon.maxhp
+  });
+}
+function onlineApplyOpponentHpUpdate(opponentRoster, packet) {
+  const p = packet && packet.payload;
+  if (!opponentRoster || !Array.isArray(opponentRoster.party) ||
+      !packet || packet.type !== 'battle_state' || packet.from === 'server' ||
+      !p || p.action !== 'hp_update' ||
+      !Number.isInteger(p.teamIndex) || p.teamIndex < 0 || p.teamIndex > 2 ||
+      !Number.isInteger(p.hp) || !Number.isInteger(p.maxhp) || p.maxhp < 1 ||
+      p.hp < 0 || p.hp > p.maxhp) return false;
+  const mon = opponentRoster.party[p.teamIndex];
+  if (!mon || mon.maxhp !== p.maxhp || p.hp > mon.hp) return false;
+  mon.hp = p.hp;
+  return true;
+}
+
 H.multiplayer = async () => {
   await say('안녕! 나는 트레이너 대전과 사계몬 교환을 안내하고 있어.\n온라인 기능을 선택해 봐!');
   const c = await choose([
