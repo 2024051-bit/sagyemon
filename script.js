@@ -2039,7 +2039,7 @@ function gateGuard(a, x, y, ox, oy, cond, closed, opened, pal = 'guard', id) {
   gc.rect(3, 3, 8, 3, 'c').set(7, 2, 'h').set(1, 2, 'p').set(10, 2, 'k').rect(1, 5, 2, 5, 't');
   gc.warp(5, 8, '@ret', 0, 0, { mat: true }); gc.warp(6, 8, '@ret', 0, 0, { mat: true });
   gc.ent({ id: 'ginkgoNurse', kind: 'nurse', x: 5, y: 2, dir: 'down', pal: 'nurse' });
-  gc.ent({ id: 'ginkgoEgg aide', kind: 'eggaide', x: 9, y: 6, dir: 'left', pal: 'prof' });
+  gc.ent({ id: 'ginkgoEggaide', kind: 'eggaide', x: 9, y: 6, dir: 'left', pal: 'prof' });
   gc.ent({ id: 'ginkgoTutor', kind: 'tutor', x: 2, y: 7, dir: 'right', pal: 'elder' });
   gc.ent({ id: 'battleTradeGuide', kind: 'multiplayer', x: 7, y: 6, dir: 'down', pal: 't2' });
   const m = room('mart', 10, 8, { name: '사계 상점', floor: '#e2ecf4' });
