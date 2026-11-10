@@ -3718,8 +3718,9 @@ async function onlineConnectRoom(base, room) {
       }
       ONLINE_ROOM.packets.push(packet);
       if (ONLINE_ROOM.packets.length > 100) ONLINE_ROOM.packets.shift();
-      const waiters = ONLINE_ROOM.waiters.splice(0);
-      waiters.forEach(fn => { try { fn(packet); } catch (e) {} });
+      // 패킷 종류가 맞지 않는 대기자는 유지한다. 다른 종류의 패킷이 왔다고
+      // waiters 전체를 비우면 battle_started 같은 후속 응답을 영영 놓칠 수 있다.
+      ONLINE_ROOM.waiters.slice().forEach(fn => { try { fn(packet); } catch (e) {} });
     };
     ws.onclose = () => {
       if (ONLINE_ROOM && ONLINE_ROOM.ws === ws) ONLINE_ROOM.closed = true;
