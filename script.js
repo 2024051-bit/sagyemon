@@ -3792,7 +3792,7 @@ function onlineCreateBattleSnapshot(selectedIndexes) {
 }
 function onlineRosterPreview(selectedIndexes, sourceParty = S.party) {
   return {
-    protocol: 1,
+    protocol: 2,
     trainer: String(S.name || '트레이너').slice(0, 16),
     party: selectedIndexes.map(index => sourceParty[index]).filter(Boolean).map(m => ({
       species: Number.isInteger(m.sp) && SP[m.sp] ? SP[m.sp].name : '알 수 없음',
@@ -3800,20 +3800,27 @@ function onlineRosterPreview(selectedIndexes, sourceParty = S.party) {
       level: clamp(Math.floor(Number(m.lvl) || 1), 1, 100),
       hp: clamp(Math.floor(Number(m.hp) || 0), 0, 99999),
       maxhp: clamp(Math.floor(Number(m.maxhp) || 0), 1, 99999),
+      stats: Object.fromEntries(['atk', 'def', 'spa', 'spd', 'spe'].map(key => [key, clamp(Math.floor(Number(m[key]) || 1), 1, 99999)])),
       types: spTypes(m.sp).slice(0, 2),
       ability: String(m.ability || '').slice(0, 12),
-      moves: movesOf(m).slice(0, 4).map(move => move.name)
+      moves: movesOf(m).slice(0, 4).map(move => ({
+        name: move.name, type: move.type, power: move.power,
+        category: move.category, accuracy: move.accuracy,
+        priority: move.priority, eff: move.eff || null,
+        sec: move.sec || null, charge: !!move.charge,
+        struggle: !!move.struggle
+      }))
     }))
   };
 }
 function onlineValidateRosterPreview(packet) {
   const data = packet && packet.payload;
-  if (!data || data.protocol !== 1 || !Array.isArray(data.party) || data.party.length !== 3) throw new Error('battle_protocol_mismatch');
+  if (!data || data.protocol !== 2 || !Array.isArray(data.party) || data.party.length !== 3) throw new Error('battle_protocol_mismatch');
   return {
     trainer: String(data.trainer || '트레이너').slice(0, 16),
     party: data.party.map(mon => {
-      if (!mon || typeof mon.species !== 'string' || mon.species.length > 20 || !Number.isFinite(mon.level) || mon.level < 1 || mon.level > 100 || !Number.isInteger(mon.hp) || !Number.isInteger(mon.maxhp) || mon.maxhp < 1 || mon.hp < 1 || mon.hp > mon.maxhp || !Array.isArray(mon.moves) || mon.moves.length > 4 || !mon.moves.every(m => typeof m === 'string') || !Array.isArray(mon.types) || mon.types.length > 2 || !mon.types.every(t => typeof t === 'string')) throw new Error('battle_protocol_mismatch');
-      return { species: mon.species.slice(0, 20), nickname: String(mon.nickname || '').slice(0, 8), level: Math.floor(mon.level), hp: mon.hp, maxhp: mon.maxhp, types: mon.types.map(t => String(t).slice(0, 8)), ability: String(mon.ability || '').slice(0, 12), moves: mon.moves.map(m => String(m).slice(0, 20)) };
+      if (!mon || typeof mon.species !== 'string' || mon.species.length > 20 || !Number.isFinite(mon.level) || mon.level < 1 || mon.level > 100 || !Number.isInteger(mon.hp) || !Number.isInteger(mon.maxhp) || mon.maxhp < 1 || mon.hp < 1 || mon.hp > mon.maxhp || !mon.stats || !['atk', 'def', 'spa', 'spd', 'spe'].every(k => Number.isInteger(mon.stats[k]) && mon.stats[k] >= 1 && mon.stats[k] <= 99999) || !Array.isArray(mon.moves) || mon.moves.length > 4 || !mon.moves.every(m => m && typeof m.name === 'string' && m.name.length <= 20 && typeof m.type === 'string' && m.type.length <= 8 && Number.isInteger(m.power) && m.power >= 0 && m.power <= 300 && ['physical', 'special', 'status'].includes(m.category) && Number.isFinite(m.accuracy) && m.accuracy >= 1 && m.accuracy <= 100 && Number.isInteger(m.priority) && m.priority >= -5 && m.priority <= 5 && (m.eff == null || typeof m.eff === 'string') && (m.sec == null || (Array.isArray(m.sec) && m.sec.length === 2 && typeof m.sec[0] === 'string' && Number.isFinite(m.sec[1]) && m.sec[1] >= 0 && m.sec[1] <= 1)) && typeof m.charge === 'boolean' && typeof m.struggle === 'boolean') || !Array.isArray(mon.types) || mon.types.length > 2 || !mon.types.every(t => typeof t === 'string')) throw new Error('battle_protocol_mismatch');
+      return { species: mon.species.slice(0, 20), nickname: String(mon.nickname || '').slice(0, 8), level: Math.floor(mon.level), hp: mon.hp, maxhp: mon.maxhp, stats: { atk: mon.stats.atk, def: mon.stats.def, spa: mon.stats.spa, spd: mon.stats.spd, spe: mon.stats.spe }, types: mon.types.map(t => String(t).slice(0, 8)), ability: String(mon.ability || '').slice(0, 12), moves: mon.moves.map(m => ({ name: m.name.slice(0, 20), type: m.type.slice(0, 8), power: m.power, category: m.category, accuracy: m.accuracy, priority: m.priority, eff: m.eff || null, sec: m.sec || null, charge: m.charge, struggle: m.struggle })) };
     })
   };
 }
@@ -3912,7 +3919,7 @@ H.multiplayer = async () => {
       const opponentRoster = onlineValidateRosterPreview({ payload: previewPacket.payload.roster });
       if (ONLINE_ROOM) ONLINE_ROOM.opponentRoster = opponentRoster;
       const startedPacket = await onlineWaitPacket('battle_started', 15000);
-      if (!startedPacket || !startedPacket.payload || startedPacket.payload.protocol !== 1 || startedPacket.payload.firstTurn !== 1) throw new Error('battle_protocol_mismatch');
+      if (!startedPacket || !startedPacket.payload || startedPacket.payload.protocol !== 2 || startedPacket.payload.firstTurn !== 1) throw new Error('battle_protocol_mismatch');
       await say('두 트레이너의 접속이 확인됐어!');
       await say(opponentRoster.trainer + '의 사계몬 팀을 확인했어.\n' + opponentRoster.party.map((m, i) => (i + 1) + '. ' + (m.nickname || m.species) + ' Lv.' + m.level + ' · ' + m.types.join('/')).join('\n'));
       return say('서버가 양쪽 팀을 확인하고 대전 시작을 승인했어! 실제 전투 화면과 기술 효과 판정은 다음 단계에서 연결해야 해.');
