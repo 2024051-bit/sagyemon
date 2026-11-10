@@ -288,6 +288,29 @@ function effect(atkType, defTypes) {
   for (const d of [].concat(defTypes)) { if (c[0].includes(d)) m *= 2; else if ((c[2] || []).includes(d)) m *= .15; else if (c[1].includes(d)) m *= .5; }
   return m;
 }
+// 타입 고유 공명: 주 타입에 따라 공격과 방어에 작은 고유 보정이 붙는다.
+const TYPE_TRAITS = {
+  노말: { name: '균형감각', desc: '노말 기술 피해 +5%', atk: '노말', bonus: 1.05 },
+  불: { name: '작열', desc: '불 기술 피해 +8%', atk: '불', bonus: 1.08 },
+  물: { name: '물의 장막', desc: '물 기술 피해 +5%, 불 피해 -5%', atk: '물', bonus: 1.05, resist: '불' },
+  풀: { name: '광합성', desc: '풀 기술 피해 +5%, 물 피해 -5%', atk: '풀', bonus: 1.05, resist: '물' },
+  전기: { name: '전하 축적', desc: '전기 기술 피해 +8%', atk: '전기', bonus: 1.08 },
+  얼음: { name: '빙결 코어', desc: '얼음 기술 피해 +5%, 물 피해 -5%', atk: '얼음', bonus: 1.05, resist: '물' },
+  격투: { name: '투기', desc: '격투 기술 피해 +8%', atk: '격투', bonus: 1.08 },
+  비행: { name: '기류 제어', desc: '비행 기술 피해 +5%, 풀 피해 -5%', atk: '비행', bonus: 1.05, resist: '풀' },
+  에스퍼: { name: '정신 파동', desc: '에스퍼 기술 피해 +8%', atk: '에스퍼', bonus: 1.08 },
+  벌레: { name: '생존 본능', desc: '벌레 기술 피해 +5%, 풀 피해 -5%', atk: '벌레', bonus: 1.05, resist: '풀' },
+  바위: { name: '암석 갑각', desc: '바위 기술 피해 +5%, 노말 피해 -5%', atk: '바위', bonus: 1.05, resist: '노말' },
+  고스트: { name: '영체', desc: '고스트 기술 피해 +8%', atk: '고스트', bonus: 1.08 },
+  드래곤: { name: '용의 혈맥', desc: '드래곤 기술 피해 +8%', atk: '드래곤', bonus: 1.08 },
+  봄: { name: '새싹의 기운', desc: '봄 기술 피해 +8%', atk: '봄', bonus: 1.08 },
+  여름: { name: '태양의 기운', desc: '여름 기술 피해 +8%', atk: '여름', bonus: 1.08 },
+  가을: { name: '수확의 기운', desc: '가을 기술 피해 +8%', atk: '가을', bonus: 1.08 },
+  겨울: { name: '혹한의 기운', desc: '겨울 기술 피해 +8%', atk: '겨울', bonus: 1.08 }
+};
+function typeTraitFor(sp) { return TYPE_TRAITS[spTypes(sp)[0]] || TYPE_TRAITS.노말; }
+function typeTraitText(m) { const t = m && typeTraitFor(m.sp); return t ? t.name + ' · ' + t.desc : ''; }
+
 // 그림 변형(진화형): 색 변환 + 장식
 const VAR = {
   dark: { h: 0, s: 1.1, l: -.12 }, red: { h: -1, s: 1.4, l: 0, to: '#e04030' }, gold: { h: 0, s: 1.2, l: .02, to: '#e8b030' }, deep: { h: 25, s: 1.15, l: -.1 }, cool: { h: -30, s: 1.1, l: -.05 }, warm: { h: 20, s: 1.15, l: -.04 },
@@ -3147,7 +3170,7 @@ const ABILITY_INFO = {
   '재생력': '매 턴이 끝날 때 최대 HP의 1/16을 회복한다.',
   '역전투혼': 'HP가 최대치의 1/3 이하일 때 주는 피해가 20% 증가한다.'
 };
-function abilityText(m) { const a = m && m.ability; return a ? `${a} · ${ABILITY_INFO[a] || '특성 효과'}` : '특성 미정'; }
+function abilityText(m) { const a = m && m.ability; return (a ? a + ' · ' + (ABILITY_INFO[a] || '특성 효과') : '특성 미정') + ' · ' + typeTraitText(m); }
 function monRow(m, extra = '') { return `<img src="${icon(m.sp)}" alt=""><span class="grow">${monName(m)} <span class="sm">Lv.${m.lvl} · ${natureText(m)} · ${abilityText(m)}${m.hp <= 0 ? ' · 기절' : m.status ? ' · ' + ST_NAME[m.status] : ''}${m.held && ITEMS[m.held] ? ' · ' + ITEMS[m.held].name : ''}${extra}</span></span>${hpRow(m)}`; }
 
 // ---------- 퀴즈 ----------
@@ -4457,7 +4480,7 @@ async function battle(o) {
   return result;
 }
 async function setHP(m, v) { m.hp = clamp(Math.round(v), 0, m.maxhp); hud(); await sleep(400); }
-function dmgCalc(att, def, power, mult, category = 'physical') {
+function dmgCalc(att, def, power, mult, category = 'physical', moveType = null) {
   const atkKey = category === 'special' ? 'spa' : 'atk', defKey = category === 'special' ? 'spd' : 'def';
   const atkStage = (att.stg || {})[atkKey] ?? 0, defStage = (def.stg || {})[defKey] ?? 0;
   const A = (att[atkKey] || att.atk) * stgMul(atkStage) * (att.status === 'brn' && category === 'physical' ? .75 : 1);
@@ -4468,6 +4491,9 @@ function dmgCalc(att, def, power, mult, category = 'physical') {
   if (att.ability === '역전투혼' && att.hp > 0 && att.hp <= att.maxhp / 3) abilityMult *= 1.2;
   if (def.ability === '강철피부' && category === 'physical') abilityMult *= .9;
   if (def.ability === '정신장벽' && category === 'special') abilityMult *= .9;
+  const atkTrait = typeTraitFor(att.sp), defTrait = typeTraitFor(def.sp);
+  if (moveType && atkTrait.atk === moveType) abilityMult *= atkTrait.bonus;
+  if (moveType && defTrait.resist === moveType) abilityMult *= .95;
   const base = (att.lvl * .2 + 2) * power * (A / Math.max(1, D)) / 10;
   return Math.max(1, Math.round(base * mult * abilityMult * (.85 + Math.random() * .15)));
 }
@@ -4545,7 +4571,7 @@ async function doMove(user, target, mv, side, { fast }) {
   if (tside === 'e') { B.a.eBlink = true; await tween(380, k => B.a.eX = Math.sin(k * Math.PI * 4) * 4); B.a.eBlink = false; B.a.eX = 0; }
   else { B.a.pBlink = true; await tween(380, k => B.a.pX = Math.sin(k * Math.PI * 4) * 4); B.a.pBlink = false; B.a.pX = 0; }
   const mult = (side === 'p' ? PDMG : (EDMG[B.o.kind] || 1)) * eff * stab(user.sp, mv.type) * (fast ? 1.5 : 1);
-  const dmg = dmgCalc(user, target, mv.power, mult, mv.category);
+  const dmg = dmgCalc(user, target, mv.power, mult, mv.category, mv.type);
   await setHP(target, target.hp - dmg);
   if (fast) await say('급소에 맞았다!');
   await effMsg(eff);
