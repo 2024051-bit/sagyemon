@@ -3787,6 +3787,11 @@ function onlineCreateBattleSnapshot(selectedIndexes) {
     const copy = JSON.parse(JSON.stringify(source));
     copy.maxhp = Math.max(1, Math.floor(Number(copy.maxhp) || 1));
     copy.hp = Math.max(1, Math.min(copy.maxhp, Math.floor(Number(copy.hp) || 1)));
+    copy.status = copy.status ? {
+      type: ({ slp: 'slp', par: 'par', brn: 'brn' })[copy.status] || null,
+      turns: Math.max(0, Math.floor(Number(copy.slp) || 0))
+    } : (copy.conf ? { type: 'conf', turns: Math.max(0, Math.floor(Number(copy.conf) || 0)) } : null);
+    if (!copy.status) copy.status = null;
     return copy;
   });
 }
@@ -3803,7 +3808,7 @@ function onlineRosterPreview(selectedIndexes, sourceParty = S.party) {
       stats: Object.fromEntries(['atk', 'def', 'spa', 'spd', 'spe'].map(key => [key, clamp(Math.floor(Number(m[key]) || 1), 1, 99999)])),
       types: spTypes(m.sp).slice(0, 2),
       ability: String(m.ability || '').slice(0, 12),
-      status: m.status ? { type: String(m.status).slice(0, 4), turns: Math.max(0, Math.floor(Number(m.slp) || 0)) } : (m.conf ? { type: 'conf', turns: Math.max(0, Math.floor(Number(m.conf) || 0)) } : null),
+      status: m.status && typeof m.status === 'object' ? { type: String(m.status.type).slice(0, 4), turns: Math.max(0, Math.floor(Number(m.status.turns) || 0)) } : (m.status ? { type: String(m.status).slice(0, 4), turns: Math.max(0, Math.floor(Number(m.slp) || 0)) } : (m.conf ? { type: 'conf', turns: Math.max(0, Math.floor(Number(m.conf) || 0)) } : null)),
       moves: movesOf(m).slice(0, 4).map(move => ({
         name: move.name, type: move.type, power: move.power,
         category: move.category, accuracy: move.accuracy,
@@ -4057,6 +4062,78 @@ function onlineApplyOpponentHpUpdate(opponentRoster, packet) {
   return true;
 }
 
+
+// 온라인 교환은 양쪽 동의 후 최종 확인하는 2단계 흐름으로 처리한다.
+// 클라이언트 저장 방식이므로 서버 계정 기반 소유권 보증은 제공하지 않는다.
+function onlineTradeMonSnapshot(mon) {
+  return JSON.parse(JSON.stringify(mon));
+}
+function onlineValidateTradeMon(mon) {
+  return !!(mon && Number.isInteger(mon.sp) && SP[mon.sp] &&
+    Number.isInteger(mon.lvl) && mon.lvl >= 1 && mon.lvl <= 100 &&
+    Number.isInteger(mon.hp) && Number.isInteger(mon.maxhp) &&
+    mon.maxhp > 0 && mon.maxhp <= 99999 && mon.hp >= 0 && mon.hp <= mon.maxhp &&
+    Array.isArray(mon.moves) && mon.moves.length <= 4 &&
+    mon.moves.every(name => typeof name === 'string' && MOVES[name]) &&
+    Number.isInteger(mon.atk) && Number.isInteger(mon.def) &&
+    Number.isInteger(mon.spa) && Number.isInteger(mon.spd) && Number.isInteger(mon.spe));
+}
+function onlineApplyTrade(localIndex, incoming) {
+  if (!Number.isInteger(localIndex) || localIndex < 0 || localIndex >= S.party.length ||
+      S.party.length < 1 || S.party.length > 6 || !onlineValidateTradeMon(incoming)) {
+    throw new Error('trade_protocol_mismatch');
+  }
+  const outgoing = S.party[localIndex];
+  S.party.splice(localIndex, 1);
+  S.party.push(JSON.parse(JSON.stringify(incoming)));
+  save();
+  return outgoing;
+}
+async function onlineRunTrade() {
+  if (!ONLINE_ROOM || !ONLINE_ROOM.room || ONLINE_ROOM.room.mode !== 'trade') throw new Error('trade_protocol_mismatch');
+  if (!S.party.length) return say('교환할 사계몬이 없어!');
+  const role = await choose(['내 사계몬을 제안하기', '상대의 제안 기다리기'], { cls: 'start', cancel: false });
+  let offer, localIndex = -1;
+  if (role === 0) {
+    if (S.party.length < 2) return say('교환 후에도 사계몬이 한 마리 이상 남아 있어야 해!');
+    localIndex = await chooseList({ title: '교환할 사계몬 선택', rows: S.party.map(mon => monRow(mon)) });
+    if (localIndex < 0) return say('교환을 취소했어.');
+    offer = { id: onlinePlayerId() + '_' + Date.now().toString(36), mon: onlineTradeMonSnapshot(S.party[localIndex]) };
+    onlineSend('trade_offer', { offer });
+    await say('교환 제안을 보냈어. 상대의 응답을 기다릴게.');
+    const response = await onlineWaitPacket(['trade_accept', 'trade_declined'], 60000);
+    if (response.type === 'trade_declined') return say('상대가 교환을 거절했어.');
+    if (!response.payload || response.payload.id !== offer.id || response.payload.phase !== 'accepted') throw new Error('trade_protocol_mismatch');
+    onlineSend('trade_accept', { id: offer.id, phase: 'commit' });
+    const received = await onlineWaitPacket('trade_commit', 15000);
+    if (!received.payload || received.payload.id !== offer.id || !onlineValidateTradeMon(received.payload.mon)) throw new Error('trade_protocol_mismatch');
+    onlineApplyTrade(localIndex, received.payload.mon);
+    return say('교환이 완료됐어! 새로운 사계몬이 동료가 됐어.');
+  }
+  const packet = await onlineWaitPacket('trade_offer', 60000);
+  offer = packet && packet.payload && packet.payload.offer;
+  if (!offer || typeof offer.id !== 'string' || offer.id.length > 100 || !onlineValidateTradeMon(offer.mon)) throw new Error('trade_protocol_mismatch');
+  await say('상대가 교환을 제안했어.\n' + monName(offer.mon) + ' · Lv.' + offer.mon.lvl);
+  const accept = await choose(['교환 수락', '거절'], { cls: 'start', cancel: false });
+  if (accept !== 0) {
+    onlineSend('trade_declined', { id: offer.id });
+    return say('교환 제안을 거절했어.');
+  }
+  if (S.party.length >= 6) {
+    // 교환은 내 사계몬을 내보내고 받으므로 한 마리 이상만 있으면 공간을 확보할 수 있다.
+  }
+  if (!S.party.length) return say('교환할 사계몬이 없어. 최소 한 마리는 준비해 줘!');
+  localIndex = await chooseList({ title: '상대에게 보낼 사계몬 선택', rows: S.party.map(mon => monRow(mon)) });
+  if (localIndex < 0) return say('교환을 취소했어.');
+  const outgoing = onlineTradeMonSnapshot(S.party[localIndex]);
+  onlineSend('trade_accept', { id: offer.id, phase: 'accepted' });
+  const committed = await onlineWaitPacket('trade_commit', 15000);
+  if (!committed.payload || committed.payload.id !== offer.id || !onlineValidateTradeMon(committed.payload.mon)) throw new Error('trade_protocol_mismatch');
+  onlineApplyTrade(localIndex, committed.payload.mon);
+  onlineSend('trade_commit_ack', { id: offer.id });
+  return say('교환이 완료됐어! ' + monName(offer.mon) + '이(가) 새로운 동료가 됐어.');
+}
+
 H.multiplayer = async () => {
   await say('안녕! 나는 트레이너 대전과 사계몬 교환을 안내하고 있어.\n온라인 기능을 선택해 봐!');
   const c = await choose([
@@ -4140,7 +4217,7 @@ H.multiplayer = async () => {
       }
       return say('대전 턴 제한에 도달해 연결을 종료했어.');
     }
-    return say('온라인 교환 방 연결을 확인했어! 다만 사계몬 소유권 검증과 실제 교환 확정은 아직 구현되지 않았어.');
+    return onlineRunTrade();
   } catch (error) {
     if (ONLINE_ROOM && ONLINE_ROOM.ws) { try { ONLINE_ROOM.ws.close(1000, 'operation failed'); } catch (e) {} ONLINE_ROOM = null; }
     const messages = {
