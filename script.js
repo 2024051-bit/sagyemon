@@ -3488,10 +3488,14 @@ H.tutor = async () => {
   const row = n => { const x = MOVES[n]; return `<span class="grow">${n}${x.eff ? ` <span class="sm">(${EFF_INFO[x.eff][0]})</span>` : ''}<br><span class="sm"><b class="ty" style="background:${TYPE_COL[x.type]}">${x.type}</b> 사용 횟수 ${x.pp}</span></span>`; };
   const j = await chooseList({ title: `${jo(monName(m), '이가')} 떠올릴 기술`, sub: `지금 기술: ${m.moves.join(', ')}`, rows: cand.map(row), foot: 'A: 고르기 · B: 그만두기' });
   if (j < 0) return say('기술 떠올리기 선생님: 언제든 다시 오렴.');
+  const RECALL_COST = 1000;
+  if (S.money < RECALL_COST) return say(`기술 떠올리기 선생님: 기술을 되살리려면 1,000원이 필요하단다. 지금은 ${S.money}원 있구나.`);
   const r = await quiz(pickUnit(), { title: '기술 떠올리기! 맞히면 성공' });
-  if (!r.ok) return say('기술 떠올리기 선생님: 아쉽구나! 해설을 읽고 다시 도전하렴.');
+  if (!r.ok) return say('기술 떠올리기 선생님: 아쉽구나! 해설을 읽고 다시 도전하렴. 돈은 받지 않았단다.');
   await say(`기술 떠올리기 선생님: 좋아! ${jo(monName(m), '이가')} ${jo(cand[j], '을를')} 떠올리기 시작했다…!`);
-  await learnMove(m, cand[j]);
+  const learned = await learnMove(m, cand[j]);
+  if (learned) { S.money -= RECALL_COST; await say('기술 회상 비용 1,000원을 냈다!'); }
+  else await say('기술을 배우지 않아 비용은 받지 않았단다.');
 };
 H.eggaide = async () => {
   if (!S.badges[0]) return say('연구소 조수: 정박사님 심부름으로 여기 와 있어. 순환시티 체육관에서 배지를 따면 다시 와 줘!');
@@ -4522,7 +4526,7 @@ async function gainXP(m, x) {
 async function learnMove(m, n) {
   const mv = MOVES[n]; movesOf(m);
   if (!mv || m.moves.includes(n)) return;
-  if (m.moves.length < 4) { m.moves.push(n); SFX.lvl(); return say(`${jo(monName(m), '은는')} 새로운 기술\n${jo(n, '을를')} 배웠다!`); }
+  if (m.moves.length < 4) { m.moves.push(n); SFX.lvl(); await say(`${jo(monName(m), '은는')} 새로운 기술\n${jo(n, '을를')} 배웠다!`); return true; }
   while (true) {
     await say(`${jo(monName(m), '은는')} 새로운 기술 ${jo(n, '을를')} 배우고 싶어 한다!\n하지만 기술을 이미 4개 알고 있다. 다른 기술을 잊게 할까?`, { wait: false });
     const y = await yesno(); hideTb();
@@ -4533,12 +4537,12 @@ async function learnMove(m, n) {
       if (i >= 0) {
         const old = m.moves[i]; m.moves[i] = n; if (m.pp) delete m.pp[old];
         await say(`1, 2, 그리고… 짠!\n${jo(monName(m), '은는')} ${jo(old, '을를')} 깨끗이 잊었다!`);
-        SFX.lvl(); return say(`그리고 ${jo(monName(m), '은는')} 새로운 기술\n${jo(n, '을를')} 배웠다!`);
+        SFX.lvl(); await say(`그리고 ${jo(monName(m), '은는')} 새로운 기술\n${jo(n, '을를')} 배웠다!`); return true;
       }
     }
     await say(`${jo(n, '을를')} 배우는 것을 포기할까?`, { wait: false });
     const g = await yesno(); hideTb();
-    if (g) return say(`${jo(monName(m), '은는')} ${jo(n, '을를')} 배우지 않았다!`);
+    if (g) { await say(`${jo(monName(m), '은는')} ${jo(n, '을를')} 배우지 않았다!`); return false; }
   }
 }
 async function playerFainted() {
