@@ -3808,7 +3808,9 @@ function onlineRosterPreview(selectedIndexes, sourceParty = S.party) {
         category: move.category, accuracy: move.accuracy,
         priority: move.priority, eff: move.eff || null,
         sec: move.sec || null, charge: !!move.charge,
-        struggle: !!move.struggle
+        struggle: !!move.struggle,
+        pp: move.struggle ? 0 : clamp(Math.floor(Number(m.pp && m.pp[move.name] != null ? m.pp[move.name] : move.pp) || 0), 0, 99),
+        maxpp: move.struggle ? 0 : clamp(Math.floor(Number(move.pp) || 0), 0, 99)
       }))
     }))
   };
@@ -3819,8 +3821,8 @@ function onlineValidateRosterPreview(packet) {
   return {
     trainer: String(data.trainer || '트레이너').slice(0, 16),
     party: data.party.map(mon => {
-      if (!mon || typeof mon.species !== 'string' || mon.species.length > 20 || !Number.isFinite(mon.level) || mon.level < 1 || mon.level > 100 || !Number.isInteger(mon.hp) || !Number.isInteger(mon.maxhp) || mon.maxhp < 1 || mon.hp < 1 || mon.hp > mon.maxhp || !mon.stats || !['atk', 'def', 'spa', 'spd', 'spe'].every(k => Number.isInteger(mon.stats[k]) && mon.stats[k] >= 1 && mon.stats[k] <= 99999) || !Array.isArray(mon.moves) || mon.moves.length > 4 || !mon.moves.every(m => m && typeof m.name === 'string' && m.name.length <= 20 && typeof m.type === 'string' && m.type.length <= 8 && Number.isInteger(m.power) && m.power >= 0 && m.power <= 300 && ['physical', 'special', 'status'].includes(m.category) && Number.isFinite(m.accuracy) && m.accuracy >= 1 && m.accuracy <= 100 && Number.isInteger(m.priority) && m.priority >= -5 && m.priority <= 5 && (m.eff == null || typeof m.eff === 'string') && (m.sec == null || (Array.isArray(m.sec) && m.sec.length === 2 && typeof m.sec[0] === 'string' && Number.isFinite(m.sec[1]) && m.sec[1] >= 0 && m.sec[1] <= 1)) && typeof m.charge === 'boolean' && typeof m.struggle === 'boolean') || !Array.isArray(mon.types) || mon.types.length > 2 || !mon.types.every(t => typeof t === 'string')) throw new Error('battle_protocol_mismatch');
-      return { species: mon.species.slice(0, 20), nickname: String(mon.nickname || '').slice(0, 8), level: Math.floor(mon.level), hp: mon.hp, maxhp: mon.maxhp, stats: { atk: mon.stats.atk, def: mon.stats.def, spa: mon.stats.spa, spd: mon.stats.spd, spe: mon.stats.spe }, types: mon.types.map(t => String(t).slice(0, 8)), ability: String(mon.ability || '').slice(0, 12), moves: mon.moves.map(m => ({ name: m.name.slice(0, 20), type: m.type.slice(0, 8), power: m.power, category: m.category, accuracy: m.accuracy, priority: m.priority, eff: m.eff || null, sec: m.sec || null, charge: m.charge, struggle: m.struggle })) };
+      if (!mon || typeof mon.species !== 'string' || mon.species.length > 20 || !Number.isFinite(mon.level) || mon.level < 1 || mon.level > 100 || !Number.isInteger(mon.hp) || !Number.isInteger(mon.maxhp) || mon.maxhp < 1 || mon.hp < 1 || mon.hp > mon.maxhp || !mon.stats || !['atk', 'def', 'spa', 'spd', 'spe'].every(k => Number.isInteger(mon.stats[k]) && mon.stats[k] >= 1 && mon.stats[k] <= 99999) || !Array.isArray(mon.moves) || mon.moves.length > 4 || !mon.moves.every(m => m && typeof m.name === 'string' && m.name.length <= 20 && typeof m.type === 'string' && m.type.length <= 8 && Number.isInteger(m.power) && m.power >= 0 && m.power <= 300 && ['physical', 'special', 'status'].includes(m.category) && Number.isFinite(m.accuracy) && m.accuracy >= 1 && m.accuracy <= 100 && Number.isInteger(m.priority) && m.priority >= -5 && m.priority <= 5 && (m.eff == null || typeof m.eff === 'string') && (m.sec == null || (Array.isArray(m.sec) && m.sec.length === 2 && typeof m.sec[0] === 'string' && Number.isFinite(m.sec[1]) && m.sec[1] >= 0 && m.sec[1] <= 1)) && typeof m.charge === 'boolean' && typeof m.struggle === 'boolean' && Number.isInteger(m.pp) && m.pp >= 0 && m.pp <= 99 && Number.isInteger(m.maxpp) && m.maxpp >= 0 && m.maxpp <= 99 && m.pp <= m.maxpp) || !Array.isArray(mon.types) || mon.types.length > 2 || !mon.types.every(t => typeof t === 'string')) throw new Error('battle_protocol_mismatch');
+      return { species: mon.species.slice(0, 20), nickname: String(mon.nickname || '').slice(0, 8), level: Math.floor(mon.level), hp: mon.hp, maxhp: mon.maxhp, stats: { atk: mon.stats.atk, def: mon.stats.def, spa: mon.stats.spa, spd: mon.stats.spd, spe: mon.stats.spe }, types: mon.types.map(t => String(t).slice(0, 8)), ability: String(mon.ability || '').slice(0, 12), moves: mon.moves.map(m => ({ name: m.name.slice(0, 20), type: m.type.slice(0, 8), power: m.power, category: m.category, accuracy: m.accuracy, priority: m.priority, eff: m.eff || null, sec: m.sec || null, charge: m.charge, struggle: m.struggle, pp: m.pp, maxpp: m.maxpp })) };
     })
   };
 }
@@ -3828,6 +3830,12 @@ function onlineValidateRosterPreview(packet) {
 function onlineBattleRandom(room) {
   let x = room.turnSeed | 0; x ^= x << 13; x ^= x >>> 17; x ^= x << 5;
   room.turnSeed = x | 0; return (x >>> 0) / 4294967296;
+}
+function onlineBattleMoves(mon, local) {
+  const moves = local ? movesOf(mon).slice(0, 4) : (Array.isArray(mon.moves) ? mon.moves : []);
+  const usable = moves.map((move, index) => ({ move, index, pp: local ? ppLeft(mon, move) : move.pp })).filter(x => x.pp > 0);
+  if (usable.length) return usable;
+  return [{ move: { name: '발버둥', type: '노말', power: 30, category: 'physical', accuracy: 100, priority: 0, struggle: true, pp: 0 }, index: 0, pp: 0 }];
 }
 function onlineBattleMonTypes(mon) {
   return Array.isArray(mon.types) ? mon.types : (mon.sp != null ? spTypes(mon.sp) : []);
@@ -3895,9 +3903,10 @@ function onlineBattleApplyTurn(room, payload, ownId) {
   const attacks = choices.filter(c => c.action === 'choose_move').map(c => {
     const local = c.playerId === ownId, team = local ? room.localTeam : room.opponentRoster.party;
     const mon = team[local ? room.activeLocal : room.activeOpponent];
-    const moves = local ? movesOf(mon) : mon.moves;
-    if (!mon || !moves || !moves[c.moveIndex]) throw new Error('battle_protocol_mismatch');
-    return { c, local, mon, move: moves[c.moveIndex] };
+    const available = onlineBattleMoves(mon, local);
+    const selected = available.find(x => x.index === c.moveIndex) || (available.length === 1 && available[0].move.struggle ? available[0] : null);
+    if (!mon || !selected) throw new Error('battle_protocol_mismatch');
+    return { c, local, mon, move: selected.move };
   }).sort((a,b) => (b.move.priority || 0) - (a.move.priority || 0) ||
     Number((b.mon.spe || b.mon.stats && b.mon.stats.spe) || 1) - Number((a.mon.spe || a.mon.stats && a.mon.stats.spe) || 1) ||
     String(a.c.playerId).localeCompare(String(b.c.playerId)));
@@ -3905,6 +3914,10 @@ function onlineBattleApplyTurn(room, payload, ownId) {
   for (const a of attacks) {
     const target = a.local ? room.opponentRoster.party[room.activeOpponent] : room.localTeam[room.activeLocal];
     if (!a.mon || a.mon.hp <= 0 || !target || target.hp <= 0) continue;
+    if (!a.move.struggle) {
+      if (a.local) usePP(a.mon, a.move);
+      else a.move.pp = Math.max(0, (a.move.pp || 0) - 1);
+    }
     const r = onlineBattleApplyMove(room, a.local ? 'local' : 'opponent', a.move);
     if (r && r.missed) logs.push(a.move.name + ' 빗나갔다!');
     else if (r && r.damage != null) logs.push(a.move.name + ' · ' + r.damage + ' 피해');
@@ -3945,10 +3958,9 @@ async function onlineRunBattleTurn(turn) {
     }
   }
   if (action === 'choose_move') {
-    const moves = movesOf(active).slice(0, 4);
-    if (!moves.length) throw new Error('battle_protocol_mismatch');
-    const pick = await choose(moves.map(move => move.name + ' · ' + move.type + ' · 위력 ' + move.power), { cls: 'start', cancel: false });
-    submitted = { action: 'choose_move', moveIndex: pick };
+    const available = onlineBattleMoves(active, true);
+    const pick = available.length === 1 && available[0].move.struggle ? 0 : await choose(available.map(x => x.move.name + ' · ' + x.move.type + ' · 위력 ' + x.move.power + ' · PP ' + x.pp), { cls: 'start', cancel: false });
+    submitted = { action: 'choose_move', moveIndex: available[pick].index };
   }
   onlineSend('battle_action', { turn, ...submitted });
   await say('턴 ' + turn + ': 상대의 행동을 기다리는 중이야.');
