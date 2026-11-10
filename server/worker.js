@@ -283,7 +283,7 @@ export class Lobby {
       }
       if (packet.type === "battle_state") {
         const p = packet.payload;
-        if (!p || p.action !== "roster_preview" || !p.roster || p.roster.protocol !== 1 ||
+        if (!p || p.action !== "roster_preview" || !p.roster || p.roster.protocol !== 2 ||
             typeof p.roster.trainer !== "string" || !Array.isArray(p.roster.party) ||
             p.roster.party.length !== 3) return;
         const validParty = p.roster.party.every(mon =>
@@ -293,8 +293,17 @@ export class Lobby {
           mon.hp >= 1 && mon.hp <= mon.maxhp && mon.maxhp <= 99999 &&
           Array.isArray(mon.types) && mon.types.length <= 2 &&
           mon.types.every(type => typeof type === "string" && type.length <= 8) &&
+          mon.stats && ["atk", "def", "spa", "spd", "spe"].every(key => Number.isInteger(mon.stats[key]) && mon.stats[key] >= 1 && mon.stats[key] <= 99999) &&
           Array.isArray(mon.moves) && mon.moves.length <= 4 &&
-          mon.moves.every(move => typeof move === "string" && move.length <= 20) &&
+          mon.moves.every(move => move && typeof move.name === "string" && move.name.length <= 20 &&
+            typeof move.type === "string" && move.type.length <= 8 &&
+            Number.isInteger(move.power) && move.power >= 0 && move.power <= 300 &&
+            ["physical", "special", "status"].includes(move.category) &&
+            Number.isFinite(move.accuracy) && move.accuracy >= 1 && move.accuracy <= 100 &&
+            Number.isInteger(move.priority) && move.priority >= -5 && move.priority <= 5 &&
+            (move.eff == null || typeof move.eff === "string") &&
+            (move.sec == null || (Array.isArray(move.sec) && move.sec.length === 2 && typeof move.sec[0] === "string" && Number.isFinite(move.sec[1]) && move.sec[1] >= 0 && move.sec[1] <= 1)) &&
+            typeof move.charge === "boolean" && typeof move.struggle === "boolean") &&
           (mon.nickname == null || (typeof mon.nickname === "string" && mon.nickname.length <= 8)) &&
           (mon.ability == null || (typeof mon.ability === "string" && mon.ability.length <= 12))
         );
@@ -310,7 +319,7 @@ export class Lobby {
         if (starting) state.started = true;
         await this.ctx.storage.put("battle:" + meta.roomId, state);
         this.broadcast(meta.roomId, ws, { type: "battle_state", from: meta.playerId, payload: p, at: Date.now() });
-        if (starting) this.broadcast(meta.roomId, null, { type: "battle_started", from: "server", payload: { protocol: 1, firstTurn: 1 }, at: Date.now() });
+        if (starting) this.broadcast(meta.roomId, null, { type: "battle_started", from: "server", payload: { protocol: 2, firstTurn: 1 }, at: Date.now() });
         return;
       }
       return;
