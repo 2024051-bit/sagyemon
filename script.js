@@ -3797,11 +3797,16 @@ H.multiplayer = async () => {
     await onlineConnectRoom(base, room);
     if (mode === 'battle') {
       // 양쪽 접속 확인만 수행한다. 전투 명령/피해 판정은 아직 게임 로직에 연결하지 않는다.
-      onlineSend('battle_action', { action: 'ready', protocol: 1 });
       await say('대전 방에 접속했어! 상대 트레이너의 준비를 확인하고 있어.');
-      const ready = await onlineWaitPacket('battle_action', 60000);
+      // 상대가 WebSocket에 늦게 접속해 첫 메시지를 놓쳐도 준비 신호를 다시 보낸다.
+      let ready = null;
+      for (let attempt = 0; attempt < 20 && !ready; attempt++) {
+        onlineSend('battle_action', { action: 'ready', protocol: 1 });
+        try { ready = await onlineWaitPacket('battle_action', 1500); }
+        catch (error) { if (error.message !== 'online_wait_timeout') throw error; }
+      }
       if (!ready || !ready.payload || ready.payload.action !== 'ready' || ready.payload.protocol !== 1) {
-        throw new Error('battle_protocol_mismatch');
+        throw new Error('online_wait_timeout');
       }
       return say('두 트레이너의 접속이 확인됐어!\n다음 단계에서 실제 사계몬 대전 화면과 턴 진행을 연결할게.');
     }
