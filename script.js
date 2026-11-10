@@ -3750,11 +3750,28 @@ function onlineWaitPacket(types, timeout = 60000) {
     room.waiters.push(onPacket);
   });
 }
-function onlineRosterPreview() {
+async function onlineChooseBattleTeam() {
+  const available = S.party.slice(0, 6);
+  if (available.length < 3) {
+    await say('온라인 대전에는 사계몬이 최소 3마리 필요해!\n팀을 3마리 이상 준비한 뒤 다시 찾아와 줘.');
+    return null;
+  }
+  const selected = [];
+  while (selected.length < 3) {
+    const remaining = available.map((mon, index) => ({ mon, index })).filter(x => !selected.includes(x.index));
+    const labels = remaining.map((x, i) => (i + 1) + '. ' + (monName(x.mon) || SP[x.mon.sp].name) + ' Lv.' + x.mon.lvl);
+    await say('전투에 참가할 사계몬을 골라 줘! (' + (selected.length + 1) + '/3)');
+    const choice = await choose(labels, { cls: 'start', cancel: false });
+    if (choice < 0 || !remaining[choice]) continue;
+    selected.push(remaining[choice].index);
+  }
+  return selected;
+}
+function onlineRosterPreview(selectedIndexes) {
   return {
     protocol: 1,
     trainer: String(S.name || '트레이너').slice(0, 16),
-    party: S.party.slice(0, 6).map(m => ({
+    party: selectedIndexes.map(index => S.party[index]).filter(Boolean).map(m => ({
       species: Number.isInteger(m.sp) && SP[m.sp] ? SP[m.sp].name : '알 수 없음',
       nickname: String(m.nick || '').slice(0, 8),
       level: clamp(Math.floor(Number(m.lvl) || 1), 1, 100),
@@ -3766,7 +3783,7 @@ function onlineRosterPreview() {
 }
 function onlineValidateRosterPreview(packet) {
   const data = packet && packet.payload;
-  if (!data || data.protocol !== 1 || !Array.isArray(data.party) || data.party.length < 1 || data.party.length > 6) throw new Error('battle_protocol_mismatch');
+  if (!data || data.protocol !== 1 || !Array.isArray(data.party) || data.party.length !== 3) throw new Error('battle_protocol_mismatch');
   return {
     trainer: String(data.trainer || '트레이너').slice(0, 16),
     party: data.party.map(mon => {
@@ -3831,7 +3848,9 @@ H.multiplayer = async () => {
         catch (error) { if (error.message !== 'online_wait_timeout') throw error; }
       }
       if (!ready || !ready.payload || ready.payload.action !== 'ready' || ready.payload.protocol !== 1) throw new Error('online_wait_timeout');
-      onlineSend('battle_state', { action: 'roster_preview', roster: onlineRosterPreview() });
+      const selectedTeam = await onlineChooseBattleTeam();
+      if (!selectedTeam) return say('사계몬 3마리를 준비한 뒤 다시 도전해 줘!');
+      onlineSend('battle_state', { action: 'roster_preview', roster: onlineRosterPreview(selectedTeam) });
       const previewPacket = await onlineWaitPacket('battle_state', 15000);
       if (!previewPacket || !previewPacket.payload || previewPacket.payload.action !== 'roster_preview') throw new Error('battle_protocol_mismatch');
       const opponentRoster = onlineValidateRosterPreview({ payload: previewPacket.payload.roster });
