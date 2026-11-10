@@ -196,6 +196,15 @@ export class Lobby {
       try { ws.send(JSON.stringify({ type: "pong", at: Date.now() })); } catch {}
     }
   }
-  webSocketClose(ws) { try { ws.close(); } catch {} }
+  webSocketClose(ws) {
+    const meta = ws.deserializeAttachment();
+    if (meta && meta.roomId) {
+      for (const peer of this.ctx.getWebSockets(meta.roomId)) {
+        if (peer !== ws && peer.readyState === WebSocket.OPEN) {
+          try { peer.send(JSON.stringify({ type: "peer_left", playerId: meta.playerId })); } catch {}
+        }
+      }
+    }
+  }
   webSocketError(ws) { try { ws.close(1011, "connection error"); } catch {} }
 }
