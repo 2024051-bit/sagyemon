@@ -3637,7 +3637,7 @@ function onlinePlayerId() {
   let id = '';
   try { id = localStorage.getItem(ONLINE_PLAYER_KEY) || ''; } catch (e) {}
   if (!/^[a-zA-Z0-9_-]{8,80}$/.test(id)) {
-    id = (crypto && crypto.randomUUID) ? crypto.randomUUID().replace(/-/g, '') : 'player_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    id = (window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID().replace(/-/g, '') : 'player_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
     try { localStorage.setItem(ONLINE_PLAYER_KEY, id); } catch (e) {}
   }
   return id;
