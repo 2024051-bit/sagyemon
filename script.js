@@ -3784,8 +3784,8 @@ function onlineCreateBattleSnapshot(selectedIndexes) {
     const source = S.party[index];
     if (!source || source.hp <= 0) throw new Error('battle_protocol_mismatch');
     const copy = JSON.parse(JSON.stringify(source));
-    copy.hp = Math.max(1, Math.min(copy.maxhp, Math.floor(copy.hp)));
-    copy.maxhp = Math.max(1, Math.floor(copy.maxhp));
+    copy.maxhp = Math.max(1, Math.floor(Number(copy.maxhp) || 1));
+    copy.hp = Math.max(1, Math.min(copy.maxhp, Math.floor(Number(copy.hp) || 1)));
     return copy;
   });
 }
