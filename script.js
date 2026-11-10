@@ -3989,7 +3989,7 @@ function onlineApplyOpponentHpUpdate(opponentRoster, packet) {
       !Number.isInteger(p.hp) || !Number.isInteger(p.maxhp) || p.maxhp < 1 ||
       p.hp < 0 || p.hp > p.maxhp) return false;
   const mon = opponentRoster.party[p.teamIndex];
-  if (!mon || mon.maxhp !== p.maxhp || p.hp > mon.hp) return false;
+  if (!mon || mon.maxhp !== p.maxhp || p.hp > Math.min(mon.maxhp, mon.hp + Math.ceil(mon.maxhp / 2))) return false;
   mon.hp = p.hp;
   return true;
 }
