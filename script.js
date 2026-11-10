@@ -4428,8 +4428,9 @@ async function battle(o) {
 async function setHP(m, v) { m.hp = clamp(Math.round(v), 0, m.maxhp); hud(); await sleep(400); }
 function dmgCalc(att, def, power, mult, category = 'physical') {
   const atkKey = category === 'special' ? 'spa' : 'atk', defKey = category === 'special' ? 'spd' : 'def';
-  const A = (att[atkKey] || att.atk) * stgMul((att.stg || {})[atkKey] || (att.stg || {}).atk || 0) * (att.status === 'brn' && category === 'physical' ? .75 : 1);
-  const D = (def[defKey] || def.def) * stgMul((def.stg || {})[defKey] || (def.stg || {}).def || 0);
+  const atkStage = (att.stg || {})[atkKey] ?? 0, defStage = (def.stg || {})[defKey] ?? 0;
+  const A = (att[atkKey] || att.atk) * stgMul(atkStage) * (att.status === 'brn' && category === 'physical' ? .75 : 1);
+  const D = (def[defKey] || def.def) * stgMul(defStage);
   const base = (att.lvl * .2 + 2) * power * (A / Math.max(1, D)) / 10;
   return Math.max(1, Math.round(base * mult * (.85 + Math.random() * .15)));
 }
@@ -4463,15 +4464,24 @@ async function inflict(t, side, st) {
   await say(`${jo(nm, '은는')} ${{ slp: '잠들어 버렸다!', par: '마비되어 몸이 저리다!', brn: '화상을 입었다!' }[key]}`);
 }
 async function stage(m, side, key, d) {
-  m.stg = m.stg || { atk: 0, def: 0 }; const nm = nameOf(m, side), lbl = key === 'atk' ? '공격' : '방어';
+  m.stg = m.stg || { atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
+  const labels = { atk: '공격', def: '방어', spa: '특수공격', spd: '특수방어', spe: '스피드' };
+  const lbl = labels[key] || key, nm = nameOf(m, side);
+  if (!labels[key]) return;
   if ((d > 0 && m.stg[key] >= 4) || (d < 0 && m.stg[key] <= -4)) return say(`${nm}의 ${jo(lbl, '은는')} 더 이상 ${d > 0 ? '오르지' : '떨어지지'} 않는다!`);
   m.stg[key] = clamp(m.stg[key] + d, -4, 4);
-  await playFx(d > 0 ? (key === 'atk' ? 'atkup' : 'defup') : (key === 'atk' ? 'atkdn' : 'defdn'), side, side, 600);
+  const fx = key === 'atk' || key === 'spa' ? (d > 0 ? 'atkup' : 'atkdn') : (d > 0 ? 'defup' : 'defdn');
+  await playFx(fx, side, side, 600);
   await say(`${nm}의 ${jo(lbl, '이가')} ${d > 0 ? '올라갔다!' : '떨어졌다!'}`);
 }
 // 기술 실행 (이미 퀴즈를 통과했거나 상대 차례)
 async function doMove(user, target, mv, side, { fast }) {
   const tside = otherSide(side);
+  const accuracy = Math.max(1, Math.min(100, mv.accuracy == null ? 100 : mv.accuracy));
+  if (Math.random() * 100 >= accuracy) {
+    await say(`${nameOf(user, side)}의 ${mv.name}! 하지만 공격이 빗나갔다!`);
+    return;
+  }
   if (mv.eff) {
     const e = mv.eff, sp0 = fxSpec(mv);
     await playFx(sp0.style || 'none', side, ['glare', 'hypno', 'wisp', 'powder', 'web', 'sound'].includes(sp0.style) ? tside : side, 650, sp0, mv);
