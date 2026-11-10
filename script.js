@@ -4384,7 +4384,8 @@ async function battle(o) {
       act = await choose(['싸우다', '가방', '사계몬', '도망치다'], { cls: 'battle', cols: 2, cancel: false, start: B.lastAct || 0 });
       B.lastAct = act; hideTb();
     }
-    if (act === -1) { const mv = B.p.charging; B.p.charging = null; B.p._release = true; await say(`${monName(B.p)}의 ${mv.name}!`, { wait: false }); await sleep(300); await doMove(B.p, B.e, mv, 'p', { fast: false }); }
+    if (act === -1) { const mv = B.p.charging; B.p.charging = null; B.p._release = true; await say(`${monName(B.p)}의 ${mv.name}!`, { wait: false }); await sleep(300); if (enemyActsBefore(mv)) { B.enemyActed = true; await enemyTurn(); if (B.p.hp <= 0 || B.e.hp <= 0) return; }
+    await doMove(B.p, B.e, mv, 'p', { fast: false }); }
     else if (act === 0) {
       const ms = movesOf(B.p);
       if (ms.every(m => ppLeft(B.p, m) <= 0)) { await say(`${jo(monName(B.p), '은는')} 쓸 수 있는 기술이 없다!`); await playerMove(MOVES['발버둥']); }
@@ -4405,7 +4406,7 @@ async function battle(o) {
     if (B.p.hp <= 0) { if (await playerFainted() === 'lose') { result = 'lose'; break; } continue; } // 혼란·발버둥으로 쓰러짐
     if (B.e.hp <= 0) { if (await enemyFainted() === 'win') { result = 'win'; break; } continue; }
     if (o.kind === 'roam' && Math.random() < .3) { S.roam[B.e.sp].hp = B.e.hp; await say(`${jo(monName(B.e), '은는')} 바람처럼 도망쳤다!`); result = 'run'; break; }
-    await enemyTurn();
+    if (B.enemyActed) B.enemyActed = false; else await enemyTurn();
     if (B.p.hp <= 0) { if (await playerFainted() === 'lose') { result = 'lose'; break; } continue; }
     if (B.e.hp <= 0) { if (await enemyFainted() === 'win') { result = 'win'; break; } continue; }
     // 턴 끝: 화상 피해
@@ -4519,6 +4520,7 @@ async function playerMove(mv) {
   usePP(B.p, mv);
   await say(`${monName(B.p)}의 ${mv.name}!`, { wait: false }); await sleep(350);
   if (!r.ok) { SFX.no(); await say(mv.eff ? '하지만 문제를 틀려서\n기술이 실패했다!' : '하지만 문제를 틀려서\n공격이 빗나갔다!'); return; }
+  if (enemyActsBefore(mv)) { B.enemyActed = true; await enemyTurn(); if (B.p.hp <= 0 || B.e.hp <= 0) return; }
   await doMove(B.p, B.e, mv, 'p', { fast: r.fast && !mv.eff && !mv.charge });
 }
 // 상대 차례: 상황에 맞게 기술을 고른다
@@ -4534,11 +4536,19 @@ function enemyPick(e) {
   const good = atk.filter(m => effect(m.type, spTypes(p.sp)) > 1);
   return good.length && Math.random() < .55 ? pick(good) : pick(atk);
 }
+function enemyActsBefore(playerMv) {
+  const e = B.e, em = e.charging || enemyPick(e);
+  B.pendingEnemyMove = em;
+  const ep = em.priority || 0, pp = playerMv.priority || 0;
+  if (ep !== pp) return ep > pp;
+  const es = e.spe || 1, ps = B.p.spe || 1;
+  return es === ps ? Math.random() < .5 : es > ps;
+}
 async function enemyTurn() {
   const e = B.e;
-  let mv;
+  let mv = B.pendingEnemyMove || null; B.pendingEnemyMove = null;
   if (e.charging) { mv = e.charging; e.charging = null; e._release = true; }
-  else { if (!await canAct(e, 'e')) return; mv = enemyPick(e); }
+  else { if (!await canAct(e, 'e')) return; mv = mv || enemyPick(e); }
   await say(`${nameOf(e, 'e')}의 ${mv.name}!`, { wait: false }); await sleep(400);
   await doMove(e, B.p, mv, 'e', { fast: false });
 }
