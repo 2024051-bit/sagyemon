@@ -232,13 +232,16 @@ export class Lobby {
         const p = packet.payload;
         if (!p || p.action !== "roster_preview" || !p.roster || p.roster.protocol !== 1 ||
             typeof p.roster.trainer !== "string" || !Array.isArray(p.roster.party) ||
-            p.roster.party.length < 1 || p.roster.party.length > 6) return;
+            p.roster.party.length !== 3) return;
         const validParty = p.roster.party.every(mon =>
           mon && typeof mon.species === "string" && mon.species.length <= 20 &&
           Number.isInteger(mon.level) && mon.level >= 1 && mon.level <= 100 &&
           Array.isArray(mon.types) && mon.types.length <= 2 &&
+          mon.types.every(type => typeof type === "string" && type.length <= 8) &&
           Array.isArray(mon.moves) && mon.moves.length <= 4 &&
-          mon.moves.every(move => typeof move === "string" && move.length <= 20)
+          mon.moves.every(move => typeof move === "string" && move.length <= 20) &&
+          (mon.nickname == null || (typeof mon.nickname === "string" && mon.nickname.length <= 8)) &&
+          (mon.ability == null || (typeof mon.ability === "string" && mon.ability.length <= 12))
         );
         if (!validParty) return;
         const state = (await this.ctx.storage.get("battle:" + meta.roomId)) || { ready: [], rosters: [], turn: 1, actions: {} };
