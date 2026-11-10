@@ -4096,9 +4096,24 @@ const BATTLE_WEATHER = [
   { id: 'cloud', name: '흐림', up: null, down: null, desc: '특별한 타입 보정 없음' }
 ];
 function chooseBattleWeather(theme) {
-  const pool = theme === 'lake' ? ['rain', 'cloud', 'wind', 'clear'] : theme === 'cave' || theme === 'indoor' || theme === 'hall' || theme === 'casino' ? ['cloud', 'cloud', 'wind'] : ['clear', 'rain', 'snow', 'wind', 'cloud'];
-  const id = pool[Math.floor(Math.random() * pool.length)];
-  return BATTLE_WEATHER.find(w => w.id === id) || BATTLE_WEATHER[4];
+  // 계절 지역은 해당 계절의 날씨가 조금 더 자주 나타나지만, 다른 날씨도 충분히 등장한다.
+  const seasonalWeights = {
+    town:   { clear: 4, rain: 6, snow: 1, wind: 5, cloud: 4 }, // 봄: 비와 산들바람
+    summer: { clear: 6, rain: 4, snow: 1, wind: 4, cloud: 5 }, // 여름: 맑은 날
+    autumn: { clear: 4, rain: 3, snow: 2, wind: 5, cloud: 6 }, // 가을: 바람과 흐림
+    winter: { clear: 3, rain: 1, snow: 7, wind: 4, cloud: 5 }  // 겨울: 눈
+  };
+  let weights;
+  if (theme === 'lake') weights = { clear: 3, rain: 6, snow: 1, wind: 4, cloud: 6 };
+  else if (theme === 'cave' || theme === 'indoor' || theme === 'hall' || theme === 'casino') weights = { clear: 0, rain: 0, snow: 0, wind: 2, cloud: 8 };
+  else weights = seasonalWeights[theme] || { clear: 4, rain: 4, snow: 4, wind: 4, cloud: 4 };
+  const total = Object.values(weights).reduce((sum, weight) => sum + weight, 0);
+  let roll = Math.random() * total;
+  for (const weather of BATTLE_WEATHER) {
+    roll -= weights[weather.id] || 0;
+    if (roll < 0) return weather;
+  }
+  return BATTLE_WEATHER[4];
 }
 function weatherDamageMult(weather, moveType) {
   if (!weather || !moveType) return 1;
