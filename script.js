@@ -3751,20 +3751,21 @@ function onlineWaitPacket(types, timeout = 60000) {
   });
 }
 async function onlineChooseBattleTeam() {
-  const available = S.party.slice(0, 6);
+  const available = S.party.slice(0, 6).map((mon, index) => ({ mon, index })).filter(x => x.mon && x.mon.hp > 0);
   if (available.length < 3) {
-    await say('온라인 대전에는 사계몬이 최소 3마리 필요해!\n팀을 3마리 이상 준비한 뒤 다시 찾아와 줘.');
+    await say('온라인 대전에는 HP가 남아 있는 사계몬이 최소 3마리 필요해!\n보건실에서 회복한 뒤 다시 찾아와 줘.');
     return null;
   }
   const selected = [];
   while (selected.length < 3) {
-    const remaining = available.map((mon, index) => ({ mon, index })).filter(x => !selected.includes(x.index));
+    const remaining = available.filter(x => !selected.includes(x.index));
     const labels = remaining.map((x, i) => (i + 1) + '. ' + (monName(x.mon) || SP[x.mon.sp].name) + ' Lv.' + x.mon.lvl);
     await say('전투에 참가할 사계몬을 골라 줘! (' + (selected.length + 1) + '/3)');
     const choice = await choose(labels, { cls: 'start', cancel: false });
     if (choice < 0 || !remaining[choice]) continue;
     selected.push(remaining[choice].index);
   }
+  if (selected.length !== 3 || new Set(selected).size !== 3) throw new Error('battle_protocol_mismatch');
   return selected;
 }
 function onlineRosterPreview(selectedIndexes) {
@@ -3787,7 +3788,7 @@ function onlineValidateRosterPreview(packet) {
   return {
     trainer: String(data.trainer || '트레이너').slice(0, 16),
     party: data.party.map(mon => {
-      if (!mon || typeof mon.species !== 'string' || !Number.isFinite(mon.level) || mon.level < 1 || mon.level > 100 || !Array.isArray(mon.moves) || mon.moves.length > 4 || !Array.isArray(mon.types) || mon.types.length > 2) throw new Error('battle_protocol_mismatch');
+      if (!mon || typeof mon.species !== 'string' || mon.species.length > 20 || !Number.isFinite(mon.level) || mon.level < 1 || mon.level > 100 || !Array.isArray(mon.moves) || mon.moves.length > 4 || !mon.moves.every(m => typeof m === 'string') || !Array.isArray(mon.types) || mon.types.length > 2 || !mon.types.every(t => typeof t === 'string')) throw new Error('battle_protocol_mismatch');
       return { species: mon.species.slice(0, 20), nickname: String(mon.nickname || '').slice(0, 8), level: Math.floor(mon.level), types: mon.types.map(t => String(t).slice(0, 8)), ability: String(mon.ability || '').slice(0, 12), moves: mon.moves.map(m => String(m).slice(0, 20)) };
     })
   };
