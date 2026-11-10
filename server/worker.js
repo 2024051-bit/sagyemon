@@ -246,7 +246,8 @@ export class Lobby {
                 resolutionOrder: [
                   ...players.filter(id => state.actions[id].action === "switch_mon"),
                   ...players.filter(id => state.actions[id].action === "choose_move")
-                ].map(id => ({ playerId: id, action: state.actions[id].action }))
+                ].map(id => ({ playerId: id, action: state.actions[id].action })),
+                seed: Math.floor(Math.random() * 2147483646) + 1
               },
               at: Date.now()
             };
