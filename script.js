@@ -4104,9 +4104,12 @@ async function onlineRunTrade() {
     const response = await onlineWaitPacket(['trade_accept', 'trade_declined'], 60000);
     if (response.type === 'trade_declined') return say('상대가 교환을 거절했어.');
     if (!response.payload || response.payload.id !== offer.id || response.payload.phase !== 'accepted' || !onlineValidateTradeMon(response.payload.mon)) throw new Error('trade_protocol_mismatch');
-    onlineApplyTrade(localIndex, response.payload.mon);
+    // 먼저 상대의 데이터를 수신하고 서버에 최종 전달한다. 수신 확인 전에는 내 파티를 변경하지 않는다.
     onlineSend('trade_commit', { id: offer.id, mon: offer.mon });
-    return say('교환이 완료됐어! 새로운 사계몬이 동료가 됐어.');
+    const receipt = await onlineWaitPacket('trade_receipt', 15000);
+    if (!receipt.payload || receipt.payload.id !== offer.id) throw new Error('trade_protocol_mismatch');
+    onlineApplyTrade(localIndex, response.payload.mon);
+    return say('교환 데이터 전달이 확인됐어. 새로운 사계몬이 동료가 됐어.');
   }
   const packet = await onlineWaitPacket('trade_offer', 60000);
   offer = packet && packet.payload && packet.payload.offer;
@@ -4130,8 +4133,10 @@ async function onlineRunTrade() {
   onlineSend('trade_accept', { id: offer.id, phase: 'accepted', mon: outgoing });
   const committed = await onlineWaitPacket('trade_commit', 15000);
   if (!committed.payload || committed.payload.id !== offer.id || !onlineValidateTradeMon(committed.payload.mon)) throw new Error('trade_protocol_mismatch');
+  // 제안자의 최종 전송을 받은 뒤에만 수신자의 파티를 갱신한다.
   onlineApplyTrade(localIndex, committed.payload.mon);
-  return say('교환이 완료됐어! ' + monName(offer.mon) + '이(가) 새로운 동료가 됐어.');
+  onlineSend('trade_receipt', { id: offer.id });
+  return say('교환 데이터 전달이 확인됐어. ' + monName(offer.mon) + '이(가) 새로운 동료가 됐어.');
 }
 
 H.multiplayer = async () => {
