@@ -315,13 +315,14 @@ export class Lobby {
           }));
           if (exhausted.some(x => x.out)) {
             state.ended = true;
-            const remaining = exhausted.filter(x => !x.out);
-            state.winnerId = remaining.length === 1 ? remaining[0].id : null;
+            // 양쪽 HP 갱신 패킷이 거의 동시에 도착할 수 있으므로 승자는 클라이언트의
+            // 동일 시드 전투 결과에서 표시하고, 서버는 추가 턴만 차단한다.
+            state.winnerId = null;
             await this.ctx.storage.put("battle:" + meta.roomId, state);
             this.broadcast(meta.roomId, null, {
               type: "battle_action",
               from: "server",
-              payload: { action: "battle_ended", winnerId: state.winnerId, turn: state.lastResolvedTurn || state.turn - 1 },
+              payload: { action: "battle_ended", reason: "team_knockout", turn: state.lastResolvedTurn || state.turn - 1 },
               at: Date.now()
             });
           }
