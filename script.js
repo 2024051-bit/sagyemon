@@ -3755,7 +3755,7 @@ function onlineWaitPacket(types, timeout = 60000) {
     room.waiters.push(onPacket);
   });
 }
-async function onlineChooseBattleTeam() {
+async async function onlineChooseBattleTeam() {
   const available = S.party.slice(0, 6).map((mon, index) => ({ mon, index })).filter(x => x.mon && x.mon.hp > 0);
   if (available.length < 3) {
     await say('온라인 대전에는 HP가 남아 있는 사계몬이 최소 3마리 필요해!\n보건실에서 회복한 뒤 다시 찾아와 줘.');
