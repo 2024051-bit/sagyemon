@@ -453,9 +453,11 @@ export class Lobby {
       }
     }
   }
-  webSocketClose(ws) {
+  async webSocketClose(ws) {
     const meta = ws.deserializeAttachment();
     if (meta && meta.roomId) {
+      // 연결이 끊긴 방의 미완료 교환 상태를 제거한다.
+      await this.ctx.storage.delete("trade:" + meta.roomId);
       for (const peer of this.ctx.getWebSockets(meta.roomId)) {
         if (peer !== ws && peer.readyState === WebSocket.OPEN) {
           try { peer.send(JSON.stringify({ type: "peer_left", playerId: meta.playerId })); } catch {}
