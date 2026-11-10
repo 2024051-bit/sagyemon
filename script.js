@@ -3953,9 +3953,12 @@ function onlineBattleApplyTurn(room, payload, ownId) {
     else if (r && r.status) logs.push(a.move.name + ' · ' + r.status);
     if (r && r.inflicted) logs.push((a.local ? room.opponentRoster.party[room.activeOpponent] : room.localTeam[room.activeLocal]).species + '에게 상태 이상이 발생했어!');
   }
-  room.localTeam.forEach((m,i) => { if (m.hp !== before[i]) onlineSendHpUpdate(i,m); });
-  for (const team of [room.localTeam, room.opponentRoster.party]) for (const mon of team) {
-    if (mon.hp > 0 && mon.status && mon.status.type === 'brn') mon.hp = Math.max(0, mon.hp - Math.max(1, Math.floor(mon.maxhp / 16)));
+  for (const mon of [room.localTeam[room.activeLocal], room.opponentRoster.party[room.activeOpponent]]) {
+    if (mon && mon.hp > 0 && mon.status && mon.status.type === 'brn') {
+      const residual = Math.max(1, Math.floor(mon.maxhp / 16));
+      mon.hp = Math.max(0, mon.hp - residual);
+      logs.push((mon.nickname || mon.species || '사계몬') + ' · 화상으로 ' + residual + ' 피해');
+    }
   }
   room.localTeam.forEach((m,i) => { if (m.hp !== before[i]) onlineSendHpUpdate(i,m); });
   return { logs, localOut: room.localTeam.every(m => m.hp <= 0), opponentOut: room.opponentRoster.party.every(m => m.hp <= 0) };
