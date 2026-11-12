@@ -289,11 +289,6 @@ Object.assign(SP, {
 });
 SP.snake2.evo = [36, 'snake3']; SP.bat2.evo = [40, 'bat3']; SP.rock2.evo = [42, 'rock3']; SP.croc2.evo = [44, 'croc3']; SP.dino2.evo = [46, 'dino3']; SP.octo2.evo = [46, 'octo3']; SP.dice2.evo = [46, 'dice3'];
 SP.owl.evo = [34, 'owl2']; SP.top.evo = [34, 'top2'];
-// 명중 특성 복구: 진화 계열은 같은 특성을 공유한다.
-for (const id of ['bat', 'bat2', 'bat3', 'moth1', 'moth2', 'bee1', 'bee2']) if (SP[id]) SP[id].ability = '복안';
-for (const id of ['bird', 'bird2', 'owl', 'owl2', 'firefly1', 'firefly2']) if (SP[id]) SP[id].ability = '예리한 눈';
-if (SP.beastI) SP.beastI.ability = '정밀 조준';
-if (SP.phi) SP.phi.ability = '황금 시야';
 // 봄 지방 야생 몬스터 (진화형은 나중에). 그림은 FORM 몸체에 새 색만 입힌다. 기술 이름에 MKW 낱말을 넣지 않는다
 Object.assign(SP, {
   piyak: { name: '삐약솜', art: 'gen', gs: { body: 'bird', form: 'chick', c1: '#f8e070', c2: '#fff8d8', glyph: '', k: 0 }, type: '노말', hp: 40, atk: 40, def: 38, moves: ['몸통박치기', '솜털 공격', '삐약 돌진', '햇병아리 박치기'], dex: ['아기새몬', 0.3, 1.8, '솜털이 보송보송한 아기 새. 봄볕 아래에서 졸다가 굴러떨어지곤 한다.'] },
@@ -346,6 +341,14 @@ Object.assign(SP, {
   // 무지개섬 특별 몬스터 (미리보기 ⑭): 오래된 비석에서 2문제 연속 정답이면 나타난다. 잡기 어려움(특별 몬스터 포획률)
   rainbow: { name: '무지개깃', art: 'gen', gs: { body: 'bird', form: 'swift', c1: '#4aa8f0', c2: '#f8d848', glyph: '', k: 20 }, add: 'crest', big: 1.1, type: ['가을', '겨울'], hp: 72, atk: 74, def: 64, moves: ['날개치기', '무지개 단풍', '단풍빛 바람', '일곱빛 오로라'], dex: ['무지개몬', 1.1, 12, '여름 섬에 잠시 쉬어 가는 철새. 단풍빛과 서리빛 깃털이 섞여 있어, 날개를 펴면 무지개처럼 일곱 빛깔이 반짝인다.'] }, // 2026-11-09 여름 → 가을+겨울 (체육관 4·가을 지방 대비, 미리보기 ⑰)
 });
+// 명중 특성 복구: 모든 기본·진화·지역 사계몬 등록이 끝난 뒤 배정한다.
+// 복안: 지수박쥐·분모나방·계수벌 계열
+for (const id of ['bat', 'bat2', 'bat3', 'moth1', 'moth2', 'bee1', 'bee2']) if (SP[id]) SP[id].ability = '복안';
+// 예리한 눈: 절편새·외심부엉이·무한등불 계열
+for (const id of ['bird', 'bird2', 'owl', 'owl2', 'firefly1', 'firefly2']) if (SP[id]) SP[id].ability = '예리한 눈';
+// 전설·특별 사계몬
+if (SP.beastI) SP.beastI.ability = '정밀 조준';
+if (SP.phi) SP.phi.ability = '황금 시야';
 // 도감 순서: 계열끼리 붙여서 정렬 (전설은 맨 뒤)
 const LEGENDS = ['beastO', 'beastI', 'beastG', 'dragon', 'whale', 'phi', 'euler', 'zeroking'];
 function evolveFor(sp, lv) { let s = sp, g = 0; while (SP[s].evo && lv >= SP[s].evo[0] && g++ < 3) s = SP[s].evo[1]; return s; }
