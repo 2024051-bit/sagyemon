@@ -289,6 +289,11 @@ Object.assign(SP, {
 });
 SP.snake2.evo = [36, 'snake3']; SP.bat2.evo = [40, 'bat3']; SP.rock2.evo = [42, 'rock3']; SP.croc2.evo = [44, 'croc3']; SP.dino2.evo = [46, 'dino3']; SP.octo2.evo = [46, 'octo3']; SP.dice2.evo = [46, 'dice3'];
 SP.owl.evo = [34, 'owl2']; SP.top.evo = [34, 'top2'];
+// 명중 특성 복구: 진화 계열은 같은 특성을 공유한다.
+for (const id of ['bat', 'bat2', 'bat3', 'moth', 'moth2', 'bee', 'bee2']) if (SP[id]) SP[id].ability = '복안';
+for (const id of ['bird', 'bird2', 'owl', 'owl2', 'firefly', 'firefly2']) if (SP[id]) SP[id].ability = '예리한 눈';
+if (SP.beastI) SP.beastI.ability = '정밀 조준';
+if (SP.phi) SP.phi.ability = '황금 시야';
 // 봄 지방 야생 몬스터 (진화형은 나중에). 그림은 FORM 몸체에 새 색만 입힌다. 기술 이름에 MKW 낱말을 넣지 않는다
 Object.assign(SP, {
   piyak: { name: '삐약솜', art: 'gen', gs: { body: 'bird', form: 'chick', c1: '#f8e070', c2: '#fff8d8', glyph: '', k: 0 }, type: '노말', hp: 40, atk: 40, def: 38, moves: ['몸통박치기', '솜털 공격', '삐약 돌진', '햇병아리 박치기'], dex: ['아기새몬', 0.3, 1.8, '솜털이 보송보송한 아기 새. 봄볕 아래에서 졸다가 굴러떨어지곤 한다.'] },
@@ -365,7 +370,7 @@ const kwType = n => { for (const [re, t] of MKW) if (re.test(n)) return t; retur
 // 변화 기술: [설명, 사용 횟수(PP)]
 const EFF_INFO = {
   atkup: ['내 공격 ↑', 20], defup: ['내 방어 ↑', 20], bulk: ['내 공격·방어 ↑', 12],
-  atkdn: ['상대 공격 ↓', 20], defdn: ['상대 방어 ↓', 20], heal: ['HP 절반 회복', 5],
+  atkdn: ['상대 공격 ↓', 20], defdn: ['상대 방어 ↓', 20], accdn: ['상대 명중 ↓', 20], heal: ['HP 절반 회복', 5],
   sleep: ['상대를 잠재움', 10], par: ['상대를 마비시킴', 12], burn: ['상대에게 화상', 12], conf: ['상대를 혼란시킴', 10],
 };
 const ST_NAME = { slp: '잠듦', par: '마비', brn: '화상' };
@@ -2780,7 +2785,7 @@ function migrateNatures(o) {
     list.forEach((m, i) => {
       if (!m || typeof m !== 'object') return;
       if (!NATURE_BY_NAME[m.nature]) m.nature = legacyNature(m, `${group}:${i}`);
-      m.ability = (SP[m.sp] && SP[m.sp].ability) || (['맹공', '집중력', '강철피부', '정신장벽', '질주', '재생력', '역전투혼'].includes(m.ability) ? m.ability : '맹공');
+      m.ability = (SP[m.sp] && SP[m.sp].ability) || (['맹공', '집중력', '강철피부', '정신장벽', '질주', '재생력', '역전투혼', '복안', '예리한 눈', '정밀 조준', '황금 시야'].includes(m.ability) ? m.ability : '맹공');
     });
   }
   return o;
@@ -2794,7 +2799,7 @@ function calcStats(m) {
   m.spa = Math.floor((b.spa == null ? b.atk : b.spa) * m.lvl / 40) + 5;
   m.spd = Math.floor((b.spd == null ? b.def : b.spd) * m.lvl / 40) + 5;
   m.spe = Math.floor((b.spe == null ? (b.atk + b.def) / 2 : b.spe) * m.lvl / 40) + 5;
-  m.ability = ['맹공', '집중력', '강철피부', '정신장벽', '질주', '재생력', '역전투혼'].includes(m.ability) ? m.ability : (b.ability || '맹공');
+  m.ability = ['맹공', '집중력', '강철피부', '정신장벽', '질주', '재생력', '역전투혼', '복안', '예리한 눈', '정밀 조준', '황금 시야'].includes(m.ability) ? m.ability : (b.ability || '맹공');
   if (m.ability === '질주') m.spe = Math.round(m.spe * 1.1);
   for (const stat of ['atk', 'def', 'spa', 'spd', 'spe']) m[stat] = Math.max(1, Math.round(m[stat] * natureRate(m, stat)));
   const hb = m.held && ITEMS[m.held] && ITEMS[m.held].boost;
@@ -2916,8 +2921,19 @@ const ABILITY_INFO = {
   '정신장벽': '받는 특수 기술의 피해량이 10% 감소한다.',
   '질주': '스피드가 10% 증가한다.',
   '재생력': '매 턴이 끝날 때 최대 HP의 1/16을 회복한다.',
-  '역전투혼': 'HP가 최대치의 1/3 이하일 때 주는 피해가 20% 증가한다.'
+  '역전투혼': 'HP가 최대치의 1/3 이하일 때 주는 피해가 20% 증가한다.',
+  '복안': '궁극기를 제외한 기술의 명중률이 5%p 증가한다. (최대 100%)',
+  '정밀 조준': '궁극기를 제외한 기술의 명중률이 5%p 증가한다. (최대 100%)',
+  '예리한 눈': '상대의 효과로 명중 랭크가 떨어지지 않는다.',
+  '황금 시야': '상대의 효과로 명중 랭크가 떨어지지 않는다.'
 };
+const ACCURACY_TRAIT_EXEMPT = new Set(['천뢰폭발', '대지뿌리 폭주', '태양충각', '만추멸섬', '빙하붕괴']);
+const ACCURACY_BOOST_ABILITIES = new Set(['복안', '정밀 조준']);
+const ACCURACY_GUARD_ABILITIES = new Set(['예리한 눈', '황금 시야']);
+function effectiveMoveAccuracy(mon, move) {
+  const base = Math.max(1, Math.min(100, Number(move && move.accuracy) || 100));
+  return Math.min(100, base + (mon && ACCURACY_BOOST_ABILITIES.has(mon.ability) && !ACCURACY_TRAIT_EXEMPT.has(move.name) ? 5 : 0));
+}
 function abilityText(m) { const a = m && m.ability; return (a ? a + ' · ' + (ABILITY_INFO[a] || '특성 효과') : '특성 미정') + ' · ' + typeTraitText(m); }
 async function announceBattleAbility(mon) {
   if (!mon || !mon.ability) return;
@@ -3489,8 +3505,8 @@ function onlineBattleMoves(mon, local) {
   return [{ move: { name: '발버둥', type: '노말', power: 30, category: 'physical', accuracy: 100, priority: 0, struggle: true, pp: 0 }, index: 0, pp: 0 }];
 }
 function battleSpeed(mon) {
-  const speed = Number(mon && (mon.spe || mon.stats && mon.stats.spe)) || 1;
-  return speed * (mon && mon.ability === '질주' ? 1.1 : 1);
+  // calcStats()에서 질주의 +10%가 이미 반영되므로 여기서 중복 적용하지 않는다.
+  return Number(mon && (mon.spe || mon.stats && mon.stats.spe)) || 1;
 }
 function onlineBattleMonTypes(mon) {
   return Array.isArray(mon.types) ? mon.types : (mon.sp != null ? spTypes(mon.sp) : []);
@@ -3503,9 +3519,10 @@ function onlineBattleApplyMove(room, side, move) {
   const di = own ? room.activeOpponent : room.activeLocal;
   const attacker = atkTeam[ai], defender = defTeam[di];
   if (!attacker || !defender || attacker.hp <= 0 || defender.hp <= 0 || !move) return null;
-  if (onlineBattleRandom(room) * 100 >= move.accuracy) return { missed: true };
   const stages = room.battleStages;
   const as = stages[own ? 'local' : 'opponent'][ai], ds = stages[own ? 'opponent' : 'local'][di];
+  const accuracy = Math.min(100, effectiveMoveAccuracy(attacker, move) * stgMul(as.acc || 0));
+  if (onlineBattleRandom(room) * 100 >= accuracy) return { missed: true };
   const e = move.eff;
   if (e === 'heal') {
     const before = attacker.hp; attacker.hp = Math.min(attacker.maxhp, attacker.hp + Math.ceil(attacker.maxhp / 2));
@@ -3516,8 +3533,12 @@ function onlineBattleApplyMove(room, side, move) {
     defender.status = e === 'sleep' ? { type: 'slp', turns: 2 + Math.floor(onlineBattleRandom(room) * 2) } : { type: e, turns: e === 'conf' ? 3 : 0 };
     return { status: ({ sleep: '잠듦', par: '마비', burn: '화상', conf: '혼란' })[e] + ' 발생' };
   }
-  if (e === 'atkup') as.atk = Math.min(6, as.atk + 1);
-  else if (e === 'defup') as.def = Math.min(6, as.def + 1);
+  if (e === 'atkup') as.atk = Math.min(4, as.atk + 1);
+  else if (e === 'defup') as.def = Math.min(4, as.def + 1);
+  else if (e === 'accdn') {
+    if (ACCURACY_GUARD_ABILITIES.has(defender.ability)) return { status: defender.ability + '로 명중 랭크 하락 방지' };
+    ds.acc = Math.max(-4, (ds.acc || 0) - 1);
+  }
   else if (e === 'bulk') { as.atk = Math.min(6, as.atk + 1); as.def = Math.min(6, as.def + 1); }
   else if (e === 'atkdn') ds.atk = Math.max(-6, ds.atk - 1);
   else if (e === 'defdn') ds.def = Math.max(-6, ds.def - 1);
@@ -3556,9 +3577,10 @@ function onlineBattleApplyTurn(room, payload, ownId) {
   if (!Number.isInteger(payload.seed) || payload.seed <= 0 || payload.seed > 2147483647) throw new Error('battle_protocol_mismatch');
   room.turnSeed = payload.seed | 0;
   room.battleStages = room.battleStages || {
-    local: room.localTeam.map(() => ({ atk: 0, def: 0 })),
-    opponent: room.opponentRoster.party.map(() => ({ atk: 0, def: 0 }))
+    local: room.localTeam.map(() => ({ atk: 0, def: 0, acc: 0 })),
+    opponent: room.opponentRoster.party.map(() => ({ atk: 0, def: 0, acc: 0 }))
   };
+  for (const side of ['local', 'opponent']) for (const st of room.battleStages[side] || []) if (st.acc == null) st.acc = 0;
   const choices = payload.choices, ownChoice = choices.find(c => c.playerId === ownId);
   if (!ownChoice || !choices.some(c => c.playerId !== ownId)) throw new Error('battle_protocol_mismatch');
   const before = room.localTeam.map(m => m.hp);
@@ -4854,10 +4876,12 @@ async function inflict(t, side, st) {
   await say(`${jo(nm, '은는')} ${{ slp: '잠들어 버렸다!', par: '마비되어 몸이 저리다!', brn: '화상을 입었다!' }[key]}`);
 }
 async function stage(m, side, key, d) {
-  m.stg = m.stg || { atk: 0, def: 0, spa: 0, spd: 0, spe: 0 };
-  const labels = { atk: '공격', def: '방어', spa: '특수공격', spd: '특수방어', spe: '스피드' };
+  m.stg = m.stg || { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0 };
+  if (m.stg.acc == null) m.stg.acc = 0;
+  const labels = { atk: '공격', def: '방어', spa: '특수공격', spd: '특수방어', spe: '스피드', acc: '명중' };
   const lbl = labels[key] || key, nm = nameOf(m, side);
   if (!labels[key]) return;
+  if (key === 'acc' && d < 0 && ACCURACY_GUARD_ABILITIES.has(m.ability)) return say(`${nm}의 ${m.ability}! 명중 랭크가 떨어지지 않았다!`);
   if ((d > 0 && m.stg[key] >= 4) || (d < 0 && m.stg[key] <= -4)) return say(`${nm}의 ${jo(lbl, '은는')} 더 이상 ${d > 0 ? '오르지' : '떨어지지'} 않는다!`);
   m.stg[key] = clamp(m.stg[key] + d, -4, 4);
   const fx = key === 'atk' || key === 'spa' ? (d > 0 ? 'atkup' : 'atkdn') : (d > 0 ? 'defup' : 'defdn');
@@ -4867,7 +4891,7 @@ async function stage(m, side, key, d) {
 // 기술 실행 (명중 판정 후 효과·피해 처리)
 async function doMove(user, target, mv, side, { fast }) {
   const tside = otherSide(side);
-  const accuracy = Math.max(1, Math.min(100, mv.accuracy == null ? 100 : mv.accuracy));
+  const accuracy = Math.min(100, effectiveMoveAccuracy(user, mv) * stgMul((user.stg || {}).acc || 0));
   if (Math.random() * 100 >= accuracy) {
     await say(`${nameOf(user, side)}의 ${mv.name}! 하지만 공격이 빗나갔다!`);
     return;
@@ -4881,6 +4905,7 @@ async function doMove(user, target, mv, side, { fast }) {
     if (e === 'bulk') { await stage(user, side, 'atk', 1); return stage(user, side, 'def', 1); }
     if (e === 'atkdn') return stage(target, tside, 'atk', -1);
     if (e === 'defdn') return stage(target, tside, 'def', -1);
+    if (e === 'accdn') return stage(target, tside, 'acc', -1);
     return inflict(target, tside, e);
   }
   if (mv.charge && !user._release) { user.charging = mv; await playFx('charge', side, side, 700); return say(`${jo(nameOf(user, side), '은는')} 힘을 모으기 시작했다!\n(다음 차례에 강한 공격이 나간다)`); }
@@ -4925,7 +4950,7 @@ function enemyPick(e) {
   const heal = st.find(m => m.eff === 'heal'); if (heal && e.hp < e.maxhp * .4 && rnd < .5) return heal;
   const inf = st.filter(m => ['sleep', 'par', 'burn'].includes(m.eff) && !p.status || (m.eff === 'conf' && !p.conf)); if (inf.length && Math.random() < .28) return pick(inf);
   const buf = st.filter(m => ['atkup', 'defup', 'bulk'].includes(m.eff) && ((e.stg || {}).atk || 0) < 2); if (buf.length && Math.random() < .18) return pick(buf);
-  const deb = st.filter(m => ['atkdn', 'defdn'].includes(m.eff) && ((p.stg || {})[m.eff.slice(0, 3)] || 0) > -2); if (deb.length && Math.random() < .18) return pick(deb);
+  const deb = st.filter(m => ['atkdn', 'defdn', 'accdn'].includes(m.eff) && ((p.stg || {})[m.eff === 'accdn' ? 'acc' : m.eff.slice(0, 3)] || 0) > -2); if (deb.length && Math.random() < .18) return pick(deb);
   let atk = ms.filter(m => !m.eff); if (!atk.length) return pick(ms);
   const usable = atk.filter(m => effect(m.type, spTypes(p.sp)) > .2); if (usable.length) atk = usable;
   const good = atk.filter(m => effect(m.type, spTypes(p.sp)) > 1);
