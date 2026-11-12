@@ -740,6 +740,8 @@ function secOf(n, type) {
     if (mv.accuracy == null) {
       mv.accuracy = !mv.power ? 100 : mv.power >= 120 ? 75 : mv.power >= 90 ? 85 : mv.power >= 80 ? 90 : mv.power >= 60 ? 95 : 100;
     }
+    // 반동·자기 피해가 있는 기술은 위험 부담을 이미 지므로 명중률 패널티를 적용하지 않는다.
+    if (mv.struggle || mv.recoil) mv.accuracy = 100;
     if (mv.priority == null) mv.priority = 0;
   }
 }
