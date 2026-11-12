@@ -1974,7 +1974,7 @@ function gymRoom(n, G) {
     let t = c;
     if (x === 0 || x === w - 1 || c === 'M') t = 'w';
     if ('ABCZ'.includes(c)) { t = 'f'; marks.push([c, x, y]); }
-    else if (c === 'Q') t = 'f'; // 수학 자물쇠 제거: 통로를 처음부터 개방
+    else if (c === 'Q') t = 'f'; // 잠긴 통로 제거: 처음부터 개방
     a.set(x, y, t);
   }));
   mat(a, 7, 'town', 0, 0);
@@ -2205,7 +2205,7 @@ routeGen('rainbowisle', { name: '무지개섬', theme: 'summer', unit: 41, w: 24
   const a = API.rainbowisle, m = a.m, [ex, ey, ax, ay] = m.exits.N; a.set(ex, ey, '~');
   blossom(m, 31, .45);
   for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) if ((x < 2 || y < 2 || x >= m.w - 2 || y >= m.h - 2) && 'TY'.includes(a.get(x, y))) a.set(x, y, '~');
-  // 섬 가장 깊은 곳(배에서 내리는 곳에서 가장 먼 빈 땅)에 도전의 비석
+  // 섬 가장 깊은 곳(배에서 내리는 곳에서 가장 먼 빈 땅)에 오래된 비석
   const open = (x, y) => ['.', ',', '*', '='].includes(a.get(x, y)) && !m.ents.some(e => e.x === x && e.y === y);
   const seen = new Map([[ax + ',' + ay, 0]]), q = [[ax, ay]]; let far = [ax, ay], fd = 0;
   while (q.length) { const [x, y] = q.shift(), d = seen.get(x + ',' + y); if (d > fd && a.get(x, y) === '.' && open(x, y)) { fd = d; far = [x, y]; } for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, k = nx + ',' + ny; if (seen.has(k) || !['.', ',', '*', '='].includes(a.get(nx, ny))) continue; seen.set(k, d + 1); q.push([nx, ny]); } }
@@ -2310,7 +2310,7 @@ townGen('icelake', { name: '얼음호수시티', theme: 'winter', unit: 81, w: 2
   { x: 18, y: 12, w: 4, roof: 'M', d: 2, to: 'mart', ret: 1, arrive: [4, 6] }, { x: 3, y: 12, w: 4, roof: 'H', d: 1, to: 'icelakeH' }] });
 API.icelake.m.xpMul = 0.8;
 gateGuard(API.icelake, API.icelake.cx, 1, API.icelake.cx + 1, 1, () => false, () => S.badges.every(Boolean) ? '경비원: 배지 8개! 졸업 언덕은 새봄마을 동쪽이야.\nSTART 메뉴 → 날아가기(좌표 종이비행기)로 새봄마을에 가 보렴!' : '경비원: 이 너머는 길이 없어.\n배지 8개를 모으면 새봄마을 동쪽 졸업 언덕으로 가렴!', '', 'guard', 'icelakeN');
-// 졸업 길 (미리보기 ㉑, 2026-11-10): 새봄마을 동쪽 → 졸업 언덕. 사계절 진화형 야생, 전 범위 문제, 동쪽 끝에서 라이벌 마지막
+// 졸업 길 (미리보기 ㉑): 새봄마을 동쪽 → 졸업 언덕. 사계절 진화형 야생, 동쪽 끝에서 라이벌과 마지막 승부
 routeGen('gradroad', { name: '졸업 길', theme: 'town', unit: 0, w: 42, h: 21, cx: 1, pond: 1, wild: ['kkokko', 'queenbung', 'wangmae', 'keunjip', 'bam2', 'gom', 'seal', 'nunkkot'], lv: [41, 45], ends: [['W', 10], ['E', 9]], trainers: 3, items: [['fpotion', 1], ['hpotion', 2], ['ball', 3]], hidden: [['fpotion', 1]], flowers: 8, seed: 211 });
 API.gradroad.m.wild.grad = 'E';
 // 4인방 전 레벨업 장소 (2026-11-10 선생님 요청): 야생 Lv 41~45, 체력 1.3배, 경험치 1.5배(0.8 → 1.2), 풀숲 만남 2배(11% → 22%)
@@ -2507,7 +2507,7 @@ API.mt3.ent({ id: 'phiL', kind: 'legend', sp: 'phi', lv: 50, x: 6, y: 6, dir: 'd
 API.den.ent({ id: 'eulerL', kind: 'legend', sp: 'euler', lv: 52, x: 11, y: 3, dir: 'down', flag: 'euler', need: () => S.champ > 0 && S.badges[7] });
 API.summit.ent({ id: 'zeroL', kind: 'legend', sp: 'zeroking', lv: 60, x: 8, y: 5, dir: 'down', flag: 'zeroking', need: () => S.flags.master });
 
-// ================== 수학몬스터 골드 엔진 ==================
+// ================== 사계몬스터 골드 엔진 ==================
 const $ = s => document.querySelector(s);
 const cv = $('#cv'), ctx = cv.getContext('2d');
 // 화면을 3배 해상도로 그린다: 타일·인물은 그대로 또렷하고, 사계몬 그림은 더 촘촘하게 나온다
@@ -3953,7 +3953,7 @@ H.starter = async e => {
     await sayAll(['정박사: 사계볼 5개와 반창고 3개도 챙겨 가렴.', '풀숲에서 야생 사계몬을 만나면 기술로 체력을 줄인 뒤 사계볼을 던져 보렴.', '참, 내 손자 녀석도 오늘 사계몬을 하나 가져갔단다. 어디선가 만나게 될 거야.']);
 };
 // 라이벌
-const RIVAL_NAME = '오답이';
+const RIVAL_NAME = '도전이';
 function rivalSp(stage) { const i = STARTERS.indexOf(S.starter || 'root'); let sp = STARTERS[(i + 1) % STARTERS.length]; if (stage >= 3) sp = SP[sp].evo[1]; if (stage >= 5) sp = SP[sp].evo[1]; return sp; }
 async function rivalBattle(n) {
   const [dx, dy] = DIRV[OPP[P.dir]] || [0, -1];
@@ -3962,7 +3962,7 @@ async function rivalBattle(n) {
   if (!walkable(rv.x, rv.y)) { rv.x = P.x; rv.y = P.y - 1; P.dir = 'up'; rv.dir = 'down'; }
   const host = CUR.ents; host.push(rv); SFX.enc(); // 지면 보건실로 옮겨지므로, 나타난 지도에서 지워야 한다
   const L = {
-    1: ['???: 야! 거기 너! 너도 박사님한테 사계몬 받았지?', `나는 ${RIVAL_NAME}. 박사님 손자다! 수학은 감으로 푸는 거야!`, '누가 더 센지 붙어 보자!'],
+    1: ['???: 야! 거기 너! 너도 박사님한테 사계몬 받았지?', `나는 ${RIVAL_NAME}. 박사님 손자다! 사계몬 승부라면 누구에게도 지지 않아!`, '누가 더 센지 붙어 보자!'],
     2: [`${RIVAL_NAME}: 또 너냐! 벚꽃마을에서 진 뒤로, 이번엔 상대의 움직임을 잘 살피고 싸우기로 했어.`, '…어두워서 길 찾느라 고생했지? 그래도 승부는 승부다!'],
     3: [`${RIVAL_NAME}: …기다렸다. 너한테 두 번 지고 나서 전투 방식을 다시 연구했어.`, '여러 사계몬과 겨뤄 보니까… 진짜로 실력이 늘더라. 이번엔 진짜 실력으로 간다!'],
     4: [`${RIVAL_NAME}: 왔구나. 그동안 수많은 사계몬과 겨루며 실력을 갈고닦았어.`, '이번엔 내가 이길 차례다! 겨울 관장 앞에서 제대로 붙어 보자!'], // 미리보기 ⑲: 7번 도로 북쪽 끝 (체육관 7 앞)
@@ -4168,10 +4168,10 @@ H.boat = async e => {
   if (e.to === 'rainbowisle' && !S.flags.isleVisit) { S.flags.isleVisit = 1; await sayAll(['(배를 타고 무지개섬에 도착했다!)', '뱃사공: 섬 깊은 곳에 오래된 비석이 있다던데… 한번 찾아보렴.']); }
 };
 // 오래된 비석을 조사하면 특별한 사계몬과 전투할 수 있다.
-const STELE_DEF = { flag: 'rainbow', sp: 'rainbow', lv: 26, units: () => ISLE_UNITS, hint: '무지개가 모습을 드러내리라', glow: '비석이 일곱 빛깔로 빛난다!', come: '하늘에서 무지개깃이 내려왔다!', gone: '무지개깃은 무지개 너머로 날아가 버렸다…' };
+const STELE_DEF = { flag: 'rainbow', sp: 'rainbow', lv: 26, glow: '비석이 일곱 빛깔로 빛난다!', come: '하늘에서 무지개깃이 내려왔다!', gone: '무지개깃은 무지개 너머로 날아가 버렸다…' };
 H.stele = async e => {
   const c = (e && e.cfg) || STELE_DEF, nm = SP[c.sp].name;
-  if (S.flags[c.flag]) return say(`도전의 비석은 조용하다.\n(${nm}은 이미 함께 여행하고 있다)`);
+  if (S.flags[c.flag]) return say(`오래된 비석은 조용하다.\n(${nm}은 이미 함께 여행하고 있다)`);
   await sayAll(['오래된 비석이 희미하게 빛난다.', c.glow, c.come]);
   const r = await battle({ kind: 'legend', team: [mkMon(c.sp, c.lv, false, HPMUL.legend)] });
   if (r === 'caught') S.flags[c.flag] = 1;
@@ -4285,7 +4285,7 @@ function drawWorld(now) {
     }
     const e = o.e, [ex, ey] = pos(e), sx = Math.round(ex * 16 - camX), sy = Math.round(ey * 16 - camY);
     if (e.kind === 'item' || e.kind === 'starter') { drawBall(sx + 8, sy + 8, e.kind === 'starter' ? '#e04a4a' : '#f0c040'); continue; }
-    if (e.kind === 'stele') { // 도전의 비석: 돌판 (특별 몬스터를 잡기 전에는 은은하게 빛난다)
+    if (e.kind === 'stele') { // 오래된 비석: 특별 몬스터를 만나기 전에는 은은하게 빛난다
       ctx.fillStyle = '#0003'; ctx.fillRect(sx + 2, sy + 13, 12, 2);
       ctx.fillStyle = '#6a6a78'; ctx.fillRect(sx + 3, sy - 1, 10, 15); ctx.fillStyle = '#c8c8d4'; ctx.fillRect(sx + 4, sy, 8, 13);
       ctx.fillStyle = '#5a5a6a'; for (const yy of [3, 6, 9]) ctx.fillRect(sx + 5, sy + yy, 6, 1);
@@ -5472,7 +5472,7 @@ function worldMap() {
     const labels = [];
     for (const id of ids) { const M = MAPS[id], W2 = WORLD[id]; if (!(S.fog || {})[id] || !/1/.test(S.fog[id])) continue; labels.push({ id, name: M.name, x: (W2.x - x0 + 2 + M.w / 2) * sc, y: (W2.y - y0 + 2 + M.h / 2) * sc, town: !M.wild && !M.cave }); }
     const el = document.createElement('div'); el.className = 'worldmap';
-    el.innerHTML = `<div class="wm-h"><b>수학 지도</b><span>${here ? '현재 위치: ' + MAPS[here.map].name : ''} · 탐험 ${Math.round(seenTiles / allTiles * 100)}%</span></div><div class="wm-box"><div class="wm-in"></div></div><div class="wm-f">방향키: 지도 움직이기 · A/B: 닫기 · 어두운 곳은 아직 가 보지 않은 곳</div>`;
+    el.innerHTML = `<div class="wm-h"><b>세계 지도</b><span>${here ? '현재 위치: ' + MAPS[here.map].name : ''} · 탐험 ${Math.round(seenTiles / allTiles * 100)}%</span></div><div class="wm-box"><div class="wm-in"></div></div><div class="wm-f">방향키: 지도 움직이기 · A/B: 닫기 · 어두운 곳은 아직 가 보지 않은 곳</div>`;
     const box = el.querySelector('.wm-in'); box.appendChild(cv);
     const marker = document.createElement('i'); marker.className = 'wm-me';
     if (here) { const W2 = WORLD[here.map]; marker.style.left = ((W2.x - x0 + 2 + here.x) * sc) + 'px'; marker.style.top = ((W2.y - y0 + 2 + here.y) * sc) + 'px'; box.appendChild(marker); }
