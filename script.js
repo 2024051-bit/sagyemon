@@ -153,7 +153,7 @@ const ITEMS = {
   burnh: { name: '화상연고', desc: '화상을 낫게 한다', kind: 'cure', st: ['brn'], price: 250 },
   fullheal: { name: '만병통치약', desc: '잠듦·마비·화상·혼란을 모두 낫게 한다', kind: 'cure', st: ['slp', 'par', 'brn', 'conf'], price: 600 },
   ether: { name: '집중 음료', desc: '사계몬 한 마리의 모든 기술 사용 횟수(PP)를 10 회복', kind: 'pp', amt: 10, price: 1000 },
-  candy: { name: '공부사탕', desc: '레벨이 1 오른다 (문제를 맞혀야 먹을 수 있다)', kind: 'candy', price: 4800 },
+  candy: { name: '공부사탕', desc: '사용하면 레벨이 1 오른다', kind: 'candy', price: 4800 },
   // 장착 아이템 (사계몬에게 지니게 한다)
   xshare: { name: '나눔학습노트', desc: '지니면 싸우지 않아도 경험치를 받는다 (싸운 사계몬들과 똑같이 1/n씩 나눔)', kind: 'held', price: 9800 },
   pencil: { name: '뾰족연필', desc: '지니면 공격이 10% 오른다', kind: 'held', boost: { atk: 1.1 }, price: 3000 },
@@ -175,7 +175,7 @@ const KEYS = {
   lamp: { name: '손전등', desc: '어두운 동굴을 밝힌다. (명상의 탑 장로에게 받음)' },
   scissors: { name: '가지치기 가위', desc: '길을 막은 작은 나무를 자를 수 있다. (나무 앞에서 A)' },
   bike: { name: '자전거', desc: 'START 메뉴에서 타고 내릴 수 있다. 두 배로 빠르다!' },
-  radio: { name: '라디오 카드', desc: '수학 퀴즈 방송을 들을 수 있다.' },
+  radio: { name: '라디오 카드', desc: '방송탑 출입을 위한 방문 카드.' },
   water: { name: '물뿌리개', desc: '흔들리는 나무에 물을 뿌릴 수 있다.' },
   tube: { name: '수영 튜브', desc: '강과 바다 위를 지나갈 수 있다.' },
   medicine: { name: '비전약', desc: '아픈 사계몬을 낫게 하는 약. 등대로 가져가자.' },
@@ -2018,7 +2018,7 @@ const GYMS = [
     tr: [T2('체육관 관원', '하얀', 't2', [['somnun', 38], ['seolyeo', 38]], '눈밭에서는 내가 최고야!', '눈이 녹아 버렸다…'), T2('체육관 관원', '고요', 't4', [['nungurum', 39]], '함박눈처럼 조용히 덮쳐 주지!', '눈이 그쳤다…'), T2('체육관 관원', '설화', 't3', [['seolyeo', 39], ['nunkkot', 40]], '관장님께 가려면 나부터 넘어라!', '눈꽃이 흩어졌다…')] },
   // 체육관 8 (겨울 · 확률과 통계): 야생 = 중1 자료의 정리(81), 관원 = 중2 확률(6), 관장 = 중3 대푯값·산포도(83) (미리보기 ⑲)
   { label: '얼음', town: 'icelake', floor: '#dce8f4', name: '한결', badge: '얼음 배지', unit: 6, lunit: 83, team: [['godeum', 42], ['seal', 43], ['nungurum', 44]], reward: [['ball', 5]], key: null, cheer: 1,
-    intro: ['얼음 체육관에 온 걸 환영해. 나는 관장 한결.', '자료는 거짓말을 하지 않아. 네 실력도 숫자로 보여 줘!'], win: '네 정답률은… 내 예상보다 훨씬 높았어. 네가 이겼어!', after: '배지 8개를 모두 모았구나! 졸업 언덕은 네가 처음 출발한 새봄마을 동쪽이야.\nSTART 메뉴의 날아가기(좌표 종이비행기)로 새봄마을에 가서 동쪽 문으로 가렴!',
+    intro: ['얼음 체육관에 온 걸 환영해. 나는 관장 한결.', '겨울의 힘은 차갑고 정확하지. 네 실력을 보여 줘!'], win: '네 실력은… 내 예상보다 훨씬 뛰어났어. 네가 이겼어!', after: '배지 8개를 모두 모았구나! 졸업 언덕은 네가 처음 출발한 새봄마을 동쪽이야.\nSTART 메뉴의 날아가기(좌표 종이비행기)로 새봄마을에 가서 동쪽 문으로 가렴!',
     tr: [T2('체육관 관원', '빙판', 't1', [['sotul', 40], ['godeum', 40]], '얼음판 위에서 미끄러지지 마!', '미끄러져 버렸다…'), T2('체육관 관원', '눈금', 't4', [['seal', 41]], '내 승률을 계산해 볼까?', '계산이 틀렸다…'), T2('체육관 관원', '호수', 't2', [['nungurum', 41], ['godeum', 42]], '관장님께 가려면 나부터 넘어라!', '호수 얼음이 깨졌다…')] },
 ];
 GYMS.forEach((G, n) => gymRoom(n, G));
@@ -2032,7 +2032,7 @@ MAPS.gym4.xpMul = 0.8; MAPS.gym5.xpMul = 0.8; MAPS.gym6.xpMul = 0.8; MAPS.gym7.x
   l.rect(1, 2, 4, 2, 'b').rect(7, 2, 10, 2, 'b').rect(7, 5, 10, 5, 't').set(1, 7, 'p').set(10, 7, 'p'); mat(l, 5, 'town', 0, 0);
   l.ent({ id: 'prof', kind: 'prof', x: 5, y: 3, dir: 'down', pal: 'prof' });
   STARTERS.forEach((sp, i) => l.ent({ id: 'sb' + i, kind: 'starter', sp, x: 7 + i, y: 5 }));
-  l.ent({ id: 'labaide', kind: 'npc', x: 2, y: 6, dir: 'right', pal: 'guard', lines: ['박사님은 사계몬이 문제를 맞힐 때 나오는 에너지를 연구하셔.', '체육관 8곳의 배지를 모으면 졸업 언덕에 갈 수 있대!'] });
+  l.ent({ id: 'labaide', kind: 'npc', x: 2, y: 6, dir: 'right', pal: 'guard', lines: ['박사님은 사계몬의 생태와 진화 에너지를 연구하셔.', '체육관 8곳의 배지를 모으면 졸업 언덕에 갈 수 있대!'] });
 }
 house('bunsuH', '안내 할아버지 집', [{ id: 'guide', kind: 'npc', x: 7, y: 4, dir: 'left', pal: 'elder', lines: ['허허, 여행을 떠나는 게냐?', '필드에서 B 버튼(X 키)을 누른 채로 걸으면 달릴 수 있단다.', '보건실에서 쉬면 기절해도 그곳에서 다시 시작하지. 꼭 들러 가거라!'] }]);
 house('cycleH', '사계몬 팬클럽', [{ id: 'q1', kind: 'quest', q: 1, x: 7, y: 4, dir: 'left', pal: 'elder' }]);
@@ -2045,8 +2045,8 @@ house('harborH', '선원의 집', [{ id: 'sailor', kind: 'npc', x: 7, y: 4, dir:
 house('pharmacy', '합동섬 약국', [{ id: 'pharm', kind: 'pharm', x: 7, y: 4, dir: 'left', pal: 'prof' }], { floor: '#eaf4ea' });
 house('islandH', '합동섬 주민 집', [{ id: 'q3', kind: 'quest', q: 3, x: 7, y: 4, dir: 'left', pal: 'elder' }]);
 house('pitaShop', '기념품 가게', [{ id: 'souvenir', kind: 'souvenir', x: 7, y: 4, dir: 'left', pal: 'grunt' }, { id: 'inspector2', kind: 'inspector2', x: 2, y: 5, dir: 'down', pal: 'insp' }], { floor: '#efe2d0' });
-house('probH', '확률시티 주민 집', [{ id: 'probn', kind: 'npc', x: 7, y: 4, dir: 'left', pal: 'elder', lines: ['관장 운수는 꼭 확률의 굴에서 장로님의 시험을 받게 한다네.', '장로님 문제는 확률 단원에서만 나온다는구먼.'] }]);
-house('townH2', '이웃집', [{ id: 'neighbor', kind: 'npc', x: 7, y: 4, dir: 'left', pal: 't2', lines: ['너도 박사님한테 사계몬 받으러 가니?', '내 동생은 사계몬보다 수학 문제가 더 무섭대. 히히.'] }]);
+house('probH', '확률시티 주민 집', [{ id: 'probn', kind: 'npc', x: 7, y: 4, dir: 'left', pal: 'elder', lines: ['관장 운수는 북쪽 확률의 굴에 있는 장로님과 친하다네.', '그 굴에는 오래된 전설이 전해 내려온다는구먼.'] }]);
+house('townH2', '이웃집', [{ id: 'neighbor', kind: 'npc', x: 7, y: 4, dir: 'left', pal: 't2', lines: ['너도 박사님한테 사계몬 받으러 가니?', '내 동생은 사계몬보다 큰 사계몬이 더 무섭대. 히히.'] }]);
 { // 기념품 가게 지하 계단 (아지트 발견 후)
   const s = API.pitaShop; s.set(1, 6, 'f');
 }
@@ -2058,7 +2058,7 @@ house('townH2', '이웃집', [{ id: 'neighbor', kind: 'npc', x: 7, y: 4, dir: 'l
   const ca = room('casino', 12, 10, { name: '확률 게임장', floor: '#e6d0ee', unit: 6 });
   ca.rect(3, 4, 8, 4, 'c').rect(1, 2, 3, 2, 'b').rect(8, 2, 10, 2, 'b').rect(1, 6, 1, 7, 'b').rect(10, 6, 10, 7, 'b'); mat(ca, 5, 'town', 0, 0);
   ca.ent({ id: 'dealer', kind: 'dealer', x: 5, y: 3, dir: 'down', pal: 'vendor' });
-  ca.ent({ id: 'casn', kind: 'npc', x: 8, y: 7, dir: 'left', pal: 't3', lines: ['확률 룰렛은 300원을 걸고 확률 문제를 맞히면 1000원을 줘!'] });
+  ca.ent({ id: 'casn', kind: 'npc', x: 8, y: 7, dir: 'left', pal: 't3', lines: ['확률 룰렛은 300원을 걸고 운이 좋으면 1000원을 받을 수 있대!'] });
 }
 // 명상의 탑 (순환시티)
 tower('mt1', '명상의 탑 1층', { w: 12, h: 12, floor: '#d8c8a8', unit: 1, mat: 5, up: [10, 2, 'mt2', 10, 3], pillars: [[3, 4], [8, 4], [3, 8], [8, 8]], trainers: [{ x: 6, y: 6, dir: 'left', title: '수도승', name: '일', pal: 'monk', team: [['bug', 6], ['snake', 7]], line: '마음을 비우고 순환마디를 보아라…', lose: '깨달음을 얻었다…' }], items: [[1, 10, ['potion', 1]]] });
@@ -2139,7 +2139,7 @@ API.hide1.m.warps[API.hide1.get(14, 1)].x = 13; API.hide1.m.warps[API.hide1.get(
   gateGuard(a, 10, 1, 11, 1, () => S.party.length > 0, '연구소 조수: 잠깐! 사계몬 없이 풀숲에 들어가면 위험해!\n오른쪽 연구소의 정박사님께 먼저 가 봐.', '연구소 조수: 북쪽 1번 도로를 지나면 분수마을이야. 조심해!', 'guard', 'aide');
   // 동쪽: 배지 8개면 졸업 길 → 졸업 언덕 (미리보기 ㉑, 2026-11-10)
   gateGuard(a, 20, 7, 19, 6, () => S.badges.every(Boolean), '경비원: 동쪽은 졸업 언덕으로 가는 졸업 길이야.\n배지 8개를 모두 모은 트레이너만 갈 수 있어!', '경비원: 배지 8개! 사계절을 다 돌고 다시 봄으로 왔구나.\n졸업 길이 열렸다. 4인방과 챔피언이 기다리고 있어!');
-  a.ent({ id: 'tkid', kind: 'npc', x: 7, y: 11, dir: 'down', pal: 'kid', wander: true, lines: ['START(Shift 키)를 누르면 메뉴가 열려!', '"오답노트"에 틀린 문제가 다 모인대. 시험 전에 꼭 봐!', '1번 도로 풀숲에는 봄 사계몬이 잔뜩 있대!', '턱이 진 언덕은 위에서 아래로 뛰어내릴 수만 있어. 돌아가는 길을 찾아봐!', '여름 사계몬은 봄 사계몬에게 강하대! 1번 도로 풀숲에 수박거북이 가끔 나온대.'] });
+  a.ent({ id: 'tkid', kind: 'npc', x: 7, y: 11, dir: 'down', pal: 'kid', wander: true, lines: ['START(Shift 키)를 누르면 메뉴가 열려!', '체육관에 도전하기 전에 사계몬들의 상태를 확인해 봐!', '1번 도로 풀숲에는 봄 사계몬이 잔뜩 있대!', '턱이 진 언덕은 위에서 아래로 뛰어내릴 수만 있어. 돌아가는 길을 찾아봐!', '여름 사계몬은 봄 사계몬에게 강하대! 1번 도로 풀숲에 수박거북이 가끔 나온대.'] });
 }
 // 1번 도로 / 벚꽃마을(지도 id는 bunsu 그대로) / 2번 도로
 XW.route1 = []; // 봄 지방: 예전 추가 계열은 나오지 않게
@@ -2155,7 +2155,7 @@ API.bunsu.sign(12, 10, '벚꽃마을\n꽃잎이 흩날리는 마을');
 API.bunsu.ev(API.bunsu.cx, 12, 'rival1', () => rivalBattle(1)); // 마을에 들어와 큰길을 오르다 라이벌을 만난다
 // 북쪽 2번 도로(꽃샘시티 방향)는 벚꽃 배지를 따면 열린다
 gateGuard(API.bunsu, API.bunsu.cx, 1, API.bunsu.cx + 1, 1, () => S.badges[0], '경비원: 북쪽 2번 도로부터는 사계몬이 훨씬 강해져.\n먼저 벚꽃 체육관에서 벚꽃 배지를 따 와!', '경비원: 벚꽃 배지! 북쪽 2번 도로로 가도 좋아.\n북쪽으로 갈수록 사계몬이 강해지니 조심해!', 'guard', 'beotN');
-API.bunsu.ent({ id: 'beotk', kind: 'npc', x: 8, y: 14, dir: 'down', pal: 't2', wander: true, lines: ['벚꽃 체육관 관장 하람은 봄꽃을 정말 좋아해!', '풀숲에서 사계몬을 만나면 문제를 맞혀야 기술을 쓸 수 있어.', '회복소에서 쉬면 사계몬이 모두 건강해져!'] });
+API.bunsu.ent({ id: 'beotk', kind: 'npc', x: 8, y: 14, dir: 'down', pal: 't2', wander: true, lines: ['벚꽃 체육관 관장 하람은 봄꽃을 정말 좋아해!', '풀숲에서는 다양한 사계몬을 만날 수 있어.', '회복소에서 쉬면 사계몬이 모두 건강해져!'] });
 // 벚꽃마을 입구: 길잡이 할아버지가 지도를 준다
 for (let x = 2; x <= API.bunsu.m.w - 3; x++) if (['.', '=', '*', ','].includes(API.bunsu.get(x, API.bunsu.m.h - 3))) API.bunsu.ev(x, API.bunsu.m.h - 3, 'mapGift', () => H.mapGift());
 // 2번 도로: 봄 지방. 북쪽(꽃샘시티 쪽)으로 갈수록 야생 몬스터 레벨이 오른다 (wild.grad)
@@ -2175,7 +2175,7 @@ blossom(API.cycle.m, 5, .5);
 // 동쪽 여름 지방(3번 도로)은 아직 닫아 둔다
 gateGuard(API.cycle, API.cycle.m.w - 2, API.cycle.cy, API.cycle.m.w - 2, API.cycle.cy - 1, () => S.badges[1], '경비원: 동쪽은 여름 지방으로 가는 3번 도로야.\n꽃샘 배지가 있어야 지나갈 수 있어!', '경비원: 꽃샘 배지! 동쪽 여름 지방으로 가도 좋아.\n동쪽으로 갈수록 사계몬이 강해지니 조심해!', 'guard', 'cycleE');
 API.cycle.sign(14, 7, '꽃샘시티\n봄과 겨울이 잠깐 만나는 마을');
-API.cycle.ent({ id: 'cyn', kind: 'npc', x: 9, y: 15, dir: 'down', pal: 'kid', wander: true, lines: ['2번 도로는 북쪽으로 갈수록 강한 사계몬이 나와!', '꽃샘 체육관 관장 나린은 진짜 강해. 충분히 키우고 도전해!', '보건실에서 오답노트를 다시 풀면 힌트 카드를 받을 수 있대.', '3번 도로엔 가을 사계몬 밤톨이도 나온대. 여름 관장한테 강하대!'] });
+API.cycle.ent({ id: 'cyn', kind: 'npc', x: 9, y: 15, dir: 'down', pal: 'kid', wander: true, lines: ['2번 도로는 북쪽으로 갈수록 강한 사계몬이 나와!', '꽃샘 체육관 관장 나린은 진짜 강해. 충분히 키우고 도전해!', '보건실에서 쉬면 사계몬의 체력이 모두 회복된대.', '3번 도로엔 가을 사계몬 밤톨이도 나온대. 여름 관장한테 강하대!'] });
 // 3번 도로: 여름 지방. 동쪽(소나기항구 쪽)으로 갈수록 야생 몬스터 레벨이 오른다
 XW.route3 = [];
 routeGen('route3', { name: '3번 도로', theme: 'summer', unit: 31, w: 42, h: 21, cx: 1, pond: 1, wild: ['maem', 'maem', 'jipge', 'mallang', 'kkiruk', 'kkiruk', 'sonak', 'subak'], lv: [16, 19], ends: [['W', 10], ['E', 6]], trainers: 4, items: [['mpotion', 2], ['ball', 3]], hidden: [['mpotion', 1]], flowers: 5, seed: 37 });
@@ -2355,7 +2355,7 @@ townGen('ineq', { name: '부등호시티', theme: 'casino', unit: '2b', w: 30, h
   { x: 8, y: 2, w: 6, roof: 'B', d: 3, to: 'radio1', emblem: '탑' }, // 체육관 3은 소나기항구로 옮김 { x: 17, y: 2, w: 4, roof: 'C', d: 2, to: 'center', ret: 1 }, { x: 23, y: 2, w: 4, roof: 'H', d: 1, to: 'ineqFlower', emblem: '꽃' },
   { x: 2, y: 14, w: 6, roof: 'M', d: 3, to: 'dept', emblem: '백' }, { x: 8, y: 14, w: 4, roof: 'H', d: 1, to: 'ineqBike', emblem: '자' }, { x: 17, y: 14, w: 6, roof: 'B', d: 3, to: 'casino', emblem: '?' }, { x: 24, y: 14, w: 4, roof: 'H', d: 1, to: 'ineqH' }] });
 API.ineq.sign(13, 11, '부등호시티\n크고 작음이 분명한 대도시');
-API.ineq.ent({ id: 'ineqn', kind: 'npc', x: 20, y: 9, dir: 'down', pal: 't2', wander: true, lines: ['방송탑 1층에서 퀴즈를 5문제 연속으로 맞히면 라디오 카드를 준대!', '자전거 가게 아저씨가 공짜로 자전거를 빌려준다던데?', '순환소수 숲 동쪽으로 빠지면 모래언덕을 돌아 4번 도로로 올 수 있대.', '튜브가 생기면 길가의 연못 한가운데 섬에도 가 봐. 물건이 놓여 있더라!'] });
+API.ineq.ent({ id: 'ineqn', kind: 'npc', x: 20, y: 9, dir: 'down', pal: 't2', wander: true, lines: ['방송탑 1층에서 안내원에게 말을 걸면 라디오 카드를 준대!', '자전거 가게 아저씨가 공짜로 자전거를 빌려준다던데?', '순환소수 숲 동쪽으로 빠지면 모래언덕을 돌아 4번 도로로 올 수 있대.', '튜브가 생기면 길가의 연못 한가운데 섬에도 가 봐. 물건이 놓여 있더라!'] });
 routeGen('route5', { name: '5번 도로', theme: 'plain', unit: 3, w: 26, h: 36, cx: 2, wild: ['sheep', 'dog', 'bird', 'mouse'], lv: [14, 17], ends: [['N', 15], ['S', 13]], trainers: 4, items: [['hpotion', 1], ['hball', 1]], hidden: [['hball', 1]], flowers: 8, seed: 83 });
 { const a = API.route5, W = a.m.w; a.rect(2, 1, W - 3, 2, 'T'); a.set(15, 1, '=').set(15, 2, '=').set(15, 3, '='); a.ent({ id: 'fakeTree', kind: 'faketree', x: 15, y: 2, dir: 'down' }); relocate(a, 4); }
 // 함수시티
@@ -2446,7 +2446,7 @@ const ELITES = [
 // 첫 4인방 방의 나가는 문: 다온을 이긴 뒤에는 안내원이 막는다 (나가서 보건실 회복 못 하게. 지면 기록이 지워져 다시 열림)
 for (const [x, ox] of [[4, 2], [5, 7]]) gateGuard(API.league1, x, 8, ox, 8, () => !S.flags.elite0, '안내원: 졸업 전당은 한 번 들어오면 챔피언까지 쭉 가야 해!\n(지면 처음부터 다시 도전해요)', '안내원: 졸업 전당에 온 걸 환영해! 4인방을 이길 때마다 다음 방 문이 열려.\n한 번이라도 지면 처음부터 다시야. 회복은 가방 아이템으로!', 'guard', 'leagueGuard' + x);
 // 졸업 언덕 (미리보기 ㉑): 졸업 길 동쪽. 가운데 큰 건물 = 졸업 전당(4인방 첫 방)
-house('gradH', '졸업 언덕 쉼터', [{ id: 'gradh', kind: 'npc', x: 7, y: 4, dir: 'left', pal: 't2', lines: ['사계절을 모두 돌아 여기까지 왔구나!', '4인방은 봄, 여름, 가을, 겨울 순서래. 다음 상대의 계절을 미리 생각해 두렴.', '챔피언 만점은 중학교 수학 전 범위에서 문제를 낸대!'] }]);
+house('gradH', '졸업 언덕 쉼터', [{ id: 'gradh', kind: 'npc', x: 7, y: 4, dir: 'left', pal: 't2', lines: ['사계절을 모두 돌아 여기까지 왔구나!', '4인방은 봄, 여름, 가을, 겨울 순서래. 다음 상대의 계절을 미리 생각해 두렴.', '챔피언은 사계절 지방의 모든 강자와 겨뤄야 한대!'] }]);
 townGen('gradhill', { name: '졸업 언덕', theme: 'town', unit: 0, w: 24, h: 20, seed: 1601, exits: ['W'], blds: [
   { x: 8, y: 2, w: 8, roof: 'G', d: 4, to: 'league1', emblem: '★' }, { x: 2, y: 12, w: 4, roof: 'C', d: 2, to: 'center', ret: 1 },
   { x: 18, y: 12, w: 4, roof: 'M', d: 2, to: 'mart', ret: 1, arrive: [4, 6] }, { x: 13, y: 12, w: 4, roof: 'H', d: 1, to: 'gradH' }] });
@@ -3939,10 +3939,10 @@ H.mom = async () => {
 };
 H.prof = async () => {
   if (!S.party.length) {
-    await sayAll(['정박사: 오, 왔구나! 나는 사계몬을 연구하는 정박사란다.', '이 세계의 사계몬은 트레이너가 문제를 맞혀야만 기술을 쓸 수 있지.\n사계볼을 던질 때도, 아이템을 쓸 때도 마찬가지란다!', '사계절 체육관 8곳을 돌며 중학교 수학을 복습하면\n졸업 언덕의 챔피언에 도전할 수 있어.', '자, 테이블 위의 사계볼 중 하나를 골라 보렴!']);
+    await sayAll(['정박사: 오, 왔구나! 나는 사계몬을 연구하는 정박사란다.', '이 세계의 사계몬은 트레이너가 문제를 맞혀야만 기술을 쓸 수 있지.\n사계볼을 던질 때도, 아이템을 쓸 때도 마찬가지란다!', '사계절 체육관 8곳을 돌며 강한 관장들에게 도전하면\n졸업 언덕의 챔피언을 만날 수 있어.', '자, 테이블 위의 사계볼 중 하나를 골라 보렴!']);
     S.flags.profTalked = 1; return;
   }
-  if (S.badges[7] && !S.flags.mball) { S.flags.mball = 1; await sayAll(['정박사: 배지 8개라니! 정말 장하구나.', '이건 내가 연구하던 특별한 볼이란다. 문제만 맞히면 무조건 잡히지!']); return giveItem('mball', 1); }
+  if (S.badges[7] && !S.flags.mball) { S.flags.mball = 1; await sayAll(['정박사: 배지 8개라니! 정말 장하구나.', '이건 내가 연구하던 특별한 사계볼이란다. 다른 볼보다 포획 확률이 높지!']); return giveItem('mball', 1); }
   if (S.champ && !S.keys.sfeather) { await sayAll(['정박사: 챔피언이 되었다고? 이건 은빛 깃털이란다.', '바닷길 한가운데 동굴 깊은 곳에서 무언가가 기다린다는 전설이 있지.']); return giveKey('sfeather'); }
   const n = Object.keys(S.caught).length;
   return sayAll([`정박사: 도감에 ${n}종이 등록됐구나!`, n < 20 ? '여러 지역의 풀숲과 물가를 돌아다니며 다양한 사계몬을 만나 보렴.' : '훌륭해! 도감 연구가들이 너를 보면 기뻐할 거야.']);
@@ -3969,7 +3969,7 @@ async function rivalBattle(n) {
   const L = {
     1: ['???: 야! 거기 너! 너도 박사님한테 사계몬 받았지?', `나는 ${RIVAL_NAME}. 박사님 손자다! 수학은 감으로 푸는 거야!`, '누가 더 센지 붙어 보자!'],
     2: [`${RIVAL_NAME}: 또 너냐! 벚꽃마을에서 진 뒤로, 이번엔 한 문제씩 제대로 읽고 풀기로 했어.`, '…어두워서 길 찾느라 고생했지? 그래도 승부는 승부다!'],
-    3: [`${RIVAL_NAME}: …기다렸다. 너한테 두 번 지고 나서 오답노트를 쓰기 시작했어.`, '틀린 문제를 다시 풀어 보니까… 진짜로 실력이 늘더라. 이번엔 진짜 실력으로 간다!'],
+    3: [`${RIVAL_NAME}: …기다렸다. 너한테 두 번 지고 나서 오답노트를 쓰기 시작했어.`, '여러 사계몬과 겨뤄 보니까… 진짜로 실력이 늘더라. 이번엔 진짜 실력으로 간다!'],
     4: [`${RIVAL_NAME}: 왔구나. 오답노트가 거의 다 비었어. 틀렸던 문제를 전부 다시 풀었거든.`, '이번엔 내가 이길 차례다! 겨울 관장 앞에서 제대로 붙어 보자!'], // 미리보기 ⑲: 7번 도로 북쪽 끝 (체육관 7 앞)
     5: [`${RIVAL_NAME}: …기다렸다. 여기가 졸업 언덕 바로 앞이야.`, '처음엔 찍기만 하던 내가 오답노트를 다 풀고 여기까지 왔어. 다 너 덕분이야.', '그래도 승부는 승부! 졸업 전에 마지막으로 진짜 승부다!'], // 미리보기 ㉑: 졸업 길 동쪽 끝
   }[n];
