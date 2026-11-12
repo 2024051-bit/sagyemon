@@ -351,6 +351,94 @@ if (SP.beastI) SP.beastI.ability = '정밀 조준';
 if (SP.phi) SP.phi.ability = '황금 시야';
 // 수박거북: 거북의 단단한 등껍질을 반영한 옹골참
 if (SP.subak) SP.subak.ability = '옹골참';
+
+// 259종 특성 배정: 동물 모티브와 진화 계열을 기준으로 같은 계열은 같은 특성을 공유한다.
+// 수박거북은 사용자가 지정한 옹골참을 유지한다. 생성 계열도 기본 맹공에 몰리지 않도록 개별 배정한다.
+const FAMILY_ABILITY = {
+  "sq": "질주",
+  "frog": "재생력",
+  "moth": "복안",
+  "prime": "복안",
+  "snail": "강철피부",
+  "sprout": "재생력",
+  "firefly": "예리한 눈",
+  "dotbird": "예리한 눈",
+  "mole": "강철피부",
+  "shroom": "집중력",
+  "crab": "강철피부",
+  "golem": "강철피부",
+  "bee": "복안",
+  "fairy": "집중력",
+  "duck": "질주",
+  "crayfish": "강철피부",
+  "bear": "맹공",
+  "eel": "질주",
+  "roo": "맹공",
+  "chame": "질주",
+  "chick": "질주",
+  "lizard": "질주",
+  "tortoise": "강철피부",
+  "cloud": "집중력",
+  "horse": "질주",
+  "flame": "집중력",
+  "beetle": "강철피부",
+  "hog": "강철피부",
+  "jelly": "정신장벽",
+  "ray": "질주",
+  "beaver": "강철피부",
+  "twin": "정신장벽",
+  "protract": "강철피부",
+  "swift": "예리한 눈",
+  "shrimp": "질주",
+  "teddy": "맹공",
+  "gull": "예리한 눈",
+  "doll": "정신장벽",
+  "moray": "질주",
+  "lynx": "맹공",
+  "seal": "재생력",
+  "wasp": "맹공",
+  "ape": "맹공",
+  "newt": "재생력",
+  "fox": "질주",
+  "sloth": "재생력",
+  "card": "집중력",
+  "toad": "재생력",
+  "whelk": "강철피부",
+  "icedie": "정신장벽",
+  "twinbird": "예리한 눈",
+  "exam": "정신장벽",
+  "wrong": "복안",
+  "formula": "집중력",
+  "concept": "정신장벽"
+};
+for (const [family, ability] of Object.entries(FAMILY_ABILITY)) {
+  const count = (NEWLINES.find(line => line[0] === family)?.[1] || []).length;
+  for (let stage = 1; stage <= count; stage++) {
+    const mon = SP[family + stage];
+    if (mon && !mon.ability) mon.ability = ability;
+  }
+}
+// 추가 단독·특수 사계몬: 실제 동물 모티브에 맞춘 기본 특성
+const EXTRA_ABILITY = {
+  eodug: '복안', ppul: '맹공', wangppul: '맹공', neurit: '재생력',
+  doldeong: '강철피부', bam: '강철피부', bam2: '강철피부',
+  jam: '질주', song: '재생력', gom: '맹공', seal: '재생력',
+  deer: '질주', somnun: '질주', nunkkot: '질주', seolyeo: '질주',
+  nungurum: '정신장벽', godeum: '강철피부', sotul: '질주',
+  dongbaek: '재생력', sunlion: '맹공', rainbow: '예리한 눈',
+  piyak: '질주', bung: '복안', daram: '질주', napul: '복안',
+  gaegul: '재생력', kkotsaem: '질주', kkokko: '질주',
+  queenbung: '복안', wanggaegul: '재생력', maem: '질주',
+  wangmae: '질주', jipge: '강철피부', keunjip: '강철피부',
+  mallang: '정신장벽', kkiruk: '예리한 눈', sonak: '정신장벽',
+  phi: '황금 시야', euler: '집중력', zeroking: '역전투혼',
+  snake3: '강철피부', bat3: '복안', rock3: '강철피부',
+  croc3: '맹공', dino3: '맹공', octo3: '맹공', dice3: '집중력',
+  owl2: '예리한 눈', top2: '정신장벽', treeb: '강철피부',
+  pandab: '재생력', turtleb: '강철피부'
+};
+for (const [id, ability] of Object.entries(EXTRA_ABILITY)) if (SP[id] && !SP[id].ability) SP[id].ability = ability;
+
 // 도감 순서: 계열끼리 붙여서 정렬 (전설은 맨 뒤)
 const LEGENDS = ['beastO', 'beastI', 'beastG', 'dragon', 'whale', 'phi', 'euler', 'zeroking'];
 function evolveFor(sp, lv) { let s = sp, g = 0; while (SP[s].evo && lv >= SP[s].evo[0] && g++ < 3) s = SP[s].evo[1]; return s; }
@@ -3550,8 +3638,9 @@ function onlineBattleApplyMove(room, side, move) {
   else if (e === 'defdn') ds.def = Math.max(-6, ds.def - 1);
   if (!move.power || move.category === 'status') return { status: e || '변화' };
   const ak = move.category === 'special' ? 'spa' : 'atk', dk = move.category === 'special' ? 'spd' : 'def';
-  const A = (attacker[ak] || attacker.stats && attacker.stats[ak] || 1) * stgMul(as.atk);
-  const D = (defender[dk] || defender.stats && defender.stats[dk] || 1) * stgMul(ds.def);
+  // 물리와 특수 기술은 서로 다른 능력치 랭크를 사용한다.
+  const A = (attacker[ak] || attacker.stats && attacker.stats[ak] || 1) * stgMul(as[ak] || 0);
+  const D = (defender[dk] || defender.stats && defender.stats[dk] || 1) * stgMul(ds[dk] || 0);
   let bonus = 1;
   if (attacker.ability === '맹공' && move.category === 'physical') bonus *= 1.1;
   if (attacker.ability === '집중력' && move.category === 'special') bonus *= 1.1;
@@ -3564,7 +3653,7 @@ function onlineBattleApplyMove(room, side, move) {
   if (dtTrait.resist === move.type) bonus *= .95;
   const mult = effect(move.type, dt) * (at.includes(move.type) ? 1.5 : 1);
   const level = attacker.lvl || attacker.level || 1;
-  if (attacker.status && attacker.status.type === 'brn' && move.category === 'physical') bonus *= .9;
+  if (attacker.status && attacker.status.type === 'brn' && move.category === 'physical') bonus *= .75;
   const base = (level * .2 + 2) * move.power * (A / Math.max(1, D)) / 10;
   let damage = Math.max(1, Math.round(base * mult * bonus * (.85 + onlineBattleRandom(room) * .15)));
   let sturdyActivated = false;
@@ -3588,9 +3677,12 @@ function onlineBattleApplyTurn(room, payload, ownId) {
   if (!Number.isInteger(payload.seed) || payload.seed <= 0 || payload.seed > 2147483647) throw new Error('battle_protocol_mismatch');
   room.turnSeed = payload.seed | 0;
   room.battleStages = room.battleStages || {
-    local: room.localTeam.map(() => ({ atk: 0, def: 0, acc: 0 })),
-    opponent: room.opponentRoster.party.map(() => ({ atk: 0, def: 0, acc: 0 }))
+    local: room.localTeam.map(() => ({ atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0 })),
+    opponent: room.opponentRoster.party.map(() => ({ atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0 }))
   };
+  for (const side of ['local', 'opponent']) for (const st of room.battleStages[side] || []) {
+    for (const key of ['atk', 'def', 'spa', 'spd', 'spe', 'acc']) if (st[key] == null) st[key] = 0;
+  }
   for (const side of ['local', 'opponent']) for (const st of room.battleStages[side] || []) if (st.acc == null) st.acc = 0;
   const choices = payload.choices, ownChoice = choices.find(c => c.playerId === ownId);
   if (!ownChoice || !choices.some(c => c.playerId !== ownId)) throw new Error('battle_protocol_mismatch');
