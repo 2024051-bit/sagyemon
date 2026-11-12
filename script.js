@@ -2878,7 +2878,7 @@ function migrateNatures(o) {
     list.forEach((m, i) => {
       if (!m || typeof m !== 'object') return;
       if (!NATURE_BY_NAME[m.nature]) m.nature = legacyNature(m, `${group}:${i}`);
-      m.ability = (SP[m.sp] && SP[m.sp].ability) || (ABILITY_NAMES.includes(m.ability) ? m.ability : '맹공');
+      m.ability = ABILITY_NAMES.has(m.ability) ? m.ability : ((SP[m.sp] && SP[m.sp].ability) || '맹공');
     });
   }
   return o;
@@ -3054,7 +3054,7 @@ const ABILITY_EXTRA = [
   ['자연 치유','교체하면 상태이상이 해제된다.'], ['독 주머니','접촉 공격을 받으면 10% 확률로 상대 중독.'],
   ['불꽃 몸','접촉 공격을 받으면 10% 확률로 상대 화상.'], ['정전기','접촉 공격을 받으면 10% 확률로 상대 마비.'],
   ['수면 적응','잠듦 지속 시간이 1턴 감소.'], ['정신력','풀죽음 효과에 면역.'],
-  ['집중 유지','상대의 효과로 명중 랭크가 떨어지지 않는다.'], ['위기 회복','HP 1/4 이하에서 전투당 1회 최대 HP 1/8 회복.'],
+  ['위기 회복','HP 1/4 이하에서 전투당 1회 최대 HP 1/8 회복.'],
   ['포식','상대를 쓰러뜨리면 최대 HP 1/8 회복.'], ['치유의 숨결','턴 종료 시 10% 확률로 상태이상 해제.'],
   ['생명력','회복 기술의 회복량 +10%.'], ['마른 피부','비가 오면 턴 종료 시 HP 1/32 회복.'],
   ['햇살 적응','맑은 날씨에 턴 종료 시 HP 1/32 회복.'], ['모래 적응','모래바람 피해에 면역.'],
