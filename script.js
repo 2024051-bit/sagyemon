@@ -3488,6 +3488,10 @@ function onlineBattleMoves(mon, local) {
   if (usable.length) return usable;
   return [{ move: { name: '발버둥', type: '노말', power: 30, category: 'physical', accuracy: 100, priority: 0, struggle: true, pp: 0 }, index: 0, pp: 0 }];
 }
+function battleSpeed(mon) {
+  const speed = Number(mon && (mon.spe || mon.stats && mon.stats.spe)) || 1;
+  return speed * (mon && mon.ability === '질주' ? 1.1 : 1);
+}
 function onlineBattleMonTypes(mon) {
   return Array.isArray(mon.types) ? mon.types : (mon.sp != null ? spTypes(mon.sp) : []);
 }
@@ -3578,7 +3582,7 @@ function onlineBattleApplyTurn(room, payload, ownId) {
     }
     return { c, local, mon, move: selected.move };
   }).sort((a,b) => (b.move.priority || 0) - (a.move.priority || 0) ||
-    Number((b.mon.spe || b.mon.stats && b.mon.stats.spe) || 1) * (b.mon.status && b.mon.status.type === 'par' ? .75 : 1) - Number((a.mon.spe || a.mon.stats && a.mon.stats.spe) || 1) * (a.mon.status && a.mon.status.type === 'par' ? .75 : 1) ||
+    battleSpeed(b.mon) * (b.mon.status && b.mon.status.type === 'par' ? .75 : 1) - battleSpeed(a.mon) * (a.mon.status && a.mon.status.type === 'par' ? .75 : 1) ||
     String(a.c.playerId).localeCompare(String(b.c.playerId)));
   const logs = [];
   for (const a of attacks) {
@@ -4932,7 +4936,7 @@ function enemyActsBefore(playerMv) {
   B.pendingEnemyMove = em;
   const ep = em.priority || 0, pp = playerMv.priority || 0;
   if (ep !== pp) return ep > pp;
-  const es = e.spe || 1, ps = B.p.spe || 1;
+  const es = battleSpeed(e), ps = battleSpeed(B.p);
   return es === ps ? Math.random() < .5 : es > ps;
 }
 async function enemyTurn() {
