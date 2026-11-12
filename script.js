@@ -3537,11 +3537,16 @@ function onlineBattleApplyMove(room, side, move) {
   const base = (level * .2 + 2) * move.power * (A / Math.max(1, D)) / 10;
   const damage = Math.max(1, Math.round(base * mult * bonus * (.85 + onlineBattleRandom(room) * .15)));
   defender.hp = Math.max(0, defender.hp - damage);
+  let recoilDamage = 0;
+  if (move.recoil) {
+    recoilDamage = Math.max(1, Math.floor(damage / 2));
+    attacker.hp = Math.max(0, attacker.hp - recoilDamage);
+  }
   if (defender.hp > 0 && !defender.status && Array.isArray(move.sec) && onlineBattleRandom(room) < move.sec[1]) {
     const kind = move.sec[0];
     if (['sleep', 'par', 'burn', 'conf'].includes(kind)) defender.status = { type: kind === 'sleep' ? 'slp' : kind, turns: kind === 'sleep' ? 2 + Math.floor(onlineBattleRandom(room) * 2) : kind === 'conf' ? 3 : 0 };
   }
-  return { damage, typeMult: mult, inflicted: defender.status && defender.status.type };
+  return { damage, recoilDamage, typeMult: mult, inflicted: defender.status && defender.status.type };
 }
 function onlineBattleApplyTurn(room, payload, ownId) {
   if (!Number.isInteger(payload.seed) || payload.seed <= 0 || payload.seed > 2147483647) throw new Error('battle_protocol_mismatch');
@@ -3598,7 +3603,10 @@ function onlineBattleApplyTurn(room, payload, ownId) {
     }
     const r = onlineBattleApplyMove(room, a.local ? 'local' : 'opponent', a.move);
     if (r && r.missed) logs.push(a.move.name + ' 빗나갔다!');
-    else if (r && r.damage != null) logs.push(a.move.name + ' · ' + r.damage + ' 피해');
+    else if (r && r.damage != null) {
+      logs.push(a.move.name + ' · ' + r.damage + ' 피해');
+      if (r.recoilDamage > 0) logs.push(a.move.name + ' · 반동으로 자신에게 ' + r.recoilDamage + ' 피해');
+    }
     else if (r && r.healed != null) logs.push(a.move.name + ' · HP ' + r.healed + ' 회복');
     else if (r && r.status) logs.push(a.move.name + ' · ' + r.status);
     if (r && r.inflicted) logs.push((a.local ? room.opponentRoster.party[room.activeOpponent] : room.localTeam[room.activeLocal]).species + '에게 상태 이상이 발생했어!');
