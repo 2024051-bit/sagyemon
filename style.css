@@ -66,56 +66,6 @@ body{font-family:var(--f-ui);padding-left:max(16px,env(safe-area-inset-left,0px)
 .stat .num{text-align:right;font-size:2.8cqw;font-variant-numeric:tabular-nums}
 .stat .xp{height:.9cqw;background:#ccc;border-radius:1cqw;overflow:hidden;margin-top:.5cqw}
 .stat .xp i{display:block;height:100%;background:#4a8be0;transition:width .5s}
-/* 퀴즈 */
-.quiz{position:absolute;inset:2.5% 2%;z-index:8;display:flex;flex-direction:column;gap:1.5cqw;padding:2.4cqw 3.2cqw;animation:pop .18s ease-out}
-@keyframes pop{from{transform:scale(.94);opacity:0}}
-.quiz .qh{display:flex;justify-content:space-between;align-items:center;gap:2cqw}
-.quiz .qu{background:var(--ink);color:#fff;border-radius:5cqw;padding:.4cqw 2cqw;font-size:2.5cqw;font-weight:700;white-space:nowrap}
-.quiz .qt{font:400 3.3cqw var(--f-title);color:var(--btn-dark);text-align:right}
-.quiz .tbar{position:relative;height:2.2cqw;background:#e7e2cf;border-radius:2cqw;overflow:hidden}
-.quiz .tbar i{position:absolute;inset:0 auto 0 0;width:100%;background:linear-gradient(90deg,#f0a020,#f6d34a)}
-.quiz .tbar span{position:absolute;inset:0;font-size:1.8cqw;font-weight:700;display:flex;align-items:center;justify-content:center;color:#5a4410}
-.quiz .qq{font-size:3.4cqw;font-weight:700;line-height:1.7;flex:0 0 auto}
-.quiz .qo{display:grid;grid-template-columns:1fr 1fr;gap:1.2cqw;flex:1;align-content:start}
-.quiz .opt{display:flex;gap:1.6cqw;align-items:center;border:.4cqw solid #c9c4ac;border-radius:1.4cqw;padding:1.1cqw 1.8cqw;background:#fffef6;font-weight:700;font-size:3.1cqw;line-height:1.5;min-height:8cqw}
-.quiz .opt b{color:var(--btn);font-size:1.1em}
-.quiz .opt.on{border-color:var(--ink);background:#fff4c8;box-shadow:0 .5cqw 0 #c9b25a}
-.quiz .opt.ok{border-color:var(--good);background:#dff5e3}
-.quiz .opt.ng{border-color:var(--bad);background:#fbe0de}
-.quiz.done .opt:not(.ok):not(.ng){opacity:.5}
-.quiz .qf{border-top:.4cqw dashed #c9c4ac;padding-top:1.2cqw;font-size:2.8cqw;line-height:1.6}
-.quiz .qf .good{color:var(--good);font:400 3.6cqw var(--f-title)}
-.quiz .qf .bad{color:var(--bad);font:400 3.6cqw var(--f-title)}
-.quiz .qf .ans{background:#fff4c8;padding:0 1cqw;border-radius:.6cqw}
-.quiz .qf .ex{color:#46465e;margin-top:.3cqw}
-.quiz .qf .go{float:right;color:var(--btn);animation:blink .7s steps(2) infinite}
-/* 성적표 (캡처해서 제출하는 화면) */
-.report{position:absolute;inset:2.5% 2%;z-index:9;background:#fffdf4;color:#26263a;border:.7cqw solid #2a3a8a;border-radius:1.2cqw;padding:1.8cqw 2.6cqw;display:flex;flex-direction:column;gap:1.1cqw;font-weight:700;font-size:2.4cqw;line-height:1.35;animation:pop .18s}
-.report .rp-h{display:flex;justify-content:space-between;align-items:baseline;border-bottom:.45cqw solid #2a3a8a;padding-bottom:.8cqw}
-.report .rp-h b{font:400 3.8cqw var(--f-title);color:#2a3a8a}
-.report .rp-h span{font-size:2.3cqw;color:#46465e}
-.report .rp-id{display:flex;justify-content:space-between;align-items:center;gap:2cqw}
-.report .rp-id .who{font-size:3.2cqw}
-.report .rp-id .who em{font-style:normal;background:#ffe58a;border-radius:.6cqw;padding:0 1cqw;margin-right:1.2cqw}
-.report .rp-badges img{width:3.6cqw;vertical-align:middle;margin-left:.2cqw;image-rendering:auto}
-.report .rp-badges i{display:inline-block;width:3.2cqw;height:3.2cqw;margin-left:.4cqw;border:.3cqw dashed #b8b4a8;border-radius:50%;vertical-align:middle}
-.report .rp-sum{font-size:2.2cqw;color:#46465e}
-.report table{width:100%;border-collapse:collapse;font-size:2.3cqw}
-.report th,.report td{border:.25cqw solid #d8d2bc;padding:.45cqw .9cqw;text-align:center}
-.report th{background:#eef0fa;color:#2a3a8a}
-.report td:first-child{text-align:left;background:#fbf8ec}
-.report td.hi{background:#dff5e3}.report td.mid{background:#fff4c8}.report td.lo{background:#fbe0de}.report td.na{color:#b0aa98}
-.report td small{font-size:.8em;color:#6a6a7a;margin-left:.4cqw}
-.report .rp-weak{background:#fbe0de;border-radius:.8cqw;padding:.6cqw 1.2cqw;font-size:2.3cqw}
-.report .rp-weak.good{background:#dff5e3}
-.report .rp-f{margin-top:auto;display:flex;justify-content:space-between;align-items:center;font-size:2.1cqw;color:#7a1d3e}
-#ui .report .rp-save{font:700 2.1cqw var(--f-ui);color:#5a4410;background:#ffe58a;border:.3cqw solid #c9a42a;border-radius:5cqw;padding:.2cqw 1.6cqw;box-shadow:0 .35cqw 0 #c9a42a;margin-right:1.4cqw;cursor:pointer}
-/* 힌트 카드: 버튼과 지운 보기 */
-.quiz .qhint{display:flex;justify-content:flex-end}
-#ui .quiz .qhint button{font:700 2.5cqw var(--f-ui);color:#5a4410;background:#ffe58a;border:.35cqw solid #c9a42a;border-radius:5cqw;padding:.5cqw 2.2cqw;box-shadow:0 .45cqw 0 #c9a42a;cursor:pointer}
-#ui .quiz .qhint button[disabled]{background:#eee8d2;color:#8a8470;border-color:#c9c4ac;box-shadow:none;cursor:default}
-.quiz .opt.cut{opacity:.35;text-decoration:line-through;position:relative;cursor:default}
-.quiz .opt.cut::after{content:'힌트';position:absolute;right:1.2cqw;top:50%;transform:translateY(-50%);font-size:2cqw;text-decoration:none;background:#ffe58a;color:#5a4410;border-radius:3cqw;padding:0 1.2cqw}
 .m i{font-family:var(--f-math);font-style:italic;font-weight:700}
 .fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.86em;line-height:1.15;margin:0 .15em}
 .fr>span:first-child{border-bottom:.12em solid currentColor;padding:0 .2em}
@@ -207,7 +157,7 @@ button:focus-visible{outline:3px solid #6ab0ff;outline-offset:2px}
 .st-box{border:.5cqw double #7a4a9a;border-radius:1cqw;padding:.8cqw 1.6cqw;display:grid;grid-template-columns:1fr 1fr 1fr;gap:1cqw;background:#fff8}
 .st-mv{display:grid;grid-template-columns:1fr;gap:0;font-size:2.4cqw;line-height:1.35}.st-mv>div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tdot{display:inline-block;width:1.6cqw;height:1.6cqw;border-radius:.4cqw;margin-right:.8cqw;vertical-align:middle}.st-mv sup{color:#7a4a9a;font-size:.7em}.st-mv .sm{font-size:.85em;color:#7a4a9a}
 .st-st{font-size:2.6cqw;color:#55556e}
-@container (max-width:480px){#ui{font-size:3.7cqw}.quiz .qq{font-size:4cqw!important}.quiz .opt{font-size:3.8cqw}.quiz .qf{font-size:3.4cqw}.stat .nm{font-size:3.4cqw}.quiz .qu{font-size:3cqw}}
+@container (max-width:480px){#ui{font-size:3.7cqw}.stat .nm{font-size:3.4cqw}}
 #fsBtn{display:none}
 /* 휴대폰: 화면을 꽉 채우기 (세로 = 화면 위 + 패드 아래, 가로 = 패드 | 화면 | 버튼) */
 @media (pointer:coarse),(max-width:700px){
@@ -251,6 +201,5 @@ button:focus-visible{outline:3px solid #6ab0ff;outline-offset:2px}
 .sc-btns{display:flex;gap:1.5cqw;flex-wrap:wrap;margin-top:1.2cqw}.sc-btns button{background:var(--btn)!important;color:#fff!important;padding:.8cqw 2.4cqw!important;border-radius:1cqw!important;font-weight:700!important}
 .stt{display:inline-block;font-size:.7em;color:#fff;padding:0 .6cqw;border-radius:.6cqw;margin-left:.6cqw;vertical-align:middle}.st-slp{background:#6a6ad0}.st-par{background:#c8a020}.st-brn{background:#d84a2a}.st-conf{background:#c050b0}
 .efx{font-style:normal;font-size:.85em;color:#7a4a9a}
-.quiz .qrow{display:flex;gap:2cqw;align-items:flex-start}.quiz .qrow .qq{flex:1}
 .qfig{flex:0 0 40%;width:40%;height:auto;background:#fff;border:.3cqw solid #e0dac0;border-radius:1cqw}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
