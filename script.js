@@ -727,10 +727,10 @@ function secOf(n, type) {
     learn.push({ name: n50, lv: 40 });
     if (!MOVES[n60]) MOVES[n60] = { name: n60, type: t1, power: 120, pp: 5 };
     learn.push({ name: n60, lv: 45 });
-    // Lv.60: 전기 타입 사계몬은 공통 궁극기 '천뢰폭발'을 배울 수 있다.
+    // Lv.70: 전기 타입 사계몬은 공통 궁극기 '천뢰폭발'을 배울 수 있다.
     if (t.includes('전기')) {
       if (!MOVES['천뢰폭발']) MOVES['천뢰폭발'] = { name: '천뢰폭발', type: '전기', power: 150, pp: 5 };
-      if (!learn.some(l => l.name === '천뢰폭발')) learn.push({ name: '천뢰폭발', lv: 60 });
+      if (!learn.some(l => l.name === '천뢰폭발')) learn.push({ name: '천뢰폭발', lv: 70 });
     }
     d.learn = learn;
   }
@@ -746,9 +746,16 @@ function secOf(n, type) {
     if (mv.accuracy == null) mv.accuracy = 85 + Math.floor(Math.random() * 16);
     // 직접 잠재우는 기술은 명중률 50%.
     if (mv.eff === 'sleep') mv.accuracy = 50;
-    // 반동·자기 피해 기술은 기본적으로 명중률 100%.
-    // 위력 150의 반동 기술 중 무작위 2개는 명중률 70%로 하고 반동을 제거한다.
+    // 반동 기술은 기본 명중률 100%. 궁극기별 패널티는 아래에서 별도로 설정한다.
+    if (mv.recoil) mv.accuracy = 100;
     if (mv.priority == null) mv.priority = 0;
+  }
+  // 궁극기마다 반동 또는 명중률 70% 중 하나를 무작위로 고정한다.
+  for (const name of ['천뢰폭발', '대지뿌리 폭주', '태양충각', '만추멸섬', '빙하붕괴']) {
+    const mv = MOVES[name];
+    if (!mv) continue;
+    if (Math.random() < 0.5) { mv.recoil = true; mv.accuracy = 100; }
+    else { mv.recoil = false; mv.accuracy = 70; }
   }
 }
 // 상태이상은 쓰지 않는다 (기획서 4.7): 상태이상 기술은 능력치를 내리는 기술로 바꾸고, 공격 기술에 붙은 상태이상은 없앤다
@@ -3840,8 +3847,8 @@ function onlineValidateRosterPreview(packet) {
   return {
     trainer: String(data.trainer || '트레이너').slice(0, 16),
     party: data.party.map(mon => {
-      if (!mon || typeof mon.species !== 'string' || mon.species.length > 20 || !Number.isFinite(mon.level) || mon.level < 1 || mon.level > 100 || !Number.isInteger(mon.hp) || !Number.isInteger(mon.maxhp) || mon.maxhp < 1 || mon.hp < 1 || mon.hp > mon.maxhp || !mon.stats || !['atk', 'def', 'spa', 'spd', 'spe'].every(k => Number.isInteger(mon.stats[k]) && mon.stats[k] >= 1 && mon.stats[k] <= 99999) || (mon.status != null && (!mon.status || !['slp', 'par', 'brn', 'conf'].includes(mon.status.type) || !Number.isInteger(mon.status.turns) || mon.status.turns < 0 || mon.status.turns > 10)) || !Array.isArray(mon.moves) || mon.moves.length > 4 || !mon.moves.every(m => m && typeof m.name === 'string' && m.name.length <= 20 && typeof m.type === 'string' && m.type.length <= 8 && Number.isInteger(m.power) && m.power >= 0 && m.power <= 300 && ['physical', 'special', 'status'].includes(m.category) && Number.isFinite(m.accuracy) && m.accuracy >= 1 && m.accuracy <= 100 && Number.isInteger(m.priority) && m.priority >= -5 && m.priority <= 5 && (m.eff == null || typeof m.eff === 'string') && (m.sec == null || (Array.isArray(m.sec) && m.sec.length === 2 && typeof m.sec[0] === 'string' && Number.isFinite(m.sec[1]) && m.sec[1] >= 0 && m.sec[1] <= 1)) && typeof m.charge === 'boolean' && typeof m.struggle === 'boolean' && Number.isInteger(m.pp) && m.pp >= 0 && m.pp <= 99 && Number.isInteger(m.maxpp) && m.maxpp >= 0 && m.maxpp <= 99 && m.pp <= m.maxpp) || !Array.isArray(mon.types) || mon.types.length > 2 || !mon.types.every(t => typeof t === 'string')) throw new Error('battle_protocol_mismatch');
-      return { species: mon.species.slice(0, 20), nickname: String(mon.nickname || '').slice(0, 8), level: Math.floor(mon.level), hp: mon.hp, maxhp: mon.maxhp, stats: { atk: mon.stats.atk, def: mon.stats.def, spa: mon.stats.spa, spd: mon.stats.spd, spe: mon.stats.spe }, types: mon.types.map(t => String(t).slice(0, 8)), ability: String(mon.ability || '').slice(0, 12), status: mon.status ? { type: mon.status.type, turns: mon.status.turns } : null, moves: mon.moves.map(m => ({ name: m.name.slice(0, 20), type: m.type.slice(0, 8), power: m.power, category: m.category, accuracy: m.accuracy, priority: m.priority, eff: m.eff || null, sec: m.sec || null, charge: m.charge, struggle: m.struggle, pp: m.pp, maxpp: m.maxpp })) };
+      if (!mon || typeof mon.species !== 'string' || mon.species.length > 20 || !Number.isFinite(mon.level) || mon.level < 1 || mon.level > 100 || !Number.isInteger(mon.hp) || !Number.isInteger(mon.maxhp) || mon.maxhp < 1 || mon.hp < 1 || mon.hp > mon.maxhp || !mon.stats || !['atk', 'def', 'spa', 'spd', 'spe'].every(k => Number.isInteger(mon.stats[k]) && mon.stats[k] >= 1 && mon.stats[k] <= 99999) || (mon.status != null && (!mon.status || !['slp', 'par', 'brn', 'conf'].includes(mon.status.type) || !Number.isInteger(mon.status.turns) || mon.status.turns < 0 || mon.status.turns > 10)) || !Array.isArray(mon.moves) || mon.moves.length > 4 || !mon.moves.every(m => m && typeof m.name === 'string' && m.name.length <= 20 && typeof m.type === 'string' && m.type.length <= 8 && Number.isInteger(m.power) && m.power >= 0 && m.power <= 300 && ['physical', 'special', 'status'].includes(m.category) && Number.isFinite(m.accuracy) && m.accuracy >= 1 && m.accuracy <= 100 && Number.isInteger(m.priority) && m.priority >= -5 && m.priority <= 5 && (m.eff == null || typeof m.eff === 'string') && (m.sec == null || (Array.isArray(m.sec) && m.sec.length === 2 && typeof m.sec[0] === 'string' && Number.isFinite(m.sec[1]) && m.sec[1] >= 0 && m.sec[1] <= 1)) && typeof m.charge === 'boolean' && typeof m.struggle === 'boolean' && (m.recoil == null || typeof m.recoil === 'boolean') && Number.isInteger(m.pp) && m.pp >= 0 && m.pp <= 99 && Number.isInteger(m.maxpp) && m.maxpp >= 0 && m.maxpp <= 99 && m.pp <= m.maxpp) || !Array.isArray(mon.types) || mon.types.length > 2 || !mon.types.every(t => typeof t === 'string')) throw new Error('battle_protocol_mismatch');
+      return { species: mon.species.slice(0, 20), nickname: String(mon.nickname || '').slice(0, 8), level: Math.floor(mon.level), hp: mon.hp, maxhp: mon.maxhp, stats: { atk: mon.stats.atk, def: mon.stats.def, spa: mon.stats.spa, spd: mon.stats.spd, spe: mon.stats.spe }, types: mon.types.map(t => String(t).slice(0, 8)), ability: String(mon.ability || '').slice(0, 12), status: mon.status ? { type: mon.status.type, turns: mon.status.turns } : null, moves: mon.moves.map(m => ({ name: m.name.slice(0, 20), type: m.type.slice(0, 8), power: m.power, category: m.category, accuracy: m.accuracy, priority: m.priority, eff: m.eff || null, sec: m.sec || null, charge: m.charge, struggle: m.struggle, recoil: !!m.recoil, pp: m.pp, maxpp: m.maxpp })) };
     })
   };
 }
@@ -5264,7 +5271,7 @@ async function doMove(user, target, mv, side, { fast }) {
   await setHP(target, target.hp - dmg);
   if (fast) await say('급소에 맞았다!');
   await effMsg(eff);
-  if (mv.struggle) { await say(`${jo(nameOf(user, side), '은는')} 반동으로 피해를 입었다!`, { wait: false }); await setHP(user, user.hp - Math.max(1, Math.floor(dmg / 4))); }
+  if (mv.struggle || mv.recoil) { await say(`${jo(nameOf(user, side), '은는')} 반동으로 피해를 입었다!`, { wait: false }); await setHP(user, user.hp - Math.max(1, Math.floor(dmg / 4))); }
   if (mv.sec && target.hp > 0 && Math.random() < mv.sec[1]) await inflict(target, tside, mv.sec[0]);
 }
 async function playerMove(mv) {
