@@ -3565,31 +3565,13 @@ H.trainer = async e => {
   const r = await battle({ kind, team, trainer: e, money: Math.max(...team.map(m => m.lvl)) * 40 });
   if (r === 'win') S.flags['tr:' + e.id] = 1;
 };
-const HINT_MAX = 5;
 H.nurse = async () => {
-  await say('보건 선생님: 어서 오세요! 무엇을 도와줄까요?', { wait: false });
-  const c = await choose(['사계몬 쉬게 하기', '오답노트 다시 풀기<span class="sub">(맞히면 힌트 카드)</span>', '그만두기'], { cls: 'start', style: { top: 'auto', bottom: '34%' } });
-  if (c === 1) return reviewNote();
-  if (c !== 0) return say('보건 선생님: 또 오세요~');
+  await say('보건 선생님: 어서 오세요!');
   S.party.forEach(fullHeal); SFX.heal();
   S.heal = { map: CUR.id, x: P.x, y: P.y, ret: S.ret ? { ...S.ret } : null };
   await say('♪ 띠리리링~\n사계몬들이 모두 건강해졌다!');
-  await say('보건 선생님: 공부도 건강이 먼저! 또 오세요~');
+  await say('보건 선생님: 언제든 쉬러 오세요~');
 };
-// 오답노트 다시 풀기: 맞히면 그 문제는 오답노트에서 '정복'되고 힌트 카드 1장 (최대 HINT_MAX장)
-async function reviewNote() {
-  if (!S.notes.length) return say('보건 선생님: 오답노트가 비어 있어요!\n틀린 문제가 생기면 다시 와요.');
-  if ((S.hints || 0) >= HINT_MAX) return say(`보건 선생님: 힌트 카드는 ${HINT_MAX}장까지만 가질 수 있어요.\n먼저 퀴즈에서 써 보세요!`);
-  const n = S.notes[0];
-  // 예전 저장의 오답노트에는 보기가 없어서, 같은 단원의 새 문제로 대신한다
-  const given = n.opts ? { q: n.q, a: n.a, opts: n.opts, ex: n.ex, u: n.u, label: n.label, fig: figFor(n.q) } : null;
-  hideTb();
-  const r = await quiz(n.u, { title: '오답노트 다시 풀기', given, review: true });
-  if (!r.ok) return say('보건 선생님: 아쉬워요! 해설을 다시 보고 또 도전해요.\n(이 문제는 오답노트에 그대로 남아요)');
-  S.notes.splice(S.notes.indexOf(n), 1); S.solved = (S.solved || 0) + 1;
-  S.hints = Math.min(HINT_MAX, (S.hints || 0) + 1); SFX.lvl();
-  return say(`정답! 이 문제는 오답노트에서 정복했어요.\n힌트 카드 1장을 받았다! (가진 카드 ${S.hints}장 / 최대 ${HINT_MAX}장)`);
-}
 // 기술 떠올리기 선생님 (보건실): 잊은 기술이나 예전에 배울 수 있던 기술을 다시 배우게 해 준다
 H.tutor = async () => {
   await sayAll(['기술 떠올리기 선생님: 기술을 되살리거나 순서를 정리해 주마.', '기술 회상은 1,000원이고, 기술 순서 변경은 무료란다!']);
@@ -5456,7 +5438,7 @@ async function blackout() {
   if (S.heal.ret) S.ret = { ...S.heal.ret };
   for (let i = 0; i < 4; i++) delete S.flags['elite' + i];
   loadMap(S.heal.map, S.heal.x, S.heal.y, 'up');
-  await say('보건 선생님: 푹 쉬었으니 이제 괜찮아요.\n오답노트로 복습하고 다시 도전해 봐요!');
+  await say('보건 선생님: 푹 쉬었으니 이제 괜찮아요. 다시 모험을 떠나 보세요!');
 }
 let EVO = null;
 async function checkEvolve() {
@@ -5553,7 +5535,7 @@ async function startMenu() {
   grantPlane();
   let i = 0;
   while (true) {
-    const items = ['사계몬', '가방', '도감'].concat(S.keys.map ? ['지도'] : [], ['트레이너 카드', '오답노트', '성적표']).concat(S.keys.plane ? ['날아가기'] : [], S.keys.bike ? [S.bike ? '자전거 내리기' : '자전거 타기'] : [], ['저장하기', '기록 옮기기', muted ? '소리 켜기' : '소리 끄기', '초기화', '닫기']);
+    const items = ['사계몬', '가방', '도감'].concat(S.keys.map ? ['지도'] : [], ['트레이너 카드']).concat(S.keys.plane ? ['날아가기'] : [], S.keys.bike ? [S.bike ? '자전거 내리기' : '자전거 타기'] : [], ['저장하기', '기록 옮기기', muted ? '소리 켜기' : '소리 끄기', '초기화', '닫기']);
     i = await choose(items, { cls: 'start two', cols: 2, start: Math.min(i, items.length - 1) });
     const it = items[i];
     if (i < 0 || it === '닫기') return;
@@ -5563,8 +5545,6 @@ async function startMenu() {
     if (it === '지도') await worldMap();
     if (it === '날아가기') { if (await flyMenu()) return; continue; }
     if (it === '트레이너 카드') await trainerCard();
-    if (it === '오답노트') await notesMenu();
-    if (it === '성적표') await reportMenu();
     if (it.startsWith('자전거')) { if (CUR.indoor) { toast('실내에서는 탈 수 없어요'); continue; } S.bike = !S.bike; toast(S.bike ? '자전거를 탔다! 씽씽~' : '자전거에서 내렸다'); return; }
     if (it === '저장하기') save(false);
     if (it === '초기화') { await resetGame(); continue; }
@@ -5928,11 +5908,10 @@ async function titleFlow() {
   $('#title').hidden = true;
   if (saved && i === 0) { S = saved; startWorld(); setTimeout(() => toast(`${S.name}, 다시 왔구나!`), 400); return; }
   scene = 'evo'; EVO = { intro: true, t0: performance.now(), done: true };
-  await sayAll(['어서 와! 사계몬의 세계에 온 걸 환영한다!', '나는 정박사. 이 세계에는 "사계몬"이라 불리는 생물이 살고 있지.', '사계몬은 트레이너가 문제를 맞혀야만 힘을 낸단다.\n틀리면… 공격도, 볼도, 아이템도 실패!', '봄·여름·가을·겨울 체육관 8곳에서 중학교 수학을 복습하고,\n졸업 언덕의 챔피언에 도전해 보렴!']);
+  await sayAll(['어서 와! 사계몬의 세계에 온 걸 환영한다!', '나는 정박사. 이 세계에는 "사계몬"이라 불리는 생물이 살고 있지.', '사계몬은 트레이너와 함께 모험하며 성장하는 생물이란다.', '봄·여름·가을·겨울 체육관 8곳을 돌며 강한 관장들에게 도전하고,\n졸업 언덕의 챔피언에 도전해 보렴!']);
   hideTb();
   const name = await nameInput();
   S = newState(name);
-  await askSid(); // 학번 (성적표·체크포인트 코드에 쓴다)
   await say(`${name}! 좋은 이름이구나.\n자, 새봄마을에서 너의 모험이 시작된다!`);
   startWorld();
   run(() => sayAll(['(집 안이다. 방향키로 움직이고 A 버튼으로 말을 걸 수 있다.)', '(먼저 엄마에게 말을 걸어 보자!)']));
