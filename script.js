@@ -727,6 +727,11 @@ function secOf(n, type) {
     learn.push({ name: n50, lv: 40 });
     if (!MOVES[n60]) MOVES[n60] = { name: n60, type: t1, power: 120, pp: 5 };
     learn.push({ name: n60, lv: 45 });
+    // Lv.60: 전기 타입 사계몬은 공통 궁극기 '천뢰폭발'을 배울 수 있다.
+    if (t.includes('전기')) {
+      if (!MOVES['천뢰폭발']) MOVES['천뢰폭발'] = { name: '천뢰폭발', type: '전기', power: 150, pp: 5 };
+      if (!learn.some(l => l.name === '천뢰폭발')) learn.push({ name: '천뢰폭발', lv: 60 });
+    }
     d.learn = learn;
   }
   for (const k2 in COVER) { const [ct, cn] = COVER[k2]; if (!MOVES[cn]) MOVES[cn] = { name: cn, type: ct, power: 85, pp: 10, sec: secOf(cn, ct) }; }
