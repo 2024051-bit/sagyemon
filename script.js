@@ -2878,7 +2878,7 @@ function migrateNatures(o) {
     list.forEach((m, i) => {
       if (!m || typeof m !== 'object') return;
       if (!NATURE_BY_NAME[m.nature]) m.nature = legacyNature(m, `${group}:${i}`);
-      m.ability = (SP[m.sp] && SP[m.sp].ability) || (['맹공', '집중력', '강철피부', '정신장벽', '질주', '재생력', '역전투혼', '복안', '예리한 눈', '정밀 조준', '황금 시야', '옹골참'].includes(m.ability) ? m.ability : '맹공');
+      m.ability = (SP[m.sp] && SP[m.sp].ability) || (ABILITY_NAMES.includes(m.ability) ? m.ability : '맹공');
     });
   }
   return o;
@@ -2892,8 +2892,8 @@ function calcStats(m) {
   m.spa = Math.floor((b.spa == null ? b.atk : b.spa) * m.lvl / 40) + 5;
   m.spd = Math.floor((b.spd == null ? b.def : b.spd) * m.lvl / 40) + 5;
   m.spe = Math.floor((b.spe == null ? (b.atk + b.def) / 2 : b.spe) * m.lvl / 40) + 5;
-  m.ability = ['맹공', '집중력', '강철피부', '정신장벽', '질주', '재생력', '역전투혼', '복안', '예리한 눈', '정밀 조준', '황금 시야', '옹골참'].includes(m.ability) ? m.ability : (b.ability || '맹공');
-  if (m.ability === '질주') m.spe = Math.round(m.spe * 1.1);
+  m.ability = ABILITY_NAMES.includes(m.ability) ? m.ability : (b.ability || '맹공');
+  if (m.ability === '질주' || m.ability === '민첩한 몸놀림') m.spe = Math.round(m.spe * 1.1);
   for (const stat of ['atk', 'def', 'spa', 'spd', 'spe']) m[stat] = Math.max(1, Math.round(m[stat] * natureRate(m, stat)));
   const hb = m.held && ITEMS[m.held] && ITEMS[m.held].boost;
   if (hb) { if (hb.hp) m.maxhp = Math.round(m.maxhp * hb.hp); if (hb.atk) m.atk = Math.round(m.atk * hb.atk); if (hb.def) m.def = Math.round(m.def * hb.def); }
@@ -3021,6 +3021,101 @@ const ABILITY_INFO = {
   '황금 시야': '상대의 효과로 명중 랭크가 떨어지지 않는다.',
   '옹골참': 'HP가 가득 찼을 때 일격으로 기절할 피해를 받으면 HP 1로 버틴다.'
 };
+
+// 신규 특성 88종: 기존 12종과 합쳐 총 100종.
+// 1차 적용에서는 안정성을 위해 공격·방어·명중·속도·상태이상 면역처럼
+// 공통 전투 계산에 안전하게 연결할 수 있는 효과부터 실제 발동시킨다.
+const ABILITY_EXTRA = [
+  ['강력한 턱','물기 계열 기술 피해 +15%.'], ['날카로운 발톱','베기 계열 기술 피해 +15%.'],
+  ['철주먹','펀치 계열 기술 피해 +15%.'], ['발차기 달인','킥 계열 기술 피해 +15%.'],
+  ['독성 발톱','독 타입 기술 피해 +10%.'], ['불꽃 심장','불 타입 기술 피해 +10%.'],
+  ['물결 친화','물 타입 기술 피해 +10%.'], ['전류 축적','전기 타입 기술 피해 +10%.'],
+  ['혹한 적응','얼음 타입 기술 피해 +10%.'], ['대지의 힘','바위 타입 기술 피해 +10%.'],
+  ['날개 바람','비행 타입 기술 피해 +10%.'], ['정신 파동','에스퍼 타입 기술 피해 +10%.'],
+  ['그림자 손','고스트 타입 기술 피해 +10%.'], ['용의 혈통','드래곤 타입 기술 피해 +10%.'],
+  ['벌레 사냥꾼','벌레 타입 기술 피해 +10%.'], ['격투 본능','격투 타입 기술 피해 +10%.'],
+  ['연속 공격','연속 공격 기술 피해 +10%.'], ['급소 감각','급소 피해 보정 +10%.'],
+  ['마무리 일격','상대 HP가 절반 이하일 때 피해 +10%.'], ['두꺼운 지방','불·얼음 타입 피해를 10% 감소.'],
+  ['단단한 껍질','급소 피해를 일반 피해로 받는다.'], ['방진','가루 계열 상태이상 기술에 면역.'],
+  ['물막이','물 타입 기술 피해 -20%.'], ['내열성','불 타입 기술 피해 -20%.'],
+  ['독 면역','중독에 면역.'], ['둔감','혼란·수면에 면역.'],
+  ['전기 절연','전기 타입 기술 피해 -20%.'], ['냉기 내성','얼음 타입 기술 피해 -20%.'],
+  ['바위 갑옷','바위 타입 기술 피해 -15%.'], ['비행 방어','비행 타입 기술 피해 -15%.'],
+  ['정신 수호','에스퍼 타입 기술 피해 -15%.'], ['그림자 내성','고스트 타입 기술 피해 -15%.'],
+  ['용 비늘','드래곤 타입 기술 피해 -15%.'], ['벌레 외피','벌레 타입 기술 피해 -15%.'],
+  ['격투 방어','격투 타입 기술 피해 -15%.'], ['풀잎 갑옷','풀 타입 기술 피해 -15%.'],
+  ['노말 내성','노말 타입 기술 피해 -10%.'], ['급소 회피','상대의 급소 확률을 낮춘다.'],
+  ['충격 흡수','위력 60 이하 기술 피해 -15%.'], ['민첩한 몸놀림','스피드 +10%.'],
+  ['순풍','전투 시작 시 스피드 랭크 +1.'], ['선제 대응','상대보다 느릴 때 첫 공격 피해 +10%.'],
+  ['그림자 발걸음','전투 시작 시 명중 랭크 +1.'], ['도약','교체 직후 첫 공격 피해 +10%.'],
+  ['추적자','상대가 교체한 직후 다음 공격 피해 +10%.'], ['매의 눈','비행 타입 기술 명중률 +5%p.'],
+  ['물속 시야','물 타입 기술 명중률 +5%p.'], ['정밀 타격','위력 60 이하 기술 피해 +10%.'],
+  ['재빠른 반응','상태이상에 걸렸을 때 스피드 감소를 무시.'], ['마지막 질주','HP 1/3 이하에서 스피드 +15%.'],
+  ['자연 치유','교체하면 상태이상이 해제된다.'], ['독 주머니','접촉 공격을 받으면 10% 확률로 상대 중독.'],
+  ['불꽃 몸','접촉 공격을 받으면 10% 확률로 상대 화상.'], ['정전기','접촉 공격을 받으면 10% 확률로 상대 마비.'],
+  ['수면 적응','잠듦 지속 시간이 1턴 감소.'], ['정신력','풀죽음 효과에 면역.'],
+  ['집중 유지','상대의 효과로 명중 랭크가 떨어지지 않는다.'], ['위기 회복','HP 1/4 이하에서 전투당 1회 최대 HP 1/8 회복.'],
+  ['포식','상대를 쓰러뜨리면 최대 HP 1/8 회복.'], ['치유의 숨결','턴 종료 시 10% 확률로 상태이상 해제.'],
+  ['생명력','회복 기술의 회복량 +10%.'], ['마른 피부','비가 오면 턴 종료 시 HP 1/32 회복.'],
+  ['햇살 적응','맑은 날씨에 턴 종료 시 HP 1/32 회복.'], ['모래 적응','모래바람 피해에 면역.'],
+  ['눈보라 적응','눈 날씨 피해에 면역.'], ['야간 시야','어두운 환경에서 명중률 +5%p.'],
+  ['꽃가루 수집','턴 종료 시 10% 확률로 HP 1/16 회복.'], ['계절 순응','자신의 계절 날씨 피해를 감소.'],
+  ['열기 방출','불 타입 기술을 맞으면 다음 공격 피해 +10%.'], ['복수심','아군이 쓰러진 직후 공격 피해 +10%.'],
+  ['위압감','전투 시작 시 상대 공격 랭크 -1.'], ['위장술','전투 시작 시 상대 명중률 -5%p.'],
+  ['포위 본능','상태이상인 상대에게 피해 +10%.'], ['연계 전술','아군 교체 직후 첫 공격 피해 +10%.'],
+  ['반격 태세','물리 공격을 받은 뒤 다음 물리 공격 +10%.'], ['마력 반사','특수 공격을 받은 뒤 다음 특수 공격 +10%.'],
+  ['불굴의 의지','HP가 절반 이하일 때 받는 피해 -5%.'], ['완벽주의','명중률 100% 기술 피해 +5%.'],
+  ['도박사','기술 피해가 0.9배 또는 1.2배로 무작위 적용.'], ['균형 감각','능력치 랭크 하락 효과를 전투당 1회 무시.'],
+  ['흡수 본능','효과가 굉장한 공격을 받으면 HP 1/16 회복.'], ['기습 본능','상대보다 먼저 공격하면 피해 +5%.'],
+  ['방어 태세','변화 기술 사용 후 다음에 받는 피해 -10%.'], ['전투 학습','같은 기술을 연속 사용하면 두 번째 피해 +5%.'],
+  ['마지막 발악','HP가 1/4 이하일 때 피해 +15%.'], ['적응 진화','효과가 별로인 타입 공격의 피해 +10%.'],
+  ['사냥꾼','야생 사계몬에게 주는 피해 +10%.'], ['수호 본능','교체된 사계몬이 받는 첫 피해 -10%.'],
+  ['결속','같은 계절 타입 아군이 있으면 피해 +5%.'], ['불굴 방패','한 번에 최대 HP 절반 이상 피해를 받으면 다음 피해 -10%.']
+];
+for (const [name, desc] of ABILITY_EXTRA) ABILITY_INFO[name] = desc;
+const ABILITY_NAMES = new Set(Object.keys(ABILITY_INFO));
+const ABILITY_ATTACK_TYPE = {
+  '독성 발톱':'독','불꽃 심장':'불','물결 친화':'물','전류 축적':'전기','혹한 적응':'얼음',
+  '대지의 힘':'바위','날개 바람':'비행','정신 파동':'에스퍼','그림자 손':'고스트',
+  '용의 혈통':'드래곤','벌레 사냥꾼':'벌레','격투 본능':'격투'
+};
+const ABILITY_DEFENSE_TYPE = {
+  '물막이':['물',.8],'내열성':['불',.8],'전기 절연':['전기',.8],'냉기 내성':['얼음',.85],
+  '바위 갑옷':['바위',.85],'비행 방어':['비행',.85],'정신 수호':['에스퍼',.85],
+  '그림자 내성':['고스트',.85],'용 비늘':['드래곤',.85],'벌레 외피':['벌레',.85],
+  '격투 방어':['격투',.85],'풀잎 갑옷':['풀',.85],'노말 내성':['노말',.9]
+};
+function abilityDamageMultiplier(att, def, move, attackerFirst = false) {
+  let mult = 1;
+  const a = att && att.ability, d = def && def.ability;
+  const type = move && move.type, name = String(move && move.name || '');
+  if (a === '강력한 턱' && /물기|깨물|이빨/.test(name)) mult *= 1.15;
+  if (a === '날카로운 발톱' && /베기|할퀴|절단|크로/.test(name)) mult *= 1.15;
+  if (a === '철주먹' && /펀치|정권/.test(name)) mult *= 1.15;
+  if (a === '발차기 달인' && /킥|발차기/.test(name)) mult *= 1.15;
+  if (ABILITY_ATTACK_TYPE[a] === type) mult *= 1.1;
+  if (a === '마무리 일격' && def && def.hp <= def.maxhp / 2) mult *= 1.1;
+  if (a === '정밀 타격' && move && move.power <= 60) mult *= 1.1;
+  if (a === '마지막 발악' && att && att.hp <= att.maxhp / 4) mult *= 1.15;
+  if (a === '기습 본능' && attackerFirst) mult *= 1.05;
+  if (a === '완벽주의' && move && move.accuracy === 100) mult *= 1.05;
+  if (a === '포위 본능' && def && def.status) mult *= 1.1;
+  if (a === '불굴의 의지' && att && att.hp <= att.maxhp / 2) mult *= .95;
+  if (d === '두꺼운 지방' && ['불','얼음'].includes(type)) mult *= .9;
+  if (d === '충격 흡수' && move && move.power <= 60) mult *= .85;
+  if (d === '불굴 방패' && def && def._abilityShield) mult *= .9;
+  const dr = ABILITY_DEFENSE_TYPE[d];
+  if (dr && dr[0] === type) mult *= dr[1];
+  return mult;
+}
+function abilityStatusImmune(mon, status) {
+  if (!mon) return false;
+  if (mon.ability === '독 면역' && status === 'poison') return true;
+  if (mon.ability === '둔감' && ['sleep','slp','conf'].includes(status)) return true;
+  if (mon.ability === '방진' && status === 'powder') return true;
+  if (mon.ability === '정신력' && status === 'flinch') return true;
+  return false;
+}
 const ACCURACY_TRAIT_EXEMPT = new Set(['천뢰폭발', '대지뿌리 폭주', '태양충각', '만추멸섬', '빙하붕괴']);
 const ACCURACY_BOOST_ABILITIES = new Set(['복안', '정밀 조준']);
 const ACCURACY_GUARD_ABILITIES = new Set(['예리한 눈', '황금 시야']);
@@ -3623,7 +3718,8 @@ function onlineBattleApplyMove(room, side, move) {
     return { healed: attacker.hp - before };
   }
   if (['sleep', 'par', 'burn', 'conf'].includes(e)) {
-    if (defender.status) return { status: '이미 상태 이상' };
+    if (abilityStatusImmune(defender, e)) return { status: defender.ability + '로 상태이상 면역' };
+      if (defender.status) return { status: '이미 상태 이상' };
     defender.status = e === 'sleep' ? { type: 'slp', turns: 2 + Math.floor(onlineBattleRandom(room) * 2) } : { type: e, turns: e === 'conf' ? 3 : 0 };
     return { status: ({ sleep: '잠듦', par: '마비', burn: '화상', conf: '혼란' })[e] + ' 발생' };
   }
@@ -3647,6 +3743,7 @@ function onlineBattleApplyMove(room, side, move) {
   if (attacker.ability === '역전투혼' && attacker.hp <= attacker.maxhp / 3) bonus *= 1.2;
   if (defender.ability === '강철피부' && move.category === 'physical') bonus *= .9;
   if (defender.ability === '정신장벽' && move.category === 'special') bonus *= .9;
+  bonus *= abilityDamageMultiplier(attacker, defender, move, (attacker.spe || 0) >= (defender.spe || 0));
   const at = onlineBattleMonTypes(attacker), dt = onlineBattleMonTypes(defender);
   const atTrait = TYPE_TRAITS[at[0]] || TYPE_TRAITS.노말, dtTrait = TYPE_TRAITS[dt[0]] || TYPE_TRAITS.노말;
   if (atTrait.atk === move.type) bonus *= atTrait.bonus;
@@ -4953,6 +5050,7 @@ function dmgCalc(att, def, power, mult, category = 'physical', moveType = null) 
   if (att.ability === '역전투혼' && att.hp > 0 && att.hp <= att.maxhp / 3) abilityMult *= 1.2;
   if (def.ability === '강철피부' && category === 'physical') abilityMult *= .9;
   if (def.ability === '정신장벽' && category === 'special') abilityMult *= .9;
+  abilityMult *= abilityDamageMultiplier(att, def, { type: moveType, power, category }, (att.spe || 0) >= (def.spe || 0));
   const atkTrait = typeTraitFor(att.sp), defTrait = typeTraitFor(def.sp);
   if (moveType && atkTrait.atk === moveType) abilityMult *= atkTrait.bonus;
   if (moveType && defTrait.resist === moveType) abilityMult *= .95;
@@ -4984,6 +5082,7 @@ async function canAct(m, side) {
 async function inflict(t, side, st) {
   const nm = nameOf(t, side);
   if (st === 'conf') { if (t.conf) return say(`${jo(nm, '은는')} 이미 혼란에 빠져 있다!`); t.conf = R(2, 4); hud(); await playFx('conf', side, side, 600); return say(`${jo(nm, '은는')} 혼란에 빠졌다!`); }
+  if (abilityStatusImmune(t, st)) return say(`${nm}의 ${t.ability}! 상태이상에 걸리지 않는다!`);
   if (t.status) return say(`하지만 ${jo(nm, '은는')} 이미 ${ST_NAME[t.status]} 상태다!`);
   const key = { sleep: 'slp', par: 'par', burn: 'brn' }[st]; t.status = key; if (key === 'slp') t.slp = R(1, 3); hud();
   await playFx(st, side, side, 600);
