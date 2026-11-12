@@ -2368,10 +2368,10 @@ tower('hide1', '찍기단 아지트 B1', { w: 16, h: 12, floor: '#b8b0c8', unit:
   { x: 3, y: 8, dir: 'right', title: '찍기단 조무래기', name: '4호', pal: 'grunt', team: [['ghost', 26], ['bat2', 26]], line: '침입자다! 찍어서 막아라!', lose: '경보를 울려야 해…' },
   { x: 8, y: 3, dir: 'down', title: '찍기단 조무래기', name: '5호', pal: 'grunt', team: [['croc', 27], ['rock2', 27]], line: '여기서 붉은 사계몬을 억지로 진화시켰지!', lose: '라디오파 실험이 들통났다…' },
   { x: 13, y: 9, dir: 'up', title: '찍기단 과학자', name: '오류', pal: 'prof', team: [['ghost', 27], ['mouse2', 28]], line: '실험을 방해하지 마라!', lose: '계산이 틀렸나…' }],
-  ents: [{ id: 'hq1', kind: 'qdoor', x: 13, y: 4 }], items: [[14, 2, ['hball', 2]], [1, 10, ['revive', 1]]] });
-API.hide1.rect(11, 4, 15, 4, 'q').set(13, 4, 'f').warp(14, 1, 'hide2', 14, 3, { stairs: true });
-tower('hide2', '찍기단 아지트 B2', { w: 16, h: 10, floor: '#a8a0b8', unit: '5b', down: [14, 8, 'hide1', 13, 2], pillars: [[3, 7], [12, 3]], ents: [{ id: 'hadmin', kind: 'hadmin', x: 7, y: 3, dir: 'down', pal: 'boss' }, { id: 'hqd', kind: 'qdoor', x: 7, y: 5 }], trainers: [{ x: 2, y: 8, dir: 'right', title: '찍기단 조무래기', name: '6호', pal: 'grunt', team: [['ghost2', 28], ['dog', 28]], line: '간부님은 이 문 너머에 계신다!', lose: '자물쇠 문제를 풀어 봐라… 못 풀걸?' }] });
-API.hide2.rect(0, 5, 15, 5, 'q').set(7, 5, 'f');
+  ents: [], items: [[14, 2, ['hball', 2]], [1, 10, ['revive', 1]]] });
+API.hide1.rect(11, 4, 15, 4, 'f').warp(14, 1, 'hide2', 14, 3, { stairs: true });
+tower('hide2', '찍기단 아지트 B2', { w: 16, h: 10, floor: '#a8a0b8', unit: '5b', down: [14, 8, 'hide1', 13, 2], pillars: [[3, 7], [12, 3]], ents: [{ id: 'hadmin', kind: 'hadmin', x: 7, y: 3, dir: 'down', pal: 'boss' }, { id: 'hadmin', kind: 'hadmin', x: 7, y: 3, dir: 'down', pal: 'boss' }], trainers: [{ x: 2, y: 8, dir: 'right', title: '찍기단 조무래기', name: '6호', pal: 'grunt', team: [['ghost2', 28], ['dog', 28]], line: '간부님은 이 문 너머에 계신다!', lose: '자물쇠 문제를 풀어 봐라… 못 풀걸?' }] });
+API.hide2.rect(0, 5, 15, 5, 'f');
 API.hide1.rect(10, 2, 10, 4, 'q');
 API.hide1.m.warps[API.hide1.get(14, 1)].x = 13; API.hide1.m.warps[API.hide1.get(14, 1)].y = 8;
 // 얼음샛길 (미끄럼 퍼즐)
@@ -3495,7 +3495,7 @@ function interact() {
   let e = entAt(x, y);
   if (!e && tileAt(x, y) === 'c') e = entAt(x + dx, y + dy);
   if (!e && tileAt(x, y) === '~') e = entAt(x, y) || null;
-  if (e) { if (e.dir && !['item', 'starter', 'qdoor', 'legend', 'friday', 'redfish', 'faketree', 'beasts', 'sick'].includes(e.kind)) e.dir = OPP[P.dir]; run(() => talk(e)); return; }
+  if (e) { if (e.dir && !['item', 'starter', 'legend', 'friday', 'redfish', 'faketree', 'beasts', 'sick'].includes(e.kind)) e.dir = OPP[P.dir]; run(() => talk(e)); return; }
   const t = tileAt(x, y);
   if (t === 'S') { run(() => sayAll(CUR.signs[x + ',' + y].split('\n\n'))); return; }
   if (t === 'x') { run(() => cutTree(x, y)); return; }
@@ -4665,7 +4665,6 @@ function drawWorld(now) {
     }
     const e = o.e, [ex, ey] = pos(e), sx = Math.round(ex * 16 - camX), sy = Math.round(ey * 16 - camY);
     if (e.kind === 'item' || e.kind === 'starter') { drawBall(sx + 8, sy + 8, e.kind === 'starter' ? '#e04a4a' : '#f0c040'); continue; }
-    if (e.kind === 'qdoor') { drawQdoor(sx, sy); continue; }
     if (e.kind === 'stele') { // 도전의 비석: 돌판 (특별 몬스터를 잡기 전에는 은은하게 빛난다)
       ctx.fillStyle = '#0003'; ctx.fillRect(sx + 2, sy + 13, 12, 2);
       ctx.fillStyle = '#6a6a78'; ctx.fillRect(sx + 3, sy - 1, 10, 15); ctx.fillStyle = '#c8c8d4'; ctx.fillRect(sx + 4, sy, 8, 13);
