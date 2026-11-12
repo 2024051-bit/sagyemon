@@ -4739,6 +4739,7 @@ async function battle(o) {
   B.part.add(B.p);
   say(`가랏! ${monName(B.p)}!`, { wait: false });
   await popMon('p'); hud(); await sleep(450);
+  await announceBattleAbility(B.p);
   let result;
   while (true) {
     hud();
