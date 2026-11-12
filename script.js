@@ -2397,7 +2397,7 @@ townGen('prob', { name: '확률시티', theme: 'casino', unit: 6, w: 24, h: 20, 
   { x: 15, y: 2, w: 4, roof: 'C', d: 2, to: 'center', ret: 1 }, // 체육관 8은 얼음호수시티로 옮김 (미리보기 ⑲)
   { x: 2, y: 12, w: 4, roof: 'M', d: 2, to: 'mart', ret: 1, arrive: [4, 6] }, { x: 15, y: 12, w: 4, roof: 'H', d: 1, to: 'probH' }] });
 API.prob.sign(9, 6, '확률시티\n0과 1 사이에서 모든 것이 결정되는 도시');
-gateGuard(API.prob, 12, 1, 13, 1, () => S.badges[7] || S.flags.denTrial, '확률시티 사람: 북쪽 확률의 굴은 체육관 관장의 허락이 있어야 들어갈 수 있어.', '확률의 굴로 가는 길이 열려 있다.', 'elder', 'denguard');
+gateGuard(API.prob, 12, 1, 13, 1, () => true, '확률시티 사람: 북쪽 확률의 굴은 누구나 들어갈 수 있어.', '확률의 굴로 가는 길이 열려 있다.', 'elder', 'denguard');
 // 27번 도로 → 챔피언로드 → 학기말 고원 → 은빛산
 routeGen('route27', { name: '27번 도로', theme: 'lake', unit: 0, w: 46, h: 21, cx: 2, wild: ['bird2', 'croc2', 'dog2', 'fighter', 'octo'], waterWild: ['fish2', 'octo2'], lv: [31, 35], ends: [['W', 7], ['E', 8], ['N', 23]], trainers: 6, items: [['hpotion', 2], ['revive', 1]], hidden: [['revive', 1]], water: [[12, 1, 15, 14], [26, 1, 27, 14]], flowers: 5, seed: 173 });
 routeGen('vroad', { name: '챔피언로드', theme: 'cave', unit: 0, w: 32, h: 31, cave: true, wild: ['rock2', 'bat2', 'tri2', 'fighter2', 'ghost2'], lv: [34, 38], ends: [['S', 4], ['N', 25]], trainers: 6, items: [['hpotion', 2], ['revive', 2], ['candy', 1], ['hball', 2]], seed: 191 });
@@ -3982,10 +3982,6 @@ async function rivalBattle(n) {
   if (r !== 'win') S.flags['rival' + n] = 0;
   else {
     await say({ 1: `${RIVAL_NAME}: 흥! 오늘은 봐준다. 다음에 보자!`, 2: `${RIVAL_NAME}: 소나기항구는 바로 앞이야. 여울 관장한테 지기만 해 봐!`, 3: `${RIVAL_NAME}: 단풍마을은 바로 앞이야. 노을 관장한테 지기만 해 봐!`, 4: `${RIVAL_NAME}: 눈꽃마을은 바로 앞이야. 서리 관장한테 지기만 해 봐!`, 5: `${RIVAL_NAME}: 졸업 언덕은 바로 앞이야. 가라!` }[n]);
-    if (n <= 5) { // 보상: 힌트 카드 1장 (Q49)
-      if ((S.hints || 0) < HINT_MAX) { S.hints = (S.hints || 0) + 1; SFX.lvl(); await say(`${jo(RIVAL_NAME, '이가')} 힌트 카드 1장을 던져 주고 갔다!\n(가진 카드 ${S.hints}장 / 최대 ${HINT_MAX}장)`); }
-      else await say(`${jo(RIVAL_NAME, '이가')} 힌트 카드를 주려 했지만, 이미 ${HINT_MAX}장을 가지고 있다.`);
-    }
   }
   const ri = host.indexOf(rv); if (ri >= 0) host.splice(ri, 1);
 }
@@ -4005,9 +4001,8 @@ H.leader = async e => {
   await sayAll(G.intro.map(l => `관장 ${G.name}: ${l}`));
   const r = await battle({ kind: 'leader', team: mkTeam(), trainer: tr, money: G.team[G.team.length - 1][1] * 120, unit: G.lunit ?? G.unit });
   if (r === 'lose' && G.cheer) { // 포기 방지 (미리보기 ⑮): 가을 관장에게 지면 보건실에서 응원 선물
-    const gotCard = (S.hints || 0) < HINT_MAX; if (gotCard) S.hints = (S.hints || 0) + 1;
     S.bag.hpotion = (S.bag.hpotion || 0) + 1; SFX.lvl();
-    await sayAll(['보건 선생님: 관장님께 졌다고 실망하지 마세요. 거의 다 왔어요!', `응원 선물로 ${gotCard ? '힌트 카드 1장과 ' : ''}구급상자 1개를 받았다!${gotCard ? `\n(힌트 카드 ${S.hints}장 / 최대 ${HINT_MAX}장)` : ''}`]);
+    await sayAll(['보건 선생님: 관장님께 졌다고 실망하지 마세요. 거의 다 왔어요!', '응원 선물로 구급상자 1개를 받았다!']);
   }
   if (r !== 'win') return;
   await awardBadge(n);
@@ -4033,7 +4028,7 @@ H.shrine = async () => {
   S.flags['quest' + e.q] = 1;
 };
 H.elder1 = async () => {
-  if (S.keys.lamp) return say('장로: 손전등으로 어둠을 밝히듯, 개념으로 문제를 밝히거라.');
+  if (S.keys.lamp) return say('장로: 손전등으로 어둠을 밝히듯, 길을 밝혀 보거라.');
   await sayAll(['장로: 이 탑에 오른 것을 칭찬하마. 나와 겨루어 보자.']);
   const r = await battle({ kind: 'trainer', team: [['snake', 9], ['bug2', 9], ['cat', 10]].map(([s, l]) => mkMon(s, l, false, HPMUL.trainer)), trainer: { title: '장로', name: '명상', pal: 'monk', lose: '훌륭하다. 순환마디처럼 꾸준하구나.' }, money: 800 });
   if (r !== 'win') return;
@@ -4050,7 +4045,7 @@ H.welladmin = async () => {
 H.kurt = async () => {
   if (!S.flags.wellClear) return sayAll(['볼 장인: 이런 고약한 놈들! 찍기단이 우물에서 분수냥 꼬리를 자르고 있어!', '내가 혼내 주러 갔다가 허리를 삐끗했지 뭐냐… 대신 좀 가 주겠니?']);
   if (!S.flags.kurt) { S.flags.kurt = 1; await say('볼 장인: 우물을 지켜 줘서 고맙다! 내가 만든 볼이야. 받아라!'); await giveItem('sball', 5); return giveItem('hball', 2); }
-  return say('볼 장인: 하이퍼매스볼은 정답만 맞히면 아주 잘 잡힌단다.');
+  return say('볼 장인: 하이퍼매스볼은 아주 강력한 사계볼이란다.');
 };
 H.bike = async () => {
   if (S.keys.bike) return say('자전거 가게: START 메뉴에서 자전거를 타 봐! 실내에서는 못 타.');
@@ -4137,7 +4132,7 @@ H.inspector = async e => {
   await say('장학사 한빛: 혹시 "찍기단"이라는 녀석들 들어 봤니?', { wait: false });
   const heard = await yesno(); hideTb();
   if (heard) await sayAll(['장학사 한빛: 역시! 우물에서도, 다른 마을에서도\n말썽을 부렸다더니… 너도 만났구나.', '그럼 이야기가 빠르겠다.']);
-  else await sayAll(['장학사 한빛: 문제는 안 풀고 "모르면 3번!"만 외치는\n이상한 무리야.', '요즘 여기저기서 말썽을 부리고 있어.']);
+  else await sayAll(['장학사 한빛: "모르면 3번!"만 외치는 이상한 무리야.', '요즘 여기저기서 말썽을 부리고 있어.']);
   await sayAll(['장학사 한빛: 녀석들이 "라디오파"라는 전파로\n사계몬을 강제로 진화시키는 실험을 하는 것 같아.', '전파가 나오는 곳을 따라가 봤더니…\n피타마을 기념품 가게였어.', '가게 안 왼쪽 아래 구석, 바닥 밑에서 전파가 새어 나와.\n분명 숨겨진 계단이 있을 거야!']);
   await say('장학사 한빛: 같이 가 줄 수 있겠니?', { wait: false });
   const go = await yesno(); hideTb();
@@ -4155,7 +4150,7 @@ H.souvenir = async () => {
   return say('수상한 직원: 어서 오세요~ 피타마을 명물 "직각자 과자" 팝니다.');
 };
 H.hadmin = async () => {
-  await sayAll(['찍기단 간부 얼렁: 여기까지 왔다고?! 라디오파 실험을 들켰구나!', '이 실험만 성공하면 모든 사계몬이 문제 없이 강해진다고! 공부 따윈 필요 없어!']);
+  await sayAll(['찍기단 간부 얼렁: 여기까지 왔다고?! 라디오파 실험을 들켰구나!', '이 실험만 성공하면 모든 사계몬이 강해진다고! 누구도 막을 수 없어!']);
   const r = await battle({ kind: 'boss', team: [['ghost2', 28], ['bat2', 29], ['croc', 29], ['dog2', 30]].map(([s, l]) => mkMon(s, l, false, HPMUL.boss)), trainer: { title: '찍기단 간부', name: '얼렁', pal: 'grunt', lose: '얼렁뚱땅으로는 안 되는구나…' }, money: 3000, unit: '5b' });
   if (r !== 'win') return;
   await sayAll(['얼렁: 크윽… 하지만 우리 보스 대충님은 이미 다음 계획을 시작하셨다!', '(장학사 한빛이 계단을 뛰어 내려왔다!)', '장학사 한빛: 해냈구나! 라디오파 장치는 방금 내가 껐어.', '이제 억지로 진화당하는 사계몬은 없을 거야.\n정말 고마워!', '아, 그리고 피타 관장님도 체육관으로 돌아가셨대.\n어서 도전해 봐!']);
@@ -5311,7 +5306,7 @@ async function fieldBag() {
   while (true) {
     const held = HELD_ORDER.filter(id => S.bag[id] > 0);
     const ids = ITEM_ORDER.filter(id => S.bag[id] > 0).concat(held), keys = Object.keys(S.keys).filter(k => S.keys[k] && KEYS[k]);
-    const i = await chooseList({ title: '가방', sub: `소지금 ${S.money}원 · 힌트 카드 ${S.hints || 0}장`, rows: ids.map(id => `<span class="grow">${ITEMS[id].name}<br><span class="sm">${ITEMS[id].desc}</span></span><span>×${S.bag[id]}</span>`).concat(keys.map(k => `<span class="grow"><span style="color:#7a1d3e">◆ ${KEYS[k].name}</span><br><span class="sm">${KEYS[k].desc}${k === 'egg' ? ` (앞으로 약 ${S.egg}걸음)` : ''}</span></span><span class="sm">중요</span>`)), foot: '필드에서도 문제를 맞혀야 아이템을 쓸 수 있어요. 틀려도 아이템은 그대로예요.' });
+    const i = await chooseList({ title: '가방', sub: `소지금 ${S.money}원`, rows: ids.map(id => `<span class="grow">${ITEMS[id].name}<br><span class="sm">${ITEMS[id].desc}</span></span><span>×${S.bag[id]}</span>`).concat(keys.map(k => `<span class="grow"><span style="color:#7a1d3e">◆ ${KEYS[k].name}</span><br><span class="sm">${KEYS[k].desc}${k === 'egg' ? ` (앞으로 약 ${S.egg}걸음)` : ''}</span></span><span class="sm">중요</span>`)), foot: '필드에서도 아이템을 자유롭게 사용할 수 있어요.' });
     if (i < 0) return;
     if (i >= ids.length) { const k = keys[i - ids.length]; if (k === 'map') { await worldMap(); continue; } if (k === 'plane') { if (await flyMenu()) return 'flew'; continue; } if (k === 'bike') { if (CUR.indoor) { toast('실내에서는 탈 수 없어요'); continue; } S.bike = !S.bike; toast(S.bike ? '자전거를 탔다!' : '자전거에서 내렸다'); return; } toast('필요한 곳에서 자동으로 쓰여요'); continue; }
     const id = ids[i], it = ITEMS[id];
