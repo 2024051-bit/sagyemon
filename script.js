@@ -124,12 +124,12 @@ const SP = {
   zero: { name: '영점새', art: 'zero', type: '노말', hp: 44, atk: 40, def: 50, spa: 45, spd: 54, spe: 46, ability: '정신장벽', moves: ['쪼기', '영점 노래', '만점 기도', '백점 돌진'], evo: [20, 'zero50'], dex: ['시험지몬', 0.3, 1.5, '알에서 막 태어난 사계몬. 아직 0점이지만 공부할수록 점수가 오른다.'] },
   zero50: { name: '50점새', art: 'zero', score: '50', v: 'warm', add: 'crest', big: 1.1, type: ['노말', '비행'], hp: 56, atk: 53, def: 60, spa: 55, spd: 56, spe: 54, ability: '질주', moves: ['날개치기', '반타작 노래', '만점 기도', '50점 돌진'], evo: [40, 'zero2'], dex: ['시험지몬', 0.45, 2.4, '시험지의 절반을 맞힌 사계몬. 틀린 문제를 다시 풀 때마다 깃털이 한 장씩 자란다.'] },
   zero2: { name: '만점새', art: 'zero', score: '100', v: 'gold', add: 'wings', big: 1.2, type: ['노말', '비행'], hp: 66, atk: 64, def: 70, spa: 66, spd: 67, spe: 67, ability: '집중력', moves: ['날개치기', '만점 노래', '100점 기도', '만점 폭격'], dex: ['시험지몬', 0.6, 3.2, '노력한 트레이너에게만 나타나 행운을 나눠 준다고 한다.'] },
-  panda: { name: '꾸벅판다', art: 'panda', type: '노말', hp: 80, atk: 58, def: 60, spa: 60, spd: 66, spe: 56, ability: '재생력', moves: ['몸통 누르기', '하품 파동', '꿀잠 프레스', '영점 조절'], dex: ['졸음몬', 2.1, 460, '수학 시간에 꾸벅꾸벅 조는 모습이 자주 목격된다. 라디오 소리에 깬다.'] },
+  panda: { name: '꾸벅판다', art: 'panda', type: '노말', hp: 80, atk: 58, def: 60, spa: 60, spd: 66, spe: 56, ability: '재생력', moves: ['몸통 누르기', '하품 파동', '꿀잠 프레스', '영점 조절'], dex: ['졸음몬', 2.1, 460, '낮잠을 즐기지만, 좋아하는 음악 소리에는 금세 잠에서 깬다.'] },
   turtle: { name: '확률거북', art: 'turtle', type: ['물', '얼음'], hp: 80, atk: 60, def: 66, spa: 61, spd: 69, spe: 61, ability: '정신장벽', moves: ['몸통박치기', '반반 물대포', '여사건 냉동빔', '확률 하이드로'], dex: ['운반몬', 2.5, 220, '일주일에 한 번, 금요일에만 연결동굴 물가에 나타난다. 만날 확률은 7분의 1.'] },
   beastO: { name: '외심수', art: 'beast', glyph: 'O', v: 'red', type: '불', hp: 80, atk: 76, def: 66, spa: 71, spd: 63, spe: 77, ability: '집중력', moves: ['물기', '외접원 화염', '수직이등분 폭염', '외심 대폭발'], dex: ['삼심몬', 2.1, 198, '세 꼭짓점을 이은 원 위를 달린다. 불탄 탑에서 깨어나 전국을 떠돈다.'] },
   beastI: { name: '내심수', art: 'beast', glyph: 'I', v: 'gold', type: '전기', hp: 72, atk: 82, def: 62, spa: 79, spd: 67, spe: 71, ability: '질주', moves: ['물기', '내접원 번개', '각의 이등분 썬더', '내심 대방전'], dex: ['삼심몬', 1.9, 178, '세 변에서 같은 거리를 유지하며 번개처럼 달린다.'] },
   beastG: { name: '무게중심수', art: 'beast', glyph: 'G', v: 'cool', type: '물', hp: 84, atk: 70, def: 74, spa: 73, spd: 78, spe: 66, ability: '정신장벽', moves: ['물기', '중선 오로라', '2대1 하이드로', '무게중심 대해일'], dex: ['삼심몬', 2.0, 187, '중선의 교점에서 태어났다. 물 위를 2 : 1의 보폭으로 달린다.'] },
-  dragon: { name: '백점드래곤', art: 'dragon', type: ['불', '비행'], hp: 92, atk: 90, def: 80, spa: 90, spd: 83, spe: 88, ability: '역전투혼', moves: ['드래곤 발톱', '만점 브레스', '학기말 파동', '100점 메테오'], dex: ['만점몬', 3.8, 199, '모든 단원을 공부한 트레이너 앞에만 금빛 날개를 펼친다고 전해진다.'] },
+  dragon: { name: '백점드래곤', art: 'dragon', type: ['불', '비행'], hp: 92, atk: 90, def: 80, spa: 90, spd: 83, spe: 88, ability: '역전투혼', moves: ['드래곤 발톱', '만점 브레스', '학기말 파동', '100점 메테오'], dex: ['만점몬', 3.8, 199, '수많은 모험을 함께한 트레이너 앞에만 금빛 날개를 펼친다고 전해진다.'] },
   whale: { name: '무한고래', art: 'whale', type: ['에스퍼', '물'], hp: 96, atk: 80, def: 90, spa: 81, spd: 88, spe: 90, ability: '재생력', moves: ['몸통박치기', '무한 에어로', '순환 해일', '무한대 블래스트'], dex: ['잠수몬', 5.2, 216, '바다 동굴 깊은 곳에서 잠든다. 날갯짓 한 번에 순환소수 같은 폭풍이 끝없이 분다.'] },
 };
 const STARTERS = ['root', 'haerong', 'danpung', 'nunmung']; // 계절 순서. 라이벌은 바로 다음 칸(나를 이기는 계절)을 고른다
@@ -184,7 +184,7 @@ const KEYS = {
   gfeather: { name: '황금 깃털', desc: '함수시티 황금탑의 문을 연다고 한다.' },
   sfeather: { name: '은빛 깃털', desc: '바다 동굴 깊은 곳으로 이끈다고 한다.' },
   egg: { name: '수상한 알', desc: '데리고 다니면 언젠가 태어난다.' },
-  map: { name: '수학 지도', desc: '가 본 곳이 그려지는 지도. START 메뉴 → 지도' },
+  map: { name: '세계 지도', desc: '가 본 곳이 그려지는 지도. START 메뉴 → 지도' },
   plane: { name: '좌표 종이비행기', desc: '가 본 마을의 좌표를 적어 날리면 그 마을로 데려다준다. (밖에서 START 메뉴 → 날아가기)' },
 };
 
@@ -1087,7 +1087,7 @@ const TCLASS = {
   '육상부': { sex: 'mf', kid: 1, hair: ['short', 'bob'], eye: 'bright', mouth: 'grin', coat: '#2a5ab0', top: '#f6f6f6', bottom: '#2a3a5a', shorts: 1, shoe: '#1a1a2a', medal: 1, pose: 'hips' },
   '만화 덕후': { sex: 'm', hair: ['short', 'wild'], eye: 'normal', mouth: 'grin', glasses: 'round', top: '#e8e0f4', shirtGlyph: 'π', glyphCol: '#5a3ab0', bottom: '#5a5a6a', shoe: '#3a3a3a', backpack: '#4a6a3a', pose: 'book', bookCol: '#8a3ac8', bookGlyph: '∞' },
   '우표 수집가': { sex: 'mf', hair: ['sidecut', 'bob', 'short'], eye: 'sly', mouth: 'smirk', coat: '#8a5a3a', top: '#f0e6d0', bottom: '#3a3a3a', shoe: '#2a1a1a', pose: 'folder' },
-  '퀴즈왕': { sex: 'm', hair: ['slick', 'short'], eye: 'bright', mouth: 'grin', vest: '#c02a3a', top: '#f6f6f6', bowtie: '#f0c020', bottom: '#2a2a34', shoe: '#1a1a1a', pose: 'buzzer' },
+  '도전자': { sex: 'm', hair: ['slick', 'short'], eye: 'bright', mouth: 'grin', vest: '#c02a3a', top: '#f6f6f6', bowtie: '#f0c020', bottom: '#2a2a34', shoe: '#1a1a1a', pose: 'buzzer' },
   '곤충채집 소년': { sex: 'm', kid: 1, hair: ['short'], eye: 'bright', mouth: 'grin', hat: 'straw', top: '#f6f6f2', coat: '#7ac04a', bottom: '#c8a040', shorts: 1, shoe: '#6a4a2a', pose: 'net' },
   '등산객': { sex: 'm', hair: ['short'], eye: 'calm', mouth: 'grin', beard: '#4a2a1a', cap: '#c8502a', heroCap: 1, capPatch: '#c8502a', capGlyph: '⛰', capGlyphCol: '#fff6d0', top: '#4a7aa0', coat: '#c8502a', bottom: '#5a4a3a', shoe: '#3a2a1a', backpack: '#3a6a3a', pose: 'stick' },
   '반바지 꼬마': { sex: 'm', kid: 1, hair: ['short', 'spiky'], eye: 'bright', mouth: 'grin', cap: ['#2e7ad0', '#e04a3a', '#2a9a5a'], heroCap: 1, top: '#f6f6f6', coat: '#f0c020', bottom: '#2a4a8a', shorts: 1, shoe: '#e04a3a', pose: 'fist' },
@@ -1312,7 +1312,7 @@ function carve(a, sx, sy, ex, ey, rnd, ch = '=', wide = 0) {
 }
 function clampN(v, a, b) { return Math.max(a, Math.min(b, v)); }
 // ---------- 트레이너 자동 생성 ----------
-const TCL = [['반바지 꼬마', 't4'], ['피크닉 소녀', 't2'], ['모범생', 't1'], ['만화 덕후', 't3'], ['등산객', 't4'], ['곤충채집 소년', 't4'], ['퀴즈왕', 't3'], ['태권도 소년', 't1'], ['책벌레 소녀', 't2'], ['우표 수집가', 't3'], ['낚시꾼', 'swim'], ['캠핑 소녀', 't2'], ['엘리트 트레이너', 't1'], ['육상부', 't3']];
+const TCL = [['반바지 꼬마', 't4'], ['피크닉 소녀', 't2'], ['모범생', 't1'], ['만화 덕후', 't3'], ['등산객', 't4'], ['곤충채집 소년', 't4'], ['도전자', 't3'], ['태권도 소년', 't1'], ['책벌레 소녀', 't2'], ['우표 수집가', 't3'], ['낚시꾼', 'swim'], ['캠핑 소녀', 't2'], ['엘리트 트레이너', 't1'], ['육상부', 't3']];
 const TNAMES = ['도윤', '하은', '서준', '지우', '민준', '서연', '예준', '하윤', '지호', '수아', '건우', '지민', '현우', '채원', '우진', '다은', '선우', '유나', '시우', '소율', '준서', '나연', '태윤', '아린', '은호', '가은', '이안', '윤서', '도현', '예린', '로운', '세아', '하람', '지안', '주원', '시아', '연우', '라온', '유찬', '보민'];
 // 도로 트레이너 대사 (2026-11-06: 수학 느낌 없이, 모든 도로 공통)
 const TLINES = ['잠깐, 나를 이기고 지나가시지.', '눈이 마주쳤으니 승부다!', '여기서 너를 기다리고 있었어!', '내 사계몬이 몸이 근질근질하대!', '이 길을 지나가려면 나를 넘어야 해!', '오늘 아침에 새로 잡은 사계몬을 보여 줄게!', '심심하던 참이었어. 한 판 붙자!', '너 꽤 강해 보이는데? 확인해 볼까!', '거기 너! 사계몬 트레이너지?', '졸업 여행 기념으로 한 판 어때?', '풀숲에서 몰래 특훈 중이었는데, 딱 좋아!', '나랑 내 사계몬은 환상의 짝꿍이야!'];
@@ -1964,7 +1964,7 @@ wffffffffffffffw
 wffffffffffffffw
 wwwwwwwMMwwwwwww`
 ];
-// 체육관: 관원(A·B·C)을 모두 이겨야 관장(Z)과 싸울 수 있다. Q는 수학 자물쇠 문, i는 얼음 바닥.
+// 체육관: 관원(A·B·C)을 모두 이겨야 관장(Z)과 싸울 수 있다. Q는 제거된 퍼즐 통로, i는 얼음 바닥.
 function gymRoom(n, G) {
   const rows = GYM_MAP[n].split('\n'), h = rows.length, w = rows[0].length;
   const a = room('gym' + n, w, h, { name: `${G.label} 체육관`, floor: G.floor, unit: G.unit, gym: n });
@@ -2199,7 +2199,6 @@ blossom(API.expo.m, 4, .5);
 gateGuard(API.expo, API.expo.cx, 1, API.expo.cx + 1, 1, () => S.badges[2], '경비원: 북쪽은 매미숲으로 가는 4번 도로야.\n소나기 배지가 있어야 지나갈 수 있어!', '경비원: 소나기 배지! 북쪽 4번 도로로 가도 좋아.\n북쪽으로 갈수록 사계몬이 강해지니 조심해!', 'guard', 'expoN');
 API.expo.sign(API.expo.cx + 2, 7, '소나기항구\n소나기가 지나가면 무지개가 뜨는 항구');
 API.expo.ent({ id: 'sonak1', kind: 'npc', x: 10, y: 15, dir: 'down', pal: 'swim', wander: true, lines: ['3번 도로는 동쪽으로 갈수록 강한 사계몬이 나와!', '여름 사계몬은 가을 사계몬에게 약해. 상성을 잘 생각해 봐!', '부두 끝에서 바다를 보면 마음이 시원해져.'] });
-// 무지개섬 문제 범위: 체육관 1~3 전 범위 복습 (수와 연산 · 식의 계산 · 방정식). 함수는 체육관 4 몫이라 뺀다
 const ISLE_UNITS = [11, 1, 13, 21, '2a', 23, 31, '2b', 33];
 // 무지개섬 (히든 맵, 미리보기 ⑭): 소나기항구 부두 끝 뱃사공이 배로 데려다준다 (소나기 배지 뒤). 바다로 둘러싸인 작은 섬
 routeGen('rainbowisle', { name: '무지개섬', theme: 'summer', unit: 41, w: 24, h: 20, cx: 1, pond: 1, wild: ['mallang', 'kkiruk', 'subak', 'sonak'], lv: [20, 24], ends: [['N', 11]], trainers: 0, items: [['mpotion', 2], ['ball', 3]], hidden: [['hpotion', 1]], flowers: 6, seed: 211 });
@@ -4173,8 +4172,7 @@ H.boat = async e => {
   SFX.sel(); await warpTo(e.to, e.tx, e.ty, e.tdir);
   if (e.to === 'rainbowisle' && !S.flags.isleVisit) { S.flags.isleVisit = 1; await sayAll(['(배를 타고 무지개섬에 도착했다!)', '뱃사공: 섬 깊은 곳 비석에 무언가 쓰여 있다던데… 한번 찾아보렴.']); }
 };
-// 도전의 비석: 문제(ISLE_UNITS) 2개를 연속으로 맞히면 무지개깃이 나타난다. 틀려도 다시 도전
-// 비석마다 특별 몬스터·레벨·문제 범위가 다르다 (e.cfg). 없으면 무지개섬 설정
+// 오래된 비석을 조사하면 특별한 사계몬과 전투할 수 있다.
 const STELE_DEF = { flag: 'rainbow', sp: 'rainbow', lv: 26, units: () => ISLE_UNITS, hint: '무지개가 모습을 드러내리라', glow: '비석이 일곱 빛깔로 빛난다!', come: '하늘에서 무지개깃이 내려왔다!', gone: '무지개깃은 무지개 너머로 날아가 버렸다…' };
 H.stele = async e => {
   const c = (e && e.cfg) || STELE_DEF, nm = SP[c.sp].name;
