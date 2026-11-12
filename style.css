@@ -220,3 +220,5 @@ button:focus-visible{outline:3px solid #6ab0ff;outline-offset:2px}
 .st-move-title>b{font-size:3.4cqw}
 .st-move-title>span{color:#6a6274}
 @media(max-width:700px){.st-window{max-height:94%}.st-detail{max-height:86vh}.st-move-list{grid-template-columns:1fr}.st-pagehead{font-size:4cqw}.st-pagehead small{font-size:3cqw}.st-next{font-size:3.5cqw}.st-detail{font-size:3.5cqw}}
+
+.st-window::after{display:none}
