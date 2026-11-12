@@ -2934,7 +2934,7 @@ function monRow(m, extra = '') { return `<img src="${icon(m.sp)}" alt=""><span c
 const SAVE_KEY = 'mathmon-gold-v3';
 let S = null, CUR = null;
 function newState(name) {
-  return { v: 3, name, map: 'home', x: 3, y: 5, dir: 'down', party: [], box: [], bag: { potion: 3, ball: 5 }, keys: {}, money: 1500, badges: [0, 0, 0, 0, 0, 0, 0, 0], hints: 0, flags: {}, stats: { 1: [0, 0], 2: [0, 0], 3: [0, 0], 4: [0, 0], 5: [0, 0], 6: [0, 0] }, notes: [], heal: { map: 'home', x: 3, y: 5 }, ret: null, champ: 0, caught: {}, seen: {}, starter: null, egg: 0, roam: {}, steps: 0, bike: false, playMs: 0 };
+  return { v: 3, name, map: 'home', x: 3, y: 5, dir: 'down', party: [], box: [], bag: { potion: 3, ball: 5 }, keys: {}, money: 1500, badges: [0, 0, 0, 0, 0, 0, 0, 0], flags: {}, heal: { map: 'home', x: 3, y: 5 }, ret: null, champ: 0, caught: {}, seen: {}, starter: null, egg: 0, roam: {}, steps: 0, bike: false, playMs: 0 };
 }
 let localOK = true;
 let lastBody = '';
@@ -5356,12 +5356,6 @@ async function dexMenu() {
     if (S.seen[sp] || S.caught[sp]) await dexCard(sp); else toast('아직 만나지 못했어요');
   }
 }
-async function notesMenu() {
-  await chooseList({
-    title: '오답노트', sub: `틀린 문제 ${S.notes.length}개`, foot: '최근에 틀린 문제부터 보여요 · B: 닫기',
-    rows: S.notes.map(n => `<span class="grow m" style="font-weight:400"><b style="color:#7a1d3e">${n.label || UNITS[n.u]}</b><br>${M(n.q)}<br>내 답 <s>${M(n.mine)}</s> → 정답 <b style="background:#fff4c8">${M(n.a)}</b><br><span class="sm">${M(n.ex)}</span></span>`)
-  });
-}
 // ---------- 트레이너 카드: 이름·돈·도감·시간 + 관장 얼굴과 배지 ----------
 function trainerCard() {
   const mins = Math.floor((S.playMs || 0) / 60000), seen = Object.keys(S.seen || {}).length, caught = Object.keys(S.caught || {}).length;
@@ -5371,97 +5365,6 @@ function trainerCard() {
     return `<div class="tc-b ${has ? '' : 'no'}"><span class="no1">${i + 1}</span><img class="face" src="${faceIcon('L' + i)}" alt="">${has ? `<img class="bd" src="${badgeIcon(i, 72)}" alt="">` : '<i class="slot"></i>'}<span class="n">${has ? G.badge : G.name}</span></div>`;
   }).join('');
   return overlay(`<div class="tc-top"><div class="tc-info"><span class="nm">이름 / ${S.name}</span><span>ID No.</span><span class="v">${id}</span><span>소지금</span><span class="v">${S.money.toLocaleString()}원</span><span>도감</span><span class="v">만남 ${seen} · 잡음 ${caught}</span><span>모험 시간</span><span class="v">${Math.floor(mins / 60)}시간 ${mins % 60}분</span></div><img class="tc-hero" src="${personCanvas('hero').toDataURL()}" alt=""></div><div class="tc-bt"><h4>체육관 배지 ${S.badges.filter(Boolean).length} / 8</h4><div class="tc-badges">${cells}</div></div>`, 'tcard');
-}
-// ---------- 성적표 (기획서 8장, 미리보기 ⑤): 학생이 캡처해서 제출한다 ----------
-const REPORT_ROWS = ['수와 연산', '문자와 식', '함수', '기하', '확률과 통계'];
-// 문제 단원 번호 → [영역 줄, 학년]. 새 단원을 만들면 여기에 더한다
-const REPORT_MAP = { 11: [0, 1], 1: [0, 2], 13: [0, 3], 21: [1, 1], 2: [1, 2], 23: [1, 3], 31: [1, 1], 33: [1, 3], 41: [2, 1], 43: [2, 3], 3: [2, 2], 51: [3, 1], 52: [3, 1], 53: [3, 1], 4: [3, 2], 5: [3, 2], 6: [4, 2], 71: [3, 3], 72: [3, 3], 73: [3, 3], 81: [4, 1], 83: [4, 3] };
-async function askSid() {
-  while (true) {
-    const v = await nameInput('학번을 입력해 주세요 (숫자 5자리)', '30215', 5, '');
-    if (/^\d{5}$/.test(v)) { S.sid = v; return; }
-    toast('학번은 숫자 5자리로 써 주세요');
-  }
-}
-// 성적표 내용 (화면과 '이미지로 저장' 그림이 함께 쓴다)
-function reportData() {
-  const cell = {};
-  for (const u in S.stats) { const m = REPORT_MAP[u]; if (!m) continue; const k = m.join(), c = cell[k] || (cell[k] = [0, 0]); c[0] += S.stats[u][0]; c[1] += S.stats[u][1]; }
-  const pct = c => Math.round(c[1] / c[0] * 100);
-  // 더 연습할 곳: 3문제 이상 푼 칸 중 정답률이 가장 낮은 곳
-  let weak = null; for (const k in cell) if (cell[k][0] >= 3 && (!weak || pct(cell[k]) < pct(cell[weak]))) weak = k;
-  const wk = weak && weak.split(',').map(Number), wp = weak && pct(cell[weak]);
-  const weakTxt = !weak ? ['good', '아직 3문제 이상 푼 영역이 없어요. 문제를 더 풀어 봐요!']
-    : wp >= 70 ? ['good', '모든 영역 정답률 70% 이상! 아주 잘하고 있어요.']
-    : ['', `더 연습할 곳: ${REPORT_ROWS[wk[0]]} · 중${wk[1]} (${wp}%) → 보건실에서 '오답노트 다시 풀기'로 복습해요!`];
-  const tot = Object.values(S.stats).reduce((a, [n, ok]) => [a[0] + n, a[1] + ok], [0, 0]);
-  const d = new Date(), pad = v => String(v).padStart(2, '0');
-  return { cell, pct, weakTxt, tot, acc: tot[0] ? Math.round(tot[1] / tot[0] * 100) : 0, d, pad,
-    date: `${d.getFullYear()}. ${pad(d.getMonth() + 1)}. ${pad(d.getDate())}.(${'일월화수목금토'[d.getDay()]}) ${pad(d.getHours())}:${pad(d.getMinutes())}` };
-}
-async function reportMenu() {
-  if (!S.sid) await askSid(); // 예전 저장: 처음 열 때 학번 입력
-  const R = reportData(), cell = R.cell, pct = R.pct;
-  const td = (r, g) => { const c = cell[r + ',' + g]; if (!c || !c[0]) return '<td class="na">-</td>'; const p = pct(c); return `<td class="${p >= 70 ? 'hi' : p >= 50 ? 'mid' : 'lo'}">${p}%<small>${c[0]}문제</small></td>`; };
-  const weakHtml = `<div class="rp-weak ${R.weakTxt[0]}">${R.weakTxt[1]}</div>`, tot = R.tot;
-  const badges = GYMS.map((G, i) => S.badges[i] ? `<img src="${badgeIcon(i, 48)}" alt="${G.badge}">` : '<i></i>').join('');
-  await overlay(`<div class="rp-h"><b>사계몬스터 성적표</b><span>${R.date}</span></div>
-    <div class="rp-id"><span class="who"><em>${S.sid}</em>${S.name}</span><span class="rp-badges">배지 ${S.badges.filter(Boolean).length}/8 ${badges}</span></div>
-    <div class="rp-sum">푼 문제 ${tot[0]}개 · 정답률 ${R.acc}% · 잡은 사계몬 ${Object.keys(S.caught).length}종 · 플레이 ${Math.floor((S.playMs || 0) / 60000)}분 · 오답노트 ${S.notes.length}문제 남음 (정복 ${S.solved || 0})</div>
-    <table><tr><th>영역</th><th>중1</th><th>중2</th><th>중3</th></tr>${REPORT_ROWS.map((n, r) => `<tr><td>${n}</td>${td(r, 1)}${td(r, 2)}${td(r, 3)}</tr>`).join('')}</table>
-    ${weakHtml}
-    <div class="rp-f"><span>이 화면을 캡처하거나 이미지로 저장해서 제출하세요</span><span><button class="rp-save" data-act="c">📷 이미지로 저장 (C)</button> A: 닫기</span></div>`, 'report', { c: saveReportPNG });
-}
-// ---------- 성적표 '이미지로 저장' (미리보기 ⑱, 2026-11-09): 게임이 직접 그려 PNG로 내려받는다. 인터넷·서버 없이 됨 ----------
-function reportCanvas() {
-  const R = reportData(), W = 1280, H = 800, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
-  const g = cv.getContext('2d'), UI = '"Nanum Gothic Coding","Malgun Gothic","Apple SD Gothic Neo",sans-serif', TT = '"Black Han Sans","Malgun Gothic",sans-serif';
-  const rr = (x, y, w, h, r, fill) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); g.fillStyle = fill; g.fill(); };
-  const txt = (s, x, y, font, col, align = 'left') => { g.font = font; g.fillStyle = col; g.textAlign = align; g.textBaseline = 'middle'; g.fillText(s, x, y); };
-  g.fillStyle = '#2a3a8a'; g.fillRect(0, 0, W, H);
-  rr(14, 14, W - 28, H - 28, 22, '#fffdf4');
-  // 머리
-  txt('사계몬스터 성적표', 56, 78, `400 54px ${TT}`, '#2a3a8a');
-  txt(R.date, W - 56, 84, `700 26px ${UI}`, '#46465e', 'right');
-  g.fillStyle = '#2a3a8a'; g.fillRect(56, 122, W - 112, 6);
-  // 학번 · 이름 · 배지
-  g.font = `700 40px ${UI}`; const sw = g.measureText(S.sid).width;
-  rr(56, 150, sw + 28, 56, 10, '#ffe58a'); txt(S.sid, 70, 179, `700 40px ${UI}`, '#26263a');
-  txt(S.name, 56 + sw + 48, 179, `700 40px ${UI}`, '#26263a');
-  const bx = W - 56 - 8 * 56;
-  txt(`배지 ${S.badges.filter(Boolean).length}/8`, bx - 16, 179, `700 28px ${UI}`, '#26263a', 'right');
-  GYMS.forEach((G, i) => { const x = bx + i * 56;
-    if (S.badges[i]) g.drawImage(badgeCanvas(i, 48), x, 155, 48, 48);
-    else { g.setLineDash([6, 5]); g.beginPath(); g.arc(x + 24, 179, 21, 0, 7); g.lineWidth = 3; g.strokeStyle = '#b8b4a8'; g.stroke(); g.setLineDash([]); } });
-  // 요약 두 줄
-  txt(`푼 문제 ${R.tot[0]}개 · 정답률 ${R.acc}% · 잡은 사계몬 ${Object.keys(S.caught).length}종`, 56, 244, `700 28px ${UI}`, '#46465e');
-  txt(`플레이 ${Math.floor((S.playMs || 0) / 60000)}분 · 오답노트 ${S.notes.length}문제 남음 (정복 ${S.solved || 0})`, 56, 284, `700 28px ${UI}`, '#46465e');
-  // 영역 × 학년 표
-  const tx = 56, ty = 316, cw0 = 320, cw = (W - 112 - cw0) / 3, rh = 52;
-  const box = (c, r, fill) => { const x = c ? tx + cw0 + (c - 1) * cw : tx, y = ty + r * rh, w = c ? cw : cw0; g.fillStyle = fill; g.fillRect(x, y, w, rh); g.lineWidth = 2; g.strokeStyle = '#d8d2bc'; g.strokeRect(x, y, w, rh); return [x, y, w]; };
-  ['영역', '중1', '중2', '중3'].forEach((h, c) => { const [x, y, w] = box(c, 0, '#eef0fa'); txt(h, x + w / 2, y + rh / 2, `700 28px ${UI}`, '#2a3a8a', 'center'); });
-  REPORT_ROWS.forEach((n, r) => {
-    const [x, y] = box(0, r + 1, '#fbf8ec'); txt(n, x + 18, y + rh / 2, `700 28px ${UI}`, '#26263a');
-    for (let gr = 1; gr <= 3; gr++) {
-      const c = R.cell[r + ',' + gr];
-      if (!c || !c[0]) { const [x2, y2, w2] = box(gr, r + 1, '#fffdf4'); txt('-', x2 + w2 / 2, y2 + rh / 2, `700 28px ${UI}`, '#b0aa98', 'center'); continue; }
-      const p = R.pct(c), [x2, y2, w2] = box(gr, r + 1, p >= 70 ? '#dff5e3' : p >= 50 ? '#fff4c8' : '#fbe0de');
-      g.font = `700 30px ${UI}`; const a = `${p}%`, aw = g.measureText(a).width; g.font = `700 20px ${UI}`; const b = `${c[0]}문제`, bw = g.measureText(b).width;
-      const sx = x2 + (w2 - aw - 10 - bw) / 2; txt(a, sx, y2 + rh / 2, `700 30px ${UI}`, '#26263a'); txt(b, sx + aw + 10, y2 + rh / 2 + 2, `700 20px ${UI}`, '#6a6a7a');
-    }
-  });
-  // 더 연습할 곳 · 바닥
-  rr(56, 650, W - 112, 58, 12, R.weakTxt[0] ? '#dff5e3' : '#fbe0de'); txt(R.weakTxt[1], 76, 679, `700 26px ${UI}`, '#26263a');
-  txt('사계몬스터 · 중학교 수학 · 사계절 졸업 여행', 56, 748, `700 22px ${UI}`, '#7a1d3e');
-  txt('이 그림은 게임의 「이미지로 저장」으로 만들었어요', W - 56, 748, `700 22px ${UI}`, '#7a1d3e', 'right');
-  return cv;
-}
-function saveReportPNG() {
-  const d = new Date(), p = v => String(v).padStart(2, '0');
-  const fn = `${S.sid}_${String(S.name).replace(/[\\/:*?"<>|\s]/g, '')}_${p(d.getMonth() + 1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}.png`;
-  const a = document.createElement('a'); a.download = fn; a.href = reportCanvas().toDataURL('image/png');
-  document.body.appendChild(a); a.click(); a.remove();
-  SFX.sel(); toast('이미지를 저장했어요! (다운로드 폴더)');
 }
 // ---------- 타이틀 & 엔딩 ----------
 function drawTitle(now) {
@@ -5619,12 +5522,10 @@ function startWorld() {
   hideTb(); scene = 'world';
 }
 async function ending(first) {
-  scene = 'evo'; EVO = { intro: true, t0: performance.now(), done: true }; // 첫 몬스터 4마리
-  const tot = Object.values(S.stats).reduce((a, [n, ok]) => [a[0] + n, a[1] + ok], [0, 0]);
+  scene = 'evo'; EVO = { intro: true, t0: performance.now(), done: true };
   SFX.badge();
-  await sayAll([first ? `전당 등록을 축하합니다!!\n${jo(S.name, '은는')} 새로운 챔피언이 되었다!` : `${jo(S.name, '은는')} 챔피언 방어에 성공했다!`, `지금까지 푼 문제 ${tot[0]}개, 정답률 ${tot[0] ? Math.round(tot[1] / tot[0] * 100) : 0}%!\n잡은 사계몬 ${Object.keys(S.caught).length}종!`, '정박사: 봄·여름·가을·겨울, 사계절 여행을 모두 마쳤구나!\n졸업을 축하한다!', '(이제 성적표가 나옵니다. 화면을 캡처하거나 이미지로 저장해서 제출하세요!)']);
-  hideTb(); await reportMenu();
-  scene = 'world';
+  await sayAll([first ? `전당 등록을 축하합니다!!\n${jo(S.name, '은는')} 새로운 챔피언이 되었다!` : `${jo(S.name, '은는')} 챔피언 방어에 성공했다!`, `잡은 사계몬 ${Object.keys(S.caught).length}종!`, '정박사: 봄·여름·가을·겨울, 사계절 여행을 모두 마쳤구나!\n졸업을 축하한다!']);
+  hideTb(); scene = 'world';
 }
 // ---------- 메인 루프 ----------
 let lastT = performance.now();
