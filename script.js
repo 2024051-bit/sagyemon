@@ -3965,10 +3965,17 @@ function onlineBattleApplyTurn(room, payload, ownId) {
     if (r && r.inflicted) logs.push((a.local ? room.opponentRoster.party[room.activeOpponent] : room.localTeam[room.activeLocal]).species + '에게 상태 이상이 발생했어!');
   }
   for (const mon of [room.localTeam[room.activeLocal], room.opponentRoster.party[room.activeOpponent]]) {
-    if (mon && mon.hp > 0 && mon.status && mon.status.type === 'brn') {
+    if (!mon || mon.hp <= 0) continue;
+    if (mon.status && mon.status.type === 'brn') {
       const residual = Math.max(1, Math.floor(mon.maxhp / 16));
       mon.hp = Math.max(0, mon.hp - residual);
       logs.push((mon.nickname || mon.species || '사계몬') + ' · 화상으로 ' + residual + ' 피해');
+    }
+    // 재생력: 화상 피해 처리 후에도 살아 있다면 최대 HP의 1/16 회복
+    if (mon.hp > 0 && mon.ability === '재생력' && mon.hp < mon.maxhp) {
+      const healed = Math.min(mon.maxhp - mon.hp, Math.max(1, Math.floor(mon.maxhp / 16)));
+      mon.hp += healed;
+      logs.push((mon.nickname || mon.species || '사계몬') + ' · 재생력으로 HP ' + healed + ' 회복');
     }
   }
   room.localTeam.forEach((m,i) => { if (m.hp !== before[i]) onlineSendHpUpdate(i,m); });
