@@ -2892,7 +2892,7 @@ function calcStats(m) {
   m.spa = Math.floor((b.spa == null ? b.atk : b.spa) * m.lvl / 40) + 5;
   m.spd = Math.floor((b.spd == null ? b.def : b.spd) * m.lvl / 40) + 5;
   m.spe = Math.floor((b.spe == null ? (b.atk + b.def) / 2 : b.spe) * m.lvl / 40) + 5;
-  m.ability = ABILITY_NAMES.includes(m.ability) ? m.ability : (b.ability || '맹공');
+  m.ability = ABILITY_NAMES.has(m.ability) ? m.ability : (b.ability || '맹공');
   if (m.ability === '질주' || m.ability === '민첩한 몸놀림') m.spe = Math.round(m.spe * 1.1);
   for (const stat of ['atk', 'def', 'spa', 'spd', 'spe']) m[stat] = Math.max(1, Math.round(m[stat] * natureRate(m, stat)));
   const hb = m.held && ITEMS[m.held] && ITEMS[m.held].boost;
