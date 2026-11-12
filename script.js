@@ -3618,8 +3618,7 @@ H.tutor = async () => {
   if (!Number.isInteger(j) || j < 0 || j >= cand.length) return say('기술 떠올리기 선생님: 언제든 다시 오렴.');
   const RECALL_COST = 1000;
   if (S.money < RECALL_COST) return say(`기술 떠올리기 선생님: 기술을 되살리려면 1,000원이 필요하단다. 지금은 ${S.money}원 있구나.`);
-  const r = await quiz(pickUnit(), { title: '기술 떠올리기! 맞히면 성공' });
-  if (!r.ok) return say('기술 떠올리기 선생님: 아쉽구나! 해설을 읽고 다시 도전하렴. 돈은 받지 않았단다.');
+  await say('기술 떠올리기 선생님: 좋아! 기술을 되살려 주마.');
   await say(`기술 떠올리기 선생님: 좋아! ${jo(monName(m), '이가')} ${jo(cand[j], '을를')} 떠올리기 시작했다…!`);
   const learned = await learnMove(m, cand[j]);
   if (learned) { S.money -= RECALL_COST; save(); await say('기술 회상 비용 1,000원을 냈다!'); }
@@ -4309,8 +4308,7 @@ H.starter = async e => {
   const m = mkMon(e.sp, 5, true); S.party.push(m); S.caught[e.sp] = 1; S.seen[e.sp] = 1; S.starter = e.sp; SFX.badge();
   await say(`${jo(S.name, '은는')} 정박사에게서\n${jo(SP[e.sp].name, '을를')} 받았다!`);
   await askNickname(m);
-  S.hints = Math.max(S.hints || 0, 2);
-  await sayAll(['정박사: 사계볼 5개와 반창고 3개도 챙겨 가렴.', '풀숲에서 야생 사계몬이 나오면 문제를 맞혀 공격하고,\n약해지면 사계볼로 잡아 보렴! 문제를 맞히면 잘 잡힌단다.', '이건 힌트 카드 2장이야. 퀴즈에서 쓰면 틀린 보기 2개를 지워 준단다.\n(퀴즈 창의 노란 버튼, 또는 H 키)', '힌트 카드는 보건실에서 오답노트 문제를 다시 맞히면 더 받을 수 있어.', '참, 내 손자 녀석도 오늘 사계몬을 하나 가져갔단다. 어디선가 만나게 될 거야.']);
+    await sayAll(['정박사: 사계볼 5개와 반창고 3개도 챙겨 가렴.', '풀숲에서 야생 사계몬을 만나면 기술로 체력을 줄인 뒤 사계볼을 던져 보렴.', '참, 내 손자 녀석도 오늘 사계몬을 하나 가져갔단다. 어디선가 만나게 될 거야.']);
 };
 // 라이벌
 const RIVAL_NAME = '오답이';
@@ -4333,7 +4331,7 @@ async function rivalBattle(n) {
   const rb = rivalSp(1), team = { 1: [['piyak', 7], [evolveFor(rb, 9), 9]], 2: [['kkiruk', 21], ['keunjip', 22], [evolveFor(rb, 24), 24]], 3: [['gom', 32], ['jam', 32], [evolveFor(rb, 34), 34]], 4: [['seolyeo', 39], ['seal', 39], [evolveFor(rb, 41), 41]], 5: [['wanggaegul', 42], ['bam2', 42], ['seal', 43], [evolveFor(rb, 44), 44]] }[n].map(([sp, lv]) => mkMon(sp, lv, false, HPMUL.rival));
   // 문제: 지금까지 지나온 영역에서 골고루 (복습 보스, Q48)
   const units = { 1: [11, 1, 13], 2: [11, 1, 13, 21, '2a', 23, 31, '2b', 33], 3: [11, 1, 13, 21, '2a', 23, 31, '2b', 33, 41, 3, 43], 4: [11, 1, 13, 21, '2a', 23, 31, '2b', 33, 41, 3, 43, 51, 52, 53, 4, '5a', '5b'], 5: ALL_UNITS }[n];
-  const r = await battle({ kind: 'rival', team, units, trainer: { title: '라이벌', name: RIVAL_NAME, pal: 'rival', lose: { 1: '칫… 다음엔 안 진다!', 2: '…천천히 읽었는데도 졌네. 찍는 것만으론 안 된다는 건 알겠어.', 3: '…인정. 오답노트를 써도 아직 네가 한 수 위야.', 4: '…알았어. 넌 진짜야.', 5: '…인정. 넌 진짜 강해. 챔피언한테도 꼭 이겨라!' }[n] }, money: n * 700 });
+  const r = await battle({ kind: 'rival', team, trainer: { title: '라이벌', name: RIVAL_NAME, pal: 'rival', lose: { 1: '칫… 다음엔 안 진다!', 2: '…천천히 읽었는데도 졌네. 찍는 것만으론 안 된다는 건 알겠어.', 3: '…인정. 오답노트를 써도 아직 네가 한 수 위야.', 4: '…알았어. 넌 진짜야.', 5: '…인정. 넌 진짜 강해. 챔피언한테도 꼭 이겨라!' }[n] }, money: n * 700 });
   if (r !== 'win') S.flags['rival' + n] = 0;
   else {
     await say({ 1: `${RIVAL_NAME}: 흥! 오늘은 봐준다. 다음에 보자!`, 2: `${RIVAL_NAME}: 소나기항구는 바로 앞이야. 여울 관장한테 지기만 해 봐!`, 3: `${RIVAL_NAME}: 단풍마을은 바로 앞이야. 노을 관장한테 지기만 해 봐!`, 4: `${RIVAL_NAME}: 눈꽃마을은 바로 앞이야. 서리 관장한테 지기만 해 봐!`, 5: `${RIVAL_NAME}: 졸업 언덕은 바로 앞이야. 가라!` }[n]);
@@ -4346,16 +4344,12 @@ async function rivalBattle(n) {
 }
 // 체육관
 H.qdoor = async e => {
-  await say('수학 자물쇠가 걸린 문이다.\n문제를 풀면 열릴 것 같다. 도전할까?', { wait: false });
+  await say('잠겨 있는 문이다. 자물쇠를 열어 볼까?', { wait: false });
   if (!await yesno()) return;
-  const r = await quiz(CUR.unit || 0, { title: '수학 자물쇠!' });
-  if (r.ok) { S.flags['qd:' + e.id] = 1; SFX.lvl(); await say('철컥! 자물쇠가 열렸다!'); return; }
-  // 틀리면 경보가 울리고 체육관 밖으로 쫓겨난다
-  SFX.no(); await say('삐삐삐! 틀린 답에 경보가 울렸다!\n관원: 거기! 체육관 밖으로 나가서 다시 공부하고 와!');
-  const out = Object.values(CUR.warps).find(w => w.mat && w.to !== '@ret');
-  if (out) { await warpTo(out.to, out.x, out.y, 'down'); await say('(체육관 밖으로 쫓겨났다… 해설을 떠올리며 다시 도전해 보자.)'); }
-};
-H.leader = async e => {
+  S.flags['qd:' + e.id] = 1;
+  SFX.sel();
+  await say('철컥! 자물쇠가 열렸다!');
+};H.leader = async e => {
   const n = e.n, G = GYMS[n];
   const mkTeam = () => G.team.map(([sp, lv]) => mkMon(sp, lv, false, HPMUL.leader));
   const tr = { title: '관장', name: G.name, pal: 'L' + n, lose: G.win };
@@ -4390,16 +4384,11 @@ async function awardBadge(n) {
   if (G.after) await say(`관장 ${G.name}: ${G.after}`); // (예전 바탕 파일의 체육관 7·8 뒤 이야기 이벤트는 2026-11-10 지움)
 }
 H.shrine = async () => {
-  if (S.badges[7]) return say('장로: 확률을 믿되, 계산을 믿어라. 언제나 정진하거라.');
-  if (!S.flags.denTrial) return say('장로: 확률의 굴에 온 것을 환영하네. 관장 운수를 먼저 이기고 오게.');
-  await sayAll(['장로: 운수를 이겼다고? 그럼 마지막 시험이다.', '확률 문제 3개를 연속으로 맞혀 보거라!']);
-  for (let i = 1; i <= 3; i++) { const r = await quiz(6, { title: `장로의 시험 ${i}/3` }); if (!r.ok) return say('장로: 아직 수행이 부족하구나. 해설을 곱씹고 다시 오너라.'); }
-  await say('장로: 훌륭하다! 운수에게 가서 내가 인정했다고 전하거라.');
-  await say('(관장 운수가 달려왔다!)\n관장 운수: 장로님이 인정하셨다고? 좋아, 이제 배지를 줄게!');
+  if (S.badges[7]) return say('장로: 시련을 이겨 내고 배지를 얻었으니, 이제 너의 여행을 계속하거라.');
+  if (!S.flags.denTrial) return say('장로: 먼저 관장 운수를 이기고 오게.');
+  await sayAll(['장로: 운수를 이겼구나. 전투에서 보여 준 실력을 인정하마.', '이제 관장에게 돌아가 마지막 배지를 받으려무나.']);
   await awardBadge(7);
-};
-// 퀘스트·이벤트
-H.quest = async e => {
+};H.quest = async e => {
   const Q = QUESTS[e.q];
   if (S.flags['quest' + e.q]) return say(Q.after);
   if (!Q.need()) return sayAll(Q.ask);
@@ -4450,14 +4439,12 @@ H.faketree = async () => {
 };
 H.host = async () => {
   if (S.flags.takeover && !S.flags.radioClear) return say('아나운서: 으으… 찍기단이 위층을 점거했어요! 도와주세요!');
-  await say(S.keys.radio ? '아나운서: 「수학 퀴즈 방송」에 또 도전할래요?\n5문제 연속 정답이면 상금을 드려요!' : '아나운서: 「수학 퀴즈 방송」에 도전할래요?\n5문제를 연속으로 맞히면 라디오 카드를 드려요!', { wait: false });
-  if (!await yesno()) return say('아나운서: 언제든 도전하러 오세요~');
-  for (let i = 1; i <= 5; i++) { const r = await quiz(0, { title: `퀴즈 방송 ${i}/5` }); if (!r.ok) return say(`아나운서: 아쉬워요! ${i - 1}문제 연속 정답!\n오답노트로 복습하고 다시 도전해 주세요.`); }
-  SFX.badge();
-  if (!S.keys.radio) { await say('아나운서: 축하합니다! 5문제 연속 정답!'); return giveKey('radio', KEYS.radio.desc); }
-  S.money += 1500; await say('아나운서: 또 5연속! 대단해요! 상금 1500원!');
-};
-H.rgrunt = async () => say('찍기단 조무래기: 방송탑은 우리가 접수했다! 위층으로 올라가 봐라~');
+  if (!S.keys.radio) {
+    await sayAll(['아나운서: 방송탑에 온 걸 환영해요!', '기념으로 방송국 카드를 드릴게요.']);
+    return giveKey('radio', KEYS.radio.desc);
+  }
+  return say('아나운서: 방송국을 자유롭게 둘러보세요. 오늘은 특별 방송 준비 중이에요!');
+};H.rgrunt = async () => say('찍기단 조무래기: 방송탑은 우리가 접수했다! 위층으로 올라가 봐라~');
 H.radmin = async () => {
   await sayAll(['찍기단 간부 엉터리: 여기까지 오다니! 보스께서 방송을 장악하시는 중이다!', '위층에는 못 간다!']);
   const r = await battle({ kind: 'boss', team: [['ghost2', 31], ['bat2', 31], ['croc2', 32]].map(([s, l]) => mkMon(s, l, false, HPMUL.boss)), trainer: { title: '찍기단 간부', name: '엉터리', pal: 'grunt', lose: '엉터리로 계산했더니 졌다…' }, money: 2500, unit: 0 });
@@ -4473,7 +4460,7 @@ H.boss = async () => {
 };
 H.director = async () => {
   if (S.flags.takeover && !S.flags.radioClear) return say('방송국장: 으으… 찍기단이 날 여기 가둬 놨어.\n보스 대충을 물리쳐 주게!');
-  if (!S.flags.radioClear) return say('방송국장: 우리 방송국은 매일 수학 퀴즈 방송을 내보낸다네. 1층에서 도전해 보게!');
+  if (!S.flags.radioClear) return say('방송국장: 찍기단이 방송탑을 노리고 있네. 1층부터 살펴보게!');
   if (S.keys.gfeather) return say('방송국장: 함수시티 황금탑에 가 보게. 황금 깃털이 길을 열어 줄 걸세.');
   await say('방송국장: 고맙네! 덕분에 방송을 되찾았어. 이건 감사의 표시라네.');
   await giveKey('gfeather', KEYS.gfeather.desc);
@@ -4560,21 +4547,12 @@ H.boat = async e => {
 const STELE_DEF = { flag: 'rainbow', sp: 'rainbow', lv: 26, units: () => ISLE_UNITS, hint: '무지개가 모습을 드러내리라', glow: '비석이 일곱 빛깔로 빛난다!', come: '하늘에서 무지개깃이 내려왔다!', gone: '무지개깃은 무지개 너머로 날아가 버렸다…' };
 H.stele = async e => {
   const c = (e && e.cfg) || STELE_DEF, nm = SP[c.sp].name;
-  if (S.flags[c.flag]) return say(`도전의 비석은 조용하다.\n(${nm}${jo(nm, '은는').slice(-1)} 이미 함께 여행하고 있다)`);
-  await say(`도전의 비석이다.\n"두 문제를 연속으로 맞히는 자에게 ${c.hint}." 도전할까?`, { wait: false });
-  if (!await yesno()) return;
-  const units = c.units();
-  for (let i = 1; i <= 2; i++) {
-    const r = await quiz(pick(units), { title: `도전의 비석 ${i}/2` });
-    if (!r.ok) return say('비석의 빛이 사그라들었다…\n(해설을 떠올리며 다시 도전해 보자!)');
-  }
-  await sayAll([c.glow, c.come]);
-  const r = await battle({ kind: 'legend', team: [mkMon(c.sp, c.lv, false, HPMUL.legend)], units });
+  if (S.flags[c.flag]) return say(`도전의 비석은 조용하다.\n(${nm}은 이미 함께 여행하고 있다)`);
+  await sayAll(['오래된 비석이 희미하게 빛난다.', c.glow, c.come]);
+  const r = await battle({ kind: 'legend', team: [mkMon(c.sp, c.lv, false, HPMUL.legend)] });
   if (r === 'caught') S.flags[c.flag] = 1;
-  else if (r === 'win') await say(`${c.gone}\n(비석에 다시 도전하면 또 만날 수 있다)`);
-};
-// 굴·구멍: 말을 걸면 다른 지도로 (히든 맵 입구·출구)
-H.hole = async e => {
+  else await say(`${nm}은 모습을 감추었다…\n다시 비석을 찾아오면 만날 수 있을 것 같다.`);
+};H.hole = async e => {
   if (e.cond && !e.cond()) return say(e.locked); // 아직 열리지 않은 입구 (새봄마을 벚나무: 배지 8개)
   await say(e.ask, { wait: false });
   if (!await yesno()) return;
@@ -4593,35 +4571,35 @@ H.friday = async () => {
   if (r === 'caught') S.flags.turtle = 1;
 };
 H.dealer = async () => {
-  await say('딜러: 확률 룰렛에 오신 걸 환영합니다! 300원을 걸고\n확률 문제를 맞히면 1000원을 드려요. 도전?', { wait: false });
+  await say('딜러: 행운의 룰렛에 도전하시겠어요? 300원을 걸면 운에 따라 상금을 받을 수 있어요.', { wait: false });
   if (!await yesno()) return say('딜러: 다음에 또 오세요~');
   if (S.money < 300) return say('딜러: 손님, 돈이 부족하시네요.');
   S.money -= 300;
-  const r = await quiz(6, { title: '확률 룰렛!' });
-  if (r.ok) { S.money += 1000; SFX.catch(); return say('딜러: 정답! 확률은 손님 편이었네요. 1000원 획득!'); }
-  await say('딜러: 아쉽네요! 확률은 정직하답니다~');
-};
-H.elite = async e => {
+  if (Math.random() < .5) {
+    S.money += 1000; SFX.catch();
+    return say('딜러: 축하합니다! 룰렛 대성공! 1000원 획득!');
+  }
+  SFX.no();
+  return say('딜러: 아쉽네요! 다음에는 행운이 따르길!');
+};H.elite = async e => {
   const E = ELITES[e.i];
   if (S.flags['elite' + e.i]) return say(`${E.name}: ${E.lose}`);
   await sayAll(E.line.map(l => `${E.title} ${E.name}: ${l}`));
-  const r = await battle({ kind: 'elite', team: E.team.map(([sp, lv]) => mkMon(sp, lv, false, HPMUL.elite)), trainer: { title: E.title, name: E.name, pal: E.pal, lose: E.lose }, money: 4000, units: E.units });
+  const r = await battle({ kind: 'elite', team: E.team.map(([sp, lv]) => mkMon(sp, lv, false, HPMUL.elite)), trainer: { title: E.title, name: E.name, pal: E.pal, lose: E.lose }, money: 4000 });
   if (r === 'win') { S.flags['elite' + e.i] = 1; await say('(뒤쪽 문이 열렸다!)'); }
   else for (let i = 0; i < 4; i++) delete S.flags['elite' + i]; // 지면 처음부터 (미리보기 ㉑)
 };
 H.champ = async () => {
-  await sayAll([S.champ ? '챔피언 만점: 다시 왔구나! 실력이 녹슬지 않았는지 볼까?' : '챔피언 만점: 사계절을 모두 돌아 4인방까지 넘다니… 기다리고 있었다.', '나는 졸업 챔피언 만점. 이번 승부에서는\n중학교 수학 전 범위의 문제가 나온다. 마지막 문제다!']);
+  await sayAll([S.champ ? '챔피언 만점: 다시 왔구나! 실력이 녹슬지 않았는지 볼까?' : '챔피언 만점: 사계절을 모두 돌아 4인방까지 넘다니… 기다리고 있었다.', '나는 졸업 챔피언 만점. 마지막 승부를 시작하자!']);
   const third = STARTERS.find(s => s !== S.starter && s !== rivalSp(1));
-  // 미리보기 ㉑: 사계절 4마리, 마지막은 나도 라이벌도 고르지 않은 첫 몬스터의 최종 진화형. 챔피언은 어렵게(HPMUL·EDMG champ)
   const team = [['queenbung', 45], ['keunjip', 46], ['jam', 46], [SP[SP[third].evo[1]].evo[1], 47]].map(([sp, lv]) => mkMon(sp, lv, false, HPMUL.champ));
-  const r = await battle({ kind: 'champ', team, trainer: { title: '챔피언', name: '만점', pal: 'champ', lose: '…훌륭하다. 네가 바로 새로운 졸업 챔피언이야!' }, money: 10000, units: ALL_UNITS });
-  if (r !== 'win') { for (let i = 0; i < 4; i++) delete S.flags['elite' + i]; return; } // 지면 처음부터
+  const r = await battle({ kind: 'champ', team, trainer: { title: '챔피언', name: '만점', pal: 'champ', lose: '…훌륭하다. 네가 바로 새로운 졸업 챔피언이야!' }, money: 10000 });
+  if (r !== 'win') { for (let i = 0; i < 4; i++) delete S.flags['elite' + i]; return; }
   const first = !S.champ; S.champ = (S.champ || 0) + 1;
   for (let i = 0; i < 4; i++) delete S.flags['elite' + i];
   await ending(first);
   loadMap('home', 3, 5, 'down');
-};
-H.master = async () => {
+};H.master = async () => {
   await sayAll(['……', '………', '(전설의 선배가 말없이 이쪽을 바라본다.)']);
   const team = [['zero2', 56], ['dice2', 57], ['fish2', 57], ['wonju3', 60], ['root3', 60], ['inf3', 60]].map(([sp, lv]) => mkMon(sp, lv, false, 1.8));
   const r = await battle({ kind: 'champ', team, trainer: { title: '전설의 선배', name: '…', pal: 'senpai', lose: '……!' }, money: 20000, unit: 0 });
