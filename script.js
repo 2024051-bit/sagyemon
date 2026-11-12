@@ -2244,15 +2244,14 @@ function gymRoom(n, G) {
     if (y < 2) return;
     let t = c;
     if (x === 0 || x === w - 1 || c === 'M') t = 'w';
-    if ('ABCZQ'.includes(c)) { t = 'f'; marks.push([c, x, y]); }
+    if ('ABCZ'.includes(c)) { t = 'f'; marks.push([c, x, y]); }
+    else if (c === 'Q') t = 'f'; // 수학 자물쇠 제거: 통로를 처음부터 개방
     a.set(x, y, t);
   }));
   mat(a, 7, 'town', 0, 0);
   const faceOf = (x, y) => { let best = 'down', bn = -1; for (const [d, dx, dy] of [['down', 0, 1], ['up', 0, -1], ['left', -1, 0], ['right', 1, 0]]) { let k = 0; while (k < 5 && ['f', 'i'].includes(a.get(x + dx * (k + 1), y + dy * (k + 1)))) k++; if (k > bn) { bn = k; best = d; } } return best; };
-  let qd = 0;
   for (const [c, x, y] of marks) {
-    if (c === 'Q') a.ent({ id: `qd${n}${qd++}`, kind: 'qdoor', x, y });
-    else if (c === 'Z') a.ent({ id: 'leader' + n, kind: 'leader', n, x, y, dir: 'down', pal: 'L' + n });
+    if (c === 'Z') a.ent({ id: 'leader' + n, kind: 'leader', n, x, y, dir: 'down', pal: 'L' + n });
     else { const k = 'ABC'.indexOf(c); if (!G.tr[k]) continue; a.ent({ id: `g${n}t${k}`, x, y, dir: faceOf(x, y), kind: 'trainer', sight: 4, ...G.tr[k] }); }
   }
   return a;
@@ -3355,7 +3354,6 @@ function entVisible(e) {
   switch (e.kind) {
     case 'item': return !S.flags['item:' + e.id];
     case 'starter': return !S.party.length;
-    case 'qdoor': return !S.flags['qd:' + e.id];
     case 'faketree': return !S.flags.faketree;
     case 'legend': return !S.flags[e.flag] && (e.sp !== 'dragon' || S.keys.gfeather) && (!e.need || e.need());
     case 'friday': return isFriday() && !S.flags.turtle;
@@ -4360,18 +4358,11 @@ async function rivalBattle(n) {
   const ri = host.indexOf(rv); if (ri >= 0) host.splice(ri, 1);
 }
 // 체육관
-H.qdoor = async e => {
-  await say('잠겨 있는 문이다. 자물쇠를 열어 볼까?', { wait: false });
-  if (!await yesno()) return;
-  S.flags['qd:' + e.id] = 1;
-  SFX.sel();
-  await say('철컥! 자물쇠가 열렸다!');
-};H.leader = async e => {
+H.leader = async e => {
   const n = e.n, G = GYMS[n];
   const mkTeam = () => G.team.map(([sp, lv]) => mkMon(sp, lv, false, HPMUL.leader));
   const tr = { title: '관장', name: G.name, pal: 'L' + n, lose: G.win };
-  if (S.badges[n] || (n === 7 && S.flags.denTrial)) {
-    if (n === 7 && !S.badges[7]) return say('관장 운수: 확률의 굴 장로님의 시험을 통과하고 와! 그래야 배지를 줄 수 있어.');
+  if (S.badges[n]) {
     await say(`관장 ${G.name}: 또 왔구나! 복습 삼아 한 번 더 붙어 볼래?`, { wait: false });
     if (!await yesno()) return say(`관장 ${G.name}: ${G.after || '언제든 다시 와!'}`);
     await battle({ kind: 'leader', team: mkTeam(), trainer: tr, money: 0, unit: G.lunit ?? G.unit });
@@ -4387,7 +4378,6 @@ H.qdoor = async e => {
     await sayAll(['보건 선생님: 관장님께 졌다고 실망하지 마세요. 거의 다 왔어요!', `응원 선물로 ${gotCard ? '힌트 카드 1장과 ' : ''}구급상자 1개를 받았다!${gotCard ? `\n(힌트 카드 ${S.hints}장 / 최대 ${HINT_MAX}장)` : ''}`]);
   }
   if (r !== 'win') return;
-  if (n === 7) { S.flags.denTrial = 1; return sayAll(['관장 운수: …내가 졌어. 하지만 배지는 아직 못 줘!', '북쪽 확률의 굴에 계신 장로님의 시험을 통과하고 와.\n그게 이 마을의 전통이야!']); }
   await awardBadge(n);
 };
 async function awardBadge(n) {
@@ -4401,10 +4391,7 @@ async function awardBadge(n) {
   if (G.after) await say(`관장 ${G.name}: ${G.after}`); // (예전 바탕 파일의 체육관 7·8 뒤 이야기 이벤트는 2026-11-10 지움)
 }
 H.shrine = async () => {
-  if (S.badges[7]) return say('장로: 시련을 이겨 내고 배지를 얻었으니, 이제 너의 여행을 계속하거라.');
-  if (!S.flags.denTrial) return say('장로: 먼저 관장 운수를 이기고 오게.');
-  await sayAll(['장로: 운수를 이겼구나. 전투에서 보여 준 실력을 인정하마.', '이제 관장에게 돌아가 마지막 배지를 받으려무나.']);
-  await awardBadge(7);
+  await sayAll(['장로: 이곳에는 오래전부터 전해 내려오는 이야기가 있지.', '강한 상대와 겨루고 싶다면 언제든 체육관에 도전해 보게.']);
 };H.quest = async e => {
   const Q = QUESTS[e.q];
   if (S.flags['quest' + e.q]) return say(Q.after);
