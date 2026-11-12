@@ -198,3 +198,25 @@ button:focus-visible{outline:3px solid #6ab0ff;outline-offset:2px}
 .efx{font-style:normal;font-size:.85em;color:#7a4a9a}
 .qfig{flex:0 0 40%;width:40%;height:auto;background:#fff;border:.3cqw solid #e0dac0;border-radius:1cqw}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* 사계몬 상세 정보 2번째 화면 */
+.st-window{align-items:stretch;max-height:92%;overflow:hidden}
+.st-pagehead{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:3.2cqw;color:#56336f;border-bottom:.35cqw solid #c7a6d8;padding:0 0 .8cqw}
+.st-pagehead small{font-size:2.3cqw;color:#80678f}
+.st-next{width:100%;border:.35cqw solid #8b62a3;border-radius:1cqw;background:#7a4a9a;color:#fff;font-weight:800;padding:1cqw;margin-top:.5cqw;font-size:2.7cqw}
+.st-detail{width:100%;min-width:0;max-height:82vh;overflow-y:auto;display:flex;flex-direction:column;gap:1.1cqw;font-size:2.7cqw;box-sizing:border-box}
+.st-section{background:#fff9;border:.25cqw solid #d7c4e1;border-radius:1cqw;padding:1.1cqw 1.5cqw}
+.st-section> b{display:block;color:#56336f;margin-bottom:.5cqw}
+.st-section p{margin:.45cqw 0;color:#45445a;line-height:1.35}
+.st-stats,.st-move-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.6cqw}
+.st-stats>div,.st-move-stats>div{display:flex;justify-content:space-between;gap:.6cqw;background:#f5eef9;border-radius:.6cqw;padding:.6cqw 1cqw}
+.st-stats span,.st-move-stats span{color:#6a6274}
+.st-move-list{display:grid;grid-template-columns:1fr 1fr;gap:.6cqw;margin:.6cqw 0}
+.st-move-list button{min-width:0;display:flex;align-items:center;justify-content:space-between;gap:.5cqw;padding:.8cqw;border:.25cqw solid #d7c4e1;border-radius:.7cqw;background:#fff;color:#30283b;font-size:2.4cqw;text-align:left}
+.st-move-list button.on{border-color:#7a4a9a;background:#eee0f7}
+.st-move-list button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st-move-list button em{font-style:normal;white-space:nowrap;color:#7a4a9a}
+.st-move-title{display:flex;justify-content:space-between;align-items:center}
+.st-move-title>b{font-size:3.4cqw}
+.st-move-title>span{color:#6a6274}
+@media(max-width:700px){.st-window{max-height:94%}.st-detail{max-height:86vh}.st-move-list{grid-template-columns:1fr}.st-pagehead{font-size:4cqw}.st-pagehead small{font-size:3cqw}.st-next{font-size:3.5cqw}.st-detail{font-size:3.5cqw}}
