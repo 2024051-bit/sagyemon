@@ -414,10 +414,10 @@ const ITEMS = {
   fpotion: { name: '특급 구급상자', desc: 'HP를 모두 회복한다', kind: 'heal', amt: 9999, price: 1800 },
   spotion: { name: '좋은상처약', desc: 'HP를 70 회복한다', kind: 'heal', amt: 70, price: 700 },
   hpotion: { name: '구급상자', desc: 'HP를 100 회복한다', kind: 'heal', amt: 100, price: 1000 },
-  ball: { name: '사계볼', desc: '야생 사계몬을 잡는 볼. 문제를 맞히면 잘 잡힌다', kind: 'ball', mult: 1, price: 200 },
-  sball: { name: '슈퍼매스볼', desc: '매스볼보다 잘 잡힌다', kind: 'ball', mult: 1.5, price: 600 },
-  hball: { name: '하이퍼매스볼', desc: '아주 잘 잡힌다', kind: 'ball', mult: 2, price: 1200 },
-  mball: { name: '마스터매스볼', desc: '정답만 맞히면 반드시 잡힌다', kind: 'ball', mult: 100 },
+  ball: { name: '사계볼', desc: '야생 사계몬을 잡는 기본 포획 도구', kind: 'ball', mult: 1, price: 200 },
+  sball: { name: '슈퍼매스볼', desc: '사계볼보다 포획 확률이 높다', kind: 'ball', mult: 1.5, price: 600 },
+  hball: { name: '하이퍼매스볼', desc: '포획 확률을 크게 높여 준다', kind: 'ball', mult: 2, price: 1200 },
+  mball: { name: '마스터매스볼', desc: '매우 높은 포획 확률을 제공한다 (최대 95%)', kind: 'ball', mult: 100 },
   revive: { name: '응원 쪽지', desc: '쓰러진 사계몬을 HP 절반으로 되살린다', kind: 'revive', price: 1500 },
   awake: { name: '잠깨는약', desc: '잠든 사계몬을 깨운다', kind: 'cure', st: ['slp'], price: 250 },
   parlyz: { name: '마비풀기약', desc: '마비를 풀어 준다', kind: 'cure', st: ['par'], price: 250 },
@@ -3083,9 +3083,11 @@ const stgMul = s => s >= 0 ? (2 + s) / 2 : 2 / (2 - s);
 const RARE = new Set(['xdragon', 'zero', 'fishr', 'rainbow', 'deer', 'sunlion']); // 희귀한 계열 (특별 몬스터 포획률)
 const isSpecialMon = sp => LEGENDS.includes(sp) || RARE.has(lineInfo(sp).root);
 const CATCH_LABEL = sp => isSpecialMon(sp) ? '어려움' : '보통';
-function catchChance(e) {
+function catchChance(e, ballId) {
   const r = e.hp / e.maxhp, k = r <= .25 ? 2 : r <= .5 ? 1 : 0;
-  return (isSpecialMon(e.sp) ? [.4, .6, .8] : [.6, .8, .95])[k];
+  const base = (isSpecialMon(e.sp) ? [.4, .6, .8] : [.6, .8, .95])[k];
+  const mult = Math.max(1, Number(ITEMS[ballId] && ITEMS[ballId].mult) || 1);
+  return Math.min(.95, 1 - Math.pow(1 - base, mult));
 }
 
 // ---------- 상태·PP 회복 아이템 ----------
@@ -5120,7 +5122,7 @@ async function battle(o) {
       const ms = movesOf(B.p);
       if (ms.every(m => ppLeft(B.p, m) <= 0)) { await say(`${jo(monName(B.p), '은는')} 쓸 수 있는 기술이 없다!`); await playerMove(MOVES['발버둥']); }
       else {
-        const i = await choose(ms.map(m => `${m.name}<span class="sub"><b class="ty" style="background:${TYPE_COL[m.type]}">${m.type}</b> ${m.eff ? `<i class="efx">${EFF_INFO[m.eff][0]}</i> ` : ''}${ppLeft(B.p, m)}/${m.pp}</span>`), { cls: B.combo >= COMBO_N ? 'moves comboon' : 'moves', cols: 2, cancel: true, start: Math.max(0, ms.findIndex(m => ppLeft(B.p, m) > 0)) });
+        const i = await choose(ms.map(m => `${m.name}<span class="sub"><b class="ty" style="background:${TYPE_COL[m.type]}">${m.type}</b> ${m.eff ? `<i class="efx">${EFF_INFO[m.eff][0]}</i> ` : ''}명중 ${m.accuracy}% · ${ppLeft(B.p, m)}/${m.pp}</span>`), { cls: B.combo >= COMBO_N ? 'moves comboon' : 'moves', cols: 2, cancel: true, start: Math.max(0, ms.findIndex(m => ppLeft(B.p, m) > 0)) });
         if (i < 0) continue;
         if (ppLeft(B.p, ms[i]) <= 0) { toast('이 기술은 더 이상 쓸 수 없어요! (보건실에서 회복)'); continue; }
         await playerMove(ms[i]);
@@ -5424,7 +5426,7 @@ async function throwBall(it, id) {
   await tween(250, k => { a.ball.y = 42 + 18 * k; }); a.ball.rot = 0;
   const e = B.e, ratio = e.hp / e.maxhp;
   // 흔들림 4번 판정 (각 판정 확률 = p^(1/4)) → 4번 모두 통과하면 포획
-  const p = catchChance(e), q = Math.pow(p, .25);
+  const p = catchChance(e, id), q = Math.pow(p, .25);
   let pass = 0; while (pass < 4 && Math.random() < q) pass++;
   const success = pass === 4, shakes = Math.min(3, pass);
   for (let i = 0; i < shakes; i++) { await sleep(350); SFX.ball(); await tween(300, k => a.ball.rot = Math.sin(k * Math.PI * 2) * .5); a.ball.rot = 0; }
