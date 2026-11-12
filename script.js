@@ -4012,7 +4012,7 @@ async function onlineRunBattleTurn(turn) {
   }
   if (action === 'choose_move') {
     const available = onlineBattleMoves(active, true);
-    const pick = available.length === 1 && available[0].move.struggle ? 0 : await choose(available.map(x => x.move.name + ' · ' + x.move.type + ' · 위력 ' + x.move.power + ' · PP ' + x.pp), { cls: 'start', cancel: false });
+    const pick = available.length === 1 && available[0].move.struggle ? 0 : await choose(available.map(x => x.move.name + ' · ' + x.move.type + ' · 위력 ' + x.move.power + ' · 명중 ' + x.move.accuracy + '% · PP ' + x.pp), { cls: 'start', cancel: false });
     submitted = { action: 'choose_move', moveIndex: available[pick].index };
   }
   onlineSend('battle_action', { turn, ...submitted });
