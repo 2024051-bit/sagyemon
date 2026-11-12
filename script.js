@@ -290,8 +290,8 @@ Object.assign(SP, {
 SP.snake2.evo = [36, 'snake3']; SP.bat2.evo = [40, 'bat3']; SP.rock2.evo = [42, 'rock3']; SP.croc2.evo = [44, 'croc3']; SP.dino2.evo = [46, 'dino3']; SP.octo2.evo = [46, 'octo3']; SP.dice2.evo = [46, 'dice3'];
 SP.owl.evo = [34, 'owl2']; SP.top.evo = [34, 'top2'];
 // 명중 특성 복구: 진화 계열은 같은 특성을 공유한다.
-for (const id of ['bat', 'bat2', 'bat3', 'moth', 'moth2', 'bee', 'bee2']) if (SP[id]) SP[id].ability = '복안';
-for (const id of ['bird', 'bird2', 'owl', 'owl2', 'firefly', 'firefly2']) if (SP[id]) SP[id].ability = '예리한 눈';
+for (const id of ['bat', 'bat2', 'bat3', 'moth1', 'moth2', 'bee1', 'bee2']) if (SP[id]) SP[id].ability = '복안';
+for (const id of ['bird', 'bird2', 'owl', 'owl2', 'firefly1', 'firefly2']) if (SP[id]) SP[id].ability = '예리한 눈';
 if (SP.beastI) SP.beastI.ability = '정밀 조준';
 if (SP.phi) SP.phi.ability = '황금 시야';
 // 봄 지방 야생 몬스터 (진화형은 나중에). 그림은 FORM 몸체에 새 색만 입힌다. 기술 이름에 MKW 낱말을 넣지 않는다
