@@ -737,11 +737,12 @@ function secOf(n, type) {
   const PHYSICAL_TYPES = new Set(['노말', '격투', '비행', '독', '땅', '바위', '벌레', '고스트', '강철']);
   for (const mv of Object.values(MOVES)) {
     mv.category = mv.eff ? 'status' : (PHYSICAL_TYPES.has(mv.type) ? 'physical' : 'special');
-    if (mv.accuracy == null) {
-      mv.accuracy = !mv.power ? 100 : mv.power >= 120 ? 75 : mv.power >= 90 ? 85 : mv.power >= 80 ? 90 : mv.power >= 60 ? 95 : 100;
-    }
-    // 반동·자기 피해가 있는 기술은 위험 부담을 이미 지므로 명중률 패널티를 적용하지 않는다.
-    if (mv.struggle || mv.recoil) mv.accuracy = 100;
+    // 기술마다 85~100% 사이의 명중률을 무작위로 한 번 정한다.
+    if (mv.accuracy == null) mv.accuracy = 85 + Math.floor(Math.random() * 16);
+    // 직접 잠재우는 기술은 명중률 50%.
+    if (mv.eff === 'sleep') mv.accuracy = 50;
+    // 반동·자기 피해 기술은 기본적으로 명중률 100%.
+    // 위력 150의 반동 기술 중 추후 선정할 정확히 2개만 70% 예외로 둔다.
     if (mv.priority == null) mv.priority = 0;
   }
 }
