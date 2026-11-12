@@ -338,7 +338,7 @@ Object.assign(SP, {
   dongbaek: { name: '동백이', art: 'gen', gs: { body: 'blob', form: 'sprout', c1: '#d83a4a', c2: '#3a8a4a', glyph: '', k: 45 }, type: '봄', hp: 62, atk: 62, def: 60, moves: ['몸통박치기', '동백 꽃잎', '동백꽃 피우기', '붉은 꽃보라'], dex: ['동백몬', 0.5, 3, '한겨울에 피어나는 동백꽃. 봄 사계몬이라 겨울 사계몬에게 강하다!'] },
   // 벚꽃 비밀 정원 특별 몬스터 (미리보기 ㉒, 2026-11-10): 봄+여름. 무지개깃(가을+겨울)·황금사슴(겨울+봄)과 함께 사계절 4인방을 모두 상성으로
   sunlion: { name: '햇꽃사자', art: 'gen', gs: { body: 'quad', form: 'lynx', c1: '#f4c040', c2: '#e86090', glyph: '', k: 46 }, v: 'gold', add: 'crown', big: 1.15, type: ['봄', '여름'], hp: 80, atk: 82, def: 72, moves: ['몸통박치기', '꽃갈기 흔들기', '봄볕 할퀴기', '한낮 포효'], dex: ['사자몬', 1.5, 120, '히든 맵의 특별 몬스터. 햇살처럼 빛나는 황금 털에 꽃잎 왕관을 쓰고 있다. 봄이 여름으로 넘어가는 날에만 나타난다고 한다.'] },
-  // 무지개섬 특별 몬스터 (미리보기 ⑭): 도전의 비석에서 2문제 연속 정답이면 나타난다. 잡기 어려움(특별 몬스터 포획률)
+  // 무지개섬 특별 몬스터 (미리보기 ⑭): 오래된 비석에서 2문제 연속 정답이면 나타난다. 잡기 어려움(특별 몬스터 포획률)
   rainbow: { name: '무지개깃', art: 'gen', gs: { body: 'bird', form: 'swift', c1: '#4aa8f0', c2: '#f8d848', glyph: '', k: 20 }, add: 'crest', big: 1.1, type: ['가을', '겨울'], hp: 72, atk: 74, def: 64, moves: ['날개치기', '무지개 단풍', '단풍빛 바람', '일곱빛 오로라'], dex: ['무지개몬', 1.1, 12, '여름 섬에 잠시 쉬어 가는 철새. 단풍빛과 서리빛 깃털이 섞여 있어, 날개를 펴면 무지개처럼 일곱 빛깔이 반짝인다.'] }, // 2026-11-09 여름 → 가을+겨울 (체육관 4·가을 지방 대비, 미리보기 ⑰)
 });
 // 도감 순서: 계열끼리 붙여서 정렬 (전설은 맨 뒤)
@@ -2199,12 +2199,10 @@ blossom(API.expo.m, 4, .5);
 gateGuard(API.expo, API.expo.cx, 1, API.expo.cx + 1, 1, () => S.badges[2], '경비원: 북쪽은 매미숲으로 가는 4번 도로야.\n소나기 배지가 있어야 지나갈 수 있어!', '경비원: 소나기 배지! 북쪽 4번 도로로 가도 좋아.\n북쪽으로 갈수록 사계몬이 강해지니 조심해!', 'guard', 'expoN');
 API.expo.sign(API.expo.cx + 2, 7, '소나기항구\n소나기가 지나가면 무지개가 뜨는 항구');
 API.expo.ent({ id: 'sonak1', kind: 'npc', x: 10, y: 15, dir: 'down', pal: 'swim', wander: true, lines: ['3번 도로는 동쪽으로 갈수록 강한 사계몬이 나와!', '여름 사계몬은 가을 사계몬에게 약해. 상성을 잘 생각해 봐!', '부두 끝에서 바다를 보면 마음이 시원해져.'] });
-const ISLE_UNITS = [11, 1, 13, 21, '2a', 23, 31, '2b', 33];
 // 무지개섬 (히든 맵, 미리보기 ⑭): 소나기항구 부두 끝 뱃사공이 배로 데려다준다 (소나기 배지 뒤). 바다로 둘러싸인 작은 섬
 routeGen('rainbowisle', { name: '무지개섬', theme: 'summer', unit: 41, w: 24, h: 20, cx: 1, pond: 1, wild: ['mallang', 'kkiruk', 'subak', 'sonak'], lv: [20, 24], ends: [['N', 11]], trainers: 0, items: [['mpotion', 2], ['ball', 3]], hidden: [['hpotion', 1]], flowers: 6, seed: 211 });
 {
   const a = API.rainbowisle, m = a.m, [ex, ey, ax, ay] = m.exits.N; a.set(ex, ey, '~');
-  m.units = ISLE_UNITS; // 섬 야생 배틀 문제도 체육관 1~3 전 범위 복습
   blossom(m, 31, .45);
   for (let y = 0; y < m.h; y++) for (let x = 0; x < m.w; x++) if ((x < 2 || y < 2 || x >= m.w - 2 || y >= m.h - 2) && 'TY'.includes(a.get(x, y))) a.set(x, y, '~');
   // 섬 가장 깊은 곳(배에서 내리는 곳에서 가장 먼 빈 땅)에 도전의 비석
@@ -2257,7 +2255,6 @@ routeGen('valley', { name: '낙엽골짜기', theme: 'autumn', unit: 4, w: 32, h
 API.valley.m.wild.grad = 'N'; API.valley.m.xpMul = 0.8;
 blossom(API.valley.m, 47, .4); openSecrets(API.valley, API.valley.m.exits.S[2], API.valley.m.exits.S[3]);
 // 히든 맵 '황금 은행나무 언덕' (미리보기 ⑮): 낙엽골짜기 깊은 막다른 곳의 큰 은행나무 아래 굴 → 언덕. 비석 2연속 정답 → 황금사슴 Lv 38
-const HILL_UNITS = [11, 1, 13, 21, '2a', 23, 31, '2b', 33, 41, 3, 43, 51, 52, 53]; // 체육관 1~5 전 범위 (체육관 6의 기하 Ⅱ 제외)
 routeGen('goldhill', { name: '황금 은행나무 언덕', theme: 'autumn', unit: 51, w: 22, h: 18, cx: 1, pond: 1, wild: ['bam', 'bam2', 'song', 'gom', 'jam'], lv: [34, 37], ends: [['S', 11]], trainers: 0, items: [['hpotion', 2], ['ball', 3]], hidden: [['fpotion', 1]], flowers: 6, seed: 223 });
 {
   const isOpen = (a, x, y) => ['.', ',', '*', '='].includes(a.get(x, y));
@@ -2268,9 +2265,9 @@ routeGen('goldhill', { name: '황금 은행나무 언덕', theme: 'autumn', unit
       for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, k = nx + ',' + ny; if (seen.has(k) || !isOpen(a, nx, ny)) continue; seen.set(k, d + 1); q.push([nx, ny]); } }
     return best; };
   const h = API.goldhill, hm = h.m, [hx, hy, hax, hay] = hm.exits.S; h.set(hx, hy, 'T');
-  hm.units = HILL_UNITS; hm.xpMul = 0.8; blossom(hm, 51, .5); openSecrets(h, hax, hay);
+  hm.xpMul = 0.8; blossom(hm, 51, .5); openSecrets(h, hax, hay);
   const st = farthest(h, hax, hay, false);
-  h.ent({ id: 'stele2', kind: 'stele', x: st[0], y: st[1], dir: 'down', cfg: { flag: 'deer', sp: 'deer', lv: 38, units: () => HILL_UNITS, hint: '황금빛 사슴이 모습을 드러내리라', glow: '비석이 황금빛으로 빛난다!', come: '은행잎 사이로 황금사슴이 걸어 나왔다!', gone: '황금사슴은 은행잎 속으로 사라져 버렸다…' } });
+  h.ent({ id: 'stele2', kind: 'stele', x: st[0], y: st[1], dir: 'down', cfg: { flag: 'deer', sp: 'deer', lv: 38, hint: '황금빛 사슴이 모습을 드러내리라', glow: '비석이 황금빛으로 빛난다!', come: '은행잎 사이로 황금사슴이 걸어 나왔다!', gone: '황금사슴은 은행잎 속으로 사라져 버렸다…' } });
   // 골짜기: 남쪽 입구에서 가장 먼 빈 땅 옆의 큰 나무 줄기에 굴 입구 (나무 칸이라 길을 막지 않는다)
   const v = API.valley, [, , vax, vay] = v.m.exits.S, back = farthest(v, vax, vay, false);
   const hole = [[0, -1], [1, 0], [-1, 0], [0, 1]].map(([dx, dy]) => [back[0] + dx, back[1] + dy]).find(([x, y]) => 'TY'.includes(v.get(x, y))) || [back[0], back[1] - 1];
@@ -2315,7 +2312,7 @@ API.icelake.m.xpMul = 0.8;
 gateGuard(API.icelake, API.icelake.cx, 1, API.icelake.cx + 1, 1, () => false, () => S.badges.every(Boolean) ? '경비원: 배지 8개! 졸업 언덕은 새봄마을 동쪽이야.\nSTART 메뉴 → 날아가기(좌표 종이비행기)로 새봄마을에 가 보렴!' : '경비원: 이 너머는 길이 없어.\n배지 8개를 모으면 새봄마을 동쪽 졸업 언덕으로 가렴!', '', 'guard', 'icelakeN');
 // 졸업 길 (미리보기 ㉑, 2026-11-10): 새봄마을 동쪽 → 졸업 언덕. 사계절 진화형 야생, 전 범위 문제, 동쪽 끝에서 라이벌 마지막
 routeGen('gradroad', { name: '졸업 길', theme: 'town', unit: 0, w: 42, h: 21, cx: 1, pond: 1, wild: ['kkokko', 'queenbung', 'wangmae', 'keunjip', 'bam2', 'gom', 'seal', 'nunkkot'], lv: [41, 45], ends: [['W', 10], ['E', 9]], trainers: 3, items: [['fpotion', 1], ['hpotion', 2], ['ball', 3]], hidden: [['fpotion', 1]], flowers: 8, seed: 211 });
-API.gradroad.m.units = [11, 1, 13, 21, '2a', 23, 31, '2b', 33, 41, 3, 43, 51, 52, 53, 4, '5a', '5b', 71, 72, 73, 81, 6, 83]; API.gradroad.m.wild.grad = 'E';
+API.gradroad.m.wild.grad = 'E';
 // 4인방 전 레벨업 장소 (2026-11-10 선생님 요청): 야생 Lv 41~45, 체력 1.3배, 경험치 1.5배(0.8 → 1.2), 풀숲 만남 2배(11% → 22%)
 API.gradroad.m.xpMul = 1.2; API.gradroad.m.wildHp = 1.25 * 1.3; /* HPMUL.wild(1.25) × 1.3. HPMUL은 아래에서 정의돼 여기서 못 씀 */ API.gradroad.m.encRate = .22;
 blossom(API.gradroad.m, 3, .5); openSecrets(API.gradroad, API.gradroad.m.exits.W[2], API.gradroad.m.exits.W[3]);
@@ -2428,14 +2425,13 @@ API.dunes.rect(3, 1, 3, API.dunes.m.h - 2, 'T').set(3, 8, 'x'); relocate(API.dun
 routeGen('cape', { name: '바람곶', theme: 'lake', unit: 4, w: 36, h: 21, wild: ['tri', 'spider', 'owl', 'fighter', 'bird2'], lv: [20, 23], ends: [['N', 18]], trainers: 4, items: [['hpotion', 2], ['hball', 2], ['revive', 1]], hidden: [['ether', 1]], cx: 2, pond: 1, seed: 641, signText: '바람곶\n바닷바람이 거센 곶. 강한 트레이너가 수련 중!', secretItem: [['hball', 1], ['protractor', 1]] });
 routeGen('highland', { name: '하늘 오솔길', theme: 'tower', unit: 0, w: 34, h: 26, wild: ['bird2', 'dog2', 'fighter2', 'ghost2', 'rock2'], lv: [33, 37], ends: [['S', 17]], trainers: 5, items: [['hpotion', 2], ['candy', 1], ['revive', 2]], hidden: [['ether', 1], ['hball', 2]], cx: 2, seed: 659, signText: '하늘 오솔길\n전 단원 복습의 길', secretItem: [['hball', 1], ['compass', 1]] });
 // 졸업 4인방 & 챔피언 (미리보기 ㉑, 2026-11-10): 사계절 4인방, 2마리씩, 관장 수준(HPMUL·EDMG elite = leader). 지면 처음부터
-const ALL_UNITS = [11, 1, 13, 21, '2a', 23, 31, '2b', 33, 41, 3, 43, 51, 52, 53, 4, '5a', '5b', 71, 72, 73, 81, 6, 83]; // 중학교 수학 전 범위
 const ELITES = [
-  { name: '다온', title: '봄의 4인방', units: [11, 1, 13, 21, '2a', 23], team: [['kkotsaem', 44], ['wanggaegul', 45]], floor: '#fbe6ee', pal: 'E0', line: ['졸업 전당에 온 걸 환영해. 나는 봄의 4인방 다온.', '봄은 모든 것의 시작. 수와 식, 기초부터 단단한지 볼까?'], lose: '기초가 탄탄하구나. 다음 방으로 가렴.' },
-  { name: '시원', title: '여름의 4인방', units: [31, '2b', 33, 41, 3, 43], team: [['wangmae', 44], ['wangppul', 45]], floor: '#e2f2dc', pal: 'E1', line: ['여름의 4인방 시원이다.', '한여름 햇볕처럼 뜨겁게! x가 정해지면 답도 정해진다!'], lose: '소나기처럼 시원한 승부였어.' },
-  { name: '가람', title: '가을의 4인방', units: [51, 52, 53, 4, '5a', '5b'], team: [['song', 44], ['bam2', 45]], floor: '#f6e4cc', pal: 'E2', line: ['가을의 4인방 가람.', '단풍잎 모양도 결국 도형이야. 증명해 봐!'], lose: '증명 끝. 너의 승리야.' },
-  { name: '은설', title: '겨울의 4인방', units: [71, 72, 73, 81, 6, 83], team: [['seal', 44], ['nunkkot', 45]], floor: '#e4eef8', pal: 'E3', line: ['마지막 4인방, 겨울의 은설.', '눈송이 하나도 확률로 떨어진다. 너의 승률을 계산해 볼까?'], lose: '계산 결과… 너의 승률은 1이었어. 챔피언이 기다린다.' },
+  { name: '다온', title: '봄의 4인방', team: [['kkotsaem', 44], ['wanggaegul', 45]], floor: '#fbe6ee', pal: 'E0', line: ['졸업 전당에 온 걸 환영해. 나는 봄의 4인방 다온.', '봄처럼 힘차게 시작해 보자! 내 사계몬들과 겨뤄 보겠어?'], lose: '훌륭한 승부였어. 다음 방으로 가렴.' },
+  { name: '시원', title: '여름의 4인방', team: [['wangmae', 44], ['wangppul', 45]], floor: '#e2f2dc', pal: 'E1', line: ['여름의 4인방 시원이다.', '한여름 햇볕처럼 뜨겁게! 내 사계몬들의 힘을 보여 주지!'], lose: '소나기처럼 시원한 승부였어.' },
+  { name: '가람', title: '가을의 4인방', team: [['song', 44], ['bam2', 45]], floor: '#f6e4cc', pal: 'E2', line: ['가을의 4인방 가람.', '단풍잎처럼 화려한 기술을 보여 주지!'], lose: '멋진 승부였어. 네가 이겼어.' },
+  { name: '은설', title: '겨울의 4인방', team: [['seal', 44], ['nunkkot', 45]], floor: '#e4eef8', pal: 'E3', line: ['마지막 4인방, 겨울의 은설.', '차가운 겨울처럼 빈틈없는 승부를 보여 주겠어!'], lose: '승부 결과… 네가 이겼어. 챔피언이 기다린다.' },
 ];ELITES.forEach((E, i) => {
-  const a = room('league' + (i + 1), 10, 10, { name: `4인방의 방 ${i + 1}`, floor: E.floor, unit: E.units[0], units: E.units });
+  const a = room('league' + (i + 1), 10, 10, { name: `4인방의 방 ${i + 1}`, floor: E.floor });
   a.set(1, 3, 'q').set(8, 3, 'q').set(1, 6, 'q').set(8, 6, 'q');
   a.warp(4, 1, i < 3 ? 'league' + (i + 2) : 'champroom', 4, 8, { door: true });
   if (i === 0) { a.warp(4, 9, 'plateau', 11, 6, { mat: true }); a.warp(5, 9, 'plateau', 11, 6, { mat: true }); }
@@ -2449,16 +2445,16 @@ house('gradH', '졸업 언덕 쉼터', [{ id: 'gradh', kind: 'npc', x: 7, y: 4, 
 townGen('gradhill', { name: '졸업 언덕', theme: 'town', unit: 0, w: 24, h: 20, seed: 1601, exits: ['W'], blds: [
   { x: 8, y: 2, w: 8, roof: 'G', d: 4, to: 'league1', emblem: '★' }, { x: 2, y: 12, w: 4, roof: 'C', d: 2, to: 'center', ret: 1 },
   { x: 18, y: 12, w: 4, roof: 'M', d: 2, to: 'mart', ret: 1, arrive: [4, 6] }, { x: 13, y: 12, w: 4, roof: 'H', d: 1, to: 'gradH' }] });
-API.gradhill.m.units = ALL_UNITS; API.gradhill.m.xpMul = 0.8; blossom(API.gradhill.m, 5, .6);
+API.gradhill.m.xpMul = 0.8; blossom(API.gradhill.m, 5, .6);
 API.gradhill.sign(API.gradhill.cx - 2, 7, '졸업 언덕\n사계절 여행을 마친 트레이너만 오르는 언덕');
 // 마지막 히든 맵 '벚꽃 비밀 정원' (미리보기 ㉒, 2026-11-10): 새봄마을 연못 위 오래된 벚나무 아래 길(배지 8개) → 정원. 비석 2연속 정답(전 범위) → 햇꽃사자 Lv 45
 routeGen('garden', { name: '벚꽃 비밀 정원', theme: 'town', unit: 0, w: 22, h: 18, cx: 1, pond: 1, wild: ['queenbung', 'wanggaegul', 'kkotsaem', 'wangmae', 'keunjip'], lv: [42, 45], ends: [['S', 11]], trainers: 0, items: [['fpotion', 2], ['ball', 3]], hidden: [['fpotion', 1]], flowers: 10, seed: 227 });
 {
   const g = API.garden, gm = g.m, [gx, gy, gax, gay] = gm.exits.S; g.set(gx, gy, 'T');
-  gm.units = ALL_UNITS; gm.xpMul = 0.8; blossom(gm, 9, .8); openSecrets(g, gax, gay);
+  gm.xpMul = 0.8; blossom(gm, 9, .8); openSecrets(g, gax, gay);
   let best = [gax, gay], bd = -1; const seen = new Map([[gax + ',' + gay, 0]]), q = [[gax, gay]];
   while (q.length) { const [x, y] = q.shift(), d = seen.get(x + ',' + y); if (d > bd && g.get(x, y) === '.' && !gm.ents.some(e => Math.abs(e.x - x) + Math.abs(e.y - y) < 3) && !gm.hidden.some(h => Math.abs(h.x - x) + Math.abs(h.y - y) < 3)) { bd = d; best = [x, y]; } for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { const nx = x + dx, ny = y + dy, k = nx + ',' + ny; if (seen.has(k) || !['.', ',', '*', '='].includes(g.get(nx, ny))) continue; seen.set(k, d + 1); q.push([nx, ny]); } }
-  g.ent({ id: 'stele3', kind: 'stele', x: best[0], y: best[1], dir: 'down', cfg: { flag: 'sunlion', sp: 'sunlion', lv: 45, units: () => ALL_UNITS, hint: '꽃잎 왕관의 사자가 모습을 드러내리라', glow: '비석이 벚꽃빛으로 빛난다!', come: '벚꽃잎 사이로 햇꽃사자가 걸어 나왔다!', gone: '햇꽃사자는 벚꽃잎 속으로 사라져 버렸다…' } });
+  g.ent({ id: 'stele3', kind: 'stele', x: best[0], y: best[1], dir: 'down', cfg: { flag: 'sunlion', sp: 'sunlion', lv: 45, hint: '꽃잎 왕관의 사자가 모습을 드러내리라', glow: '비석이 벚꽃빛으로 빛난다!', come: '벚꽃잎 사이로 햇꽃사자가 걸어 나왔다!', gone: '햇꽃사자는 벚꽃잎 속으로 사라져 버렸다…' } });
   // 새봄마을 오래된 벚나무(14, 9)의 뿌리 사이 길 ↔ 정원 입구 옆 굴
   API.town.ent({ id: 'holeT', kind: 'hole', x: 14, y: 9, dir: 'down', to: 'garden', tx: gax, ty: gay, tdir: 'up', cond: () => S.badges.every(Boolean), locked: '오래된 벚나무다. 뿌리 사이로 따뜻한 바람이 새어 나온다…\n(배지 8개를 모으면 무슨 일이 생길 것 같다)', ask: '오래된 벚나무 뿌리 사이에 길이 열려 있다!\n안쪽에서 벚꽃잎이 날려 온다… 들어가 볼까?', first: 'gardenVisit', firstLines: ['(벚나무 뿌리 사이 길을 지나자 벚꽃이 흐드러진 비밀 정원이 펼쳐졌다!)', '(정원 깊은 곳에 오래된 비석이 서 있다고 한다.)'] });
   const bx = ['.', ',', '*', '='].includes(g.get(gax + 1, gay)) ? gax + 1 : gax - 1;
@@ -3967,7 +3963,7 @@ async function rivalBattle(n) {
   const host = CUR.ents; host.push(rv); SFX.enc(); // 지면 보건실로 옮겨지므로, 나타난 지도에서 지워야 한다
   const L = {
     1: ['???: 야! 거기 너! 너도 박사님한테 사계몬 받았지?', `나는 ${RIVAL_NAME}. 박사님 손자다! 수학은 감으로 푸는 거야!`, '누가 더 센지 붙어 보자!'],
-    2: [`${RIVAL_NAME}: 또 너냐! 벚꽃마을에서 진 뒤로, 이번엔 한 문제씩 제대로 읽고 풀기로 했어.`, '…어두워서 길 찾느라 고생했지? 그래도 승부는 승부다!'],
+    2: [`${RIVAL_NAME}: 또 너냐! 벚꽃마을에서 진 뒤로, 이번엔 상대의 움직임을 잘 살피고 싸우기로 했어.`, '…어두워서 길 찾느라 고생했지? 그래도 승부는 승부다!'],
     3: [`${RIVAL_NAME}: …기다렸다. 너한테 두 번 지고 나서 전투 방식을 다시 연구했어.`, '여러 사계몬과 겨뤄 보니까… 진짜로 실력이 늘더라. 이번엔 진짜 실력으로 간다!'],
     4: [`${RIVAL_NAME}: 왔구나. 그동안 수많은 사계몬과 겨루며 실력을 갈고닦았어.`, '이번엔 내가 이길 차례다! 겨울 관장 앞에서 제대로 붙어 보자!'], // 미리보기 ⑲: 7번 도로 북쪽 끝 (체육관 7 앞)
     5: [`${RIVAL_NAME}: …기다렸다. 여기가 졸업 언덕 바로 앞이야.`, '처음엔 아무 전략 없이 덤볐지만, 이제는 제대로 싸우는 법을 배웠어. 다 너 덕분이야.', '그래도 승부는 승부! 졸업 전에 마지막으로 진짜 승부다!'], // 미리보기 ㉑: 졸업 길 동쪽 끝
@@ -3975,9 +3971,8 @@ async function rivalBattle(n) {
   await sayAll(L);
   // 체육관 2개마다 한 번 (미리보기 ⑬, Q47): 1 = 벚꽃마을(체육관 1 앞), 2 = 파도동굴 출구(체육관 3 앞). 첫 몬스터는 관장보다 2레벨 낮게
   const rb = rivalSp(1), team = { 1: [['piyak', 7], [evolveFor(rb, 9), 9]], 2: [['kkiruk', 21], ['keunjip', 22], [evolveFor(rb, 24), 24]], 3: [['gom', 32], ['jam', 32], [evolveFor(rb, 34), 34]], 4: [['seolyeo', 39], ['seal', 39], [evolveFor(rb, 41), 41]], 5: [['wanggaegul', 42], ['bam2', 42], ['seal', 43], [evolveFor(rb, 44), 44]] }[n].map(([sp, lv]) => mkMon(sp, lv, false, HPMUL.rival));
-  // 문제: 지금까지 지나온 영역에서 골고루 (복습 보스, Q48)
-  const units = { 1: [11, 1, 13], 2: [11, 1, 13, 21, '2a', 23, 31, '2b', 33], 3: [11, 1, 13, 21, '2a', 23, 31, '2b', 33, 41, 3, 43], 4: [11, 1, 13, 21, '2a', 23, 31, '2b', 33, 41, 3, 43, 51, 52, 53, 4, '5a', '5b'], 5: ALL_UNITS }[n];
-  const r = await battle({ kind: 'rival', team, trainer: { title: '라이벌', name: RIVAL_NAME, pal: 'rival', lose: { 1: '칫… 다음엔 안 진다!', 2: '…신중하게 움직였는데도 졌네. 무작정 공격하는 것만으론 안 된다는 걸 알겠어.', 3: '…인정. 전투를 연구해도 아직 네가 한 수 위야.', 4: '…알았어. 넌 진짜야.', 5: '…인정. 넌 진짜 강해. 챔피언한테도 꼭 이겨라!' }[n] }, money: n * 700 });
+  // 전투 팀은 지금까지의 여정을 반영해 점점 강해진다.
+    const r = await battle({ kind: 'rival', team, trainer: { title: '라이벌', name: RIVAL_NAME, pal: 'rival', lose: { 1: '칫… 다음엔 안 진다!', 2: '…신중하게 움직였는데도 졌네. 무작정 공격하는 것만으론 안 된다는 걸 알겠어.', 3: '…인정. 전투를 연구해도 아직 네가 한 수 위야.', 4: '…알았어. 넌 진짜야.', 5: '…인정. 넌 진짜 강해. 챔피언한테도 꼭 이겨라!' }[n] }, money: n * 700 });
   if (r !== 'win') S.flags['rival' + n] = 0;
   else {
     await say({ 1: `${RIVAL_NAME}: 흥! 오늘은 봐준다. 다음에 보자!`, 2: `${RIVAL_NAME}: 소나기항구는 바로 앞이야. 여울 관장한테 지기만 해 봐!`, 3: `${RIVAL_NAME}: 단풍마을은 바로 앞이야. 노을 관장한테 지기만 해 봐!`, 4: `${RIVAL_NAME}: 눈꽃마을은 바로 앞이야. 서리 관장한테 지기만 해 봐!`, 5: `${RIVAL_NAME}: 졸업 언덕은 바로 앞이야. 가라!` }[n]);
@@ -4170,7 +4165,7 @@ H.boat = async e => {
     if (!await yesno()) return say('뱃사공: 천천히 둘러보고 오렴. 섬 깊은 곳에 오래된 비석이 있단다.');
   }
   SFX.sel(); await warpTo(e.to, e.tx, e.ty, e.tdir);
-  if (e.to === 'rainbowisle' && !S.flags.isleVisit) { S.flags.isleVisit = 1; await sayAll(['(배를 타고 무지개섬에 도착했다!)', '뱃사공: 섬 깊은 곳 비석에 무언가 쓰여 있다던데… 한번 찾아보렴.']); }
+  if (e.to === 'rainbowisle' && !S.flags.isleVisit) { S.flags.isleVisit = 1; await sayAll(['(배를 타고 무지개섬에 도착했다!)', '뱃사공: 섬 깊은 곳에 오래된 비석이 있다던데… 한번 찾아보렴.']); }
 };
 // 오래된 비석을 조사하면 특별한 사계몬과 전투할 수 있다.
 const STELE_DEF = { flag: 'rainbow', sp: 'rainbow', lv: 26, units: () => ISLE_UNITS, hint: '무지개가 모습을 드러내리라', glow: '비석이 일곱 빛깔로 빛난다!', come: '하늘에서 무지개깃이 내려왔다!', gone: '무지개깃은 무지개 너머로 날아가 버렸다…' };
