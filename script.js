@@ -3224,7 +3224,7 @@ H.tutor = async () => {
   if (mode < 0) return say('기술 떠올리기 선생님: 언제든 다시 오렴.');
   const i = await chooseList({ title: mode === 0 ? '누구의 기술을 떠올릴까?' : '누구의 기술 순서를 바꿀까?', sub: '사계몬을 선택해 주세요', rows: S.party.map(m => monRow(m)) });
   if (i < 0) return say('기술 떠올리기 선생님: 언제든 다시 오렴.');
-  const m = B.partyTeam[i]; movesOf(m);
+  const m = S.party[i]; movesOf(m);
   if (mode === 1) {
     if (m.moves.length < 2) return say(`${jo(monName(m), '은는')} 기술이 2개 이상 있어야 순서를 바꿀 수 있단다.`);
     const fromIndex = await chooseList({ title: '순서를 바꿀 기술', rows: m.moves.map((n, k) => `<span class="grow">${k + 1}. ${n}</span>`) });
@@ -5017,7 +5017,7 @@ async function switchMon(forced) {
   while (true) {
     const i = await chooseList({ title: '사계몬', sub: forced ? '나갈 사계몬을 골라요' : '교체할 사계몬', rows: B.partyTeam.map(m => monRow(m, m === B.p ? ' · 싸우는 중' : '')), cancel: !forced, start: Math.max(0, B.partyTeam.findIndex(m => m.hp > 0 && m !== B.p)) });
     if (i < 0) return false;
-    const m = S.party[i];
+    const m = B.partyTeam[i];
     if (m.hp <= 0) { toast('기절해서 싸울 수 없어요!'); continue; }
     if (m === B.p) { toast('이미 싸우고 있어요!'); continue; }
     if (!forced) { await say(`돌아와, ${monName(B.p)}!`, { wait: false }); await tween(250, k => B.a.pScale = 1 - k); B.a.pVis = false; }
