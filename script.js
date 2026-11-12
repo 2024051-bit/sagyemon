@@ -5281,22 +5281,15 @@ async function doMove(user, target, mv, side, { fast }) {
 }
 async function playerMove(mv) {
   if (!await canAct(B.p, 'p')) return;
-  if (B.combo >= COMBO_N && !mv.struggle) { // 콤보 발동: 문제 없이 기술 사용 (급소 없음)
-    B.combo = 0; hud(); const c = $('#combo'); if (c) { c.classList.add('go'); c.innerHTML = '콤보!'; }
-    SFX.lvl(); await say('콤보 발동! 문제 없이 공격한다!', { wait: false }); await sleep(700);
-    usePP(B.p, mv);
-    await say(`${monName(B.p)}의 ${mv.name}!`, { wait: false }); await sleep(350); hud();
-    if (enemyActsBefore(mv)) { B.enemyActed = true; await enemyTurn(); if (B.p.hp <= 0 || B.e.hp <= 0) return; }
-    await doMove(B.p, B.e, mv, 'p', { fast: false });
-    return;
-  }
-  const r = await quiz(pickUnit(), { title: `${mv.name}! 맞히면 ${mv.eff ? '성공' : '공격 성공'}`, timed: !mv.eff });
-  comboAdd(r.ok);
   usePP(B.p, mv);
-  await say(`${monName(B.p)}의 ${mv.name}!`, { wait: false }); await sleep(350);
-  if (!r.ok) { SFX.no(); await say(mv.eff ? '하지만 문제를 틀려서\n기술이 실패했다!' : '하지만 문제를 틀려서\n공격이 빗나갔다!'); return; }
-  if (enemyActsBefore(mv)) { B.enemyActed = true; await enemyTurn(); if (B.p.hp <= 0 || B.e.hp <= 0) return; }
-  await doMove(B.p, B.e, mv, 'p', { fast: r.fast && !mv.eff && !mv.charge });
+  await say(`${monName(B.p)}의 ${mv.name}!`, { wait: false });
+  await sleep(350); hud();
+  if (enemyActsBefore(mv)) {
+    B.enemyActed = true;
+    await enemyTurn();
+    if (B.p.hp <= 0 || B.e.hp <= 0) return;
+  }
+  await doMove(B.p, B.e, mv, 'p', { fast: false });
 }
 // 상대 차례: 상황에 맞게 기술을 고른다
 function enemyPick(e) {
@@ -5423,26 +5416,21 @@ async function switchMon(forced) {
 async function battleBag() {
   while (true) {
     const ids = ITEM_ORDER.filter(id => S.bag[id] > 0);
-    const i = await chooseList({ title: '가방', sub: `소지금 ${S.money}원`, rows: ids.map(id => `<span class="grow">${ITEMS[id].name}<br><span class="sm">${ITEMS[id].desc}</span></span><span>×${S.bag[id]}</span>`), foot: '아이템도 문제를 맞혀야 쓸 수 있어요!' });
+    const i = await chooseList({ title: '가방', sub: `소지금 ${S.money}원`, rows: ids.map(id => `<span class="grow">${ITEMS[id].name}<br><span class="sm">${ITEMS[id].desc}</span></span><span>×${S.bag[id]}</span>`), foot: '아이템은 선택하면 바로 사용할 수 있어요.' });
     if (i < 0) return 'cancel';
     const id = ids[i], it = ITEMS[id];
     if (it.kind === 'candy') { toast('배틀 중에는 먹을 수 없어요'); continue; }
     if (it.kind === 'ball') {
       if (!isWildKind(B.o.kind)) { await say('다른 트레이너의 사계몬은\n잡을 수 없어!'); return 'cancel'; }
       S.bag[id]--;
-      const r = await quiz(pickUnit(), { title: `${it.name} 던지기! 맞히면 명중` });
-      comboAdd(r.ok);
       await say(`${jo(S.name, '은는')} ${jo(it.name, '을를')} 던졌다!`, { wait: false });
-      return await throwBall(r.ok, it, id);
+      return await throwBall(it, id);
     }
     const targets = S.party.filter(m => itemTarget(it, m));
     if (!targets.length) { toast(it.kind === 'revive' ? '기절한 사계몬이 없어요' : it.kind === 'cure' ? '이 약이 필요한 사계몬이 없어요' : it.kind === 'pp' ? 'PP가 줄어든 사계몬이 없어요' : 'HP가 다 찬 상태예요'); continue; }
     const t = await chooseList({ title: `${it.name} 사용`, sub: '누구에게 쓸까요?', rows: targets.map(m => monRow(m)) });
     if (t < 0) continue;
     const m = targets[t];
-    const r = await quiz(pickUnit(), { title: `${it.name}! 맞히면 사용 성공` });
-    comboAdd(r.ok);
-    if (!r.ok) { await say(`앗! ${it.name} 뚜껑이 열리지 않는다!\n(아이템은 그대로 남아 있어요)`); return 'used'; }
     S.bag[id]--; SFX.heal();
     if (it.kind === 'revive') { m.hp = Math.floor(m.maxhp / 2); hud(); await say(`${jo(monName(m), '이가')} 기운을 되찾았다!`); }
     else if (it.kind === 'cure' || it.kind === 'pp') { await useCare(it, m); hud(); }
@@ -5450,13 +5438,9 @@ async function battleBag() {
     return 'used';
   }
 }
-async function throwBall(ok, it, id) {
+async function throwBall(it, id) {
   const a = B.a, col = { ball: '#f0c040', sball: '#4ab0f0', hball: '#f0f0f0', mball: '#a040d0' }[id];
   a.ball = { x: 50, y: 100, rot: 0, col }; SFX.ball();
-  if (!ok) {
-    await tween(600, k => { a.ball.x = 50 + 200 * k; a.ball.y = 100 - Math.sin(k * Math.PI) * 70 + k * 10; a.ball.rot = k * 12; });
-    a.ball = null; await say('앗! 문제를 틀려서 손이 미끄러졌다!\n볼이 엉뚱한 곳으로 날아갔다!'); return 'used';
-  }
   await tween(600, k => { a.ball.x = 50 + 130 * k; a.ball.y = 100 - 58 * k - Math.sin(k * Math.PI) * 40; a.ball.rot = k * 10; });
   await tween(220, k => { a.flash = .6 * (1 - k); a.eScale = 1 - k; }); a.eVis = false; a.eScale = 1;
   await tween(250, k => { a.ball.y = 42 + 18 * k; }); a.ball.rot = 0;
@@ -5469,8 +5453,8 @@ async function throwBall(ok, it, id) {
   await sleep(300);
   if (!success) { a.ball = null; a.eVis = true; await tween(200, k => a.flash = .6 * (1 - k)); hud();
     await say(['앗! 사계몬이 볼에서 바로 나와 버렸다!', '아앗! 잡았다고 생각했는데!', '아까워! 조금만 더 하면 잡을 수 있었는데!', '으아~! 거의 잡을 뻔했는데!'][shakes]);
-    e.pity = true; // 정답인데 놓쳤으니 다음 정답에서는 반드시 잡힌다
-    await say('(정답을 맞혔으니, 다음에 정답을 맞히면 꼭 잡을 수 있어요!)');
+    e.pity = true;
+    await say('(다음에 같은 사계몬에게 볼을 던지면 반드시 잡을 수 있어요!)');
     if (ratio > .5) await say('(체력을 더 깎으면 잡힐 확률이 올라가요!)');
     return 'used'; }
   a.stars = true; SFX.catch(); await say(`신난다! ${jo(monName(e), '을를')} 잡았다!`); a.stars = false;
@@ -5727,8 +5711,6 @@ async function fieldBag() {
     const t = await chooseList({ title: `${it.name} 사용`, sub: '누구에게 쓸까요?', rows: targets.map(m => monRow(m)) });
     if (t < 0) continue;
     const m = targets[t];
-    const r = await quiz(pickUnit(), { title: `${it.name}! 맞히면 사용 성공` });
-    if (!r.ok) { toast('실패! 아이템은 그대로 있어요'); continue; }
     S.bag[id]--; SFX.heal();
     if (it.kind === 'candy') { await gainXP(m, need(m.lvl, m) - m.xp); hideTb(); await checkEvolve(); hideTb(); continue; }
     if (it.kind === 'cure' || it.kind === 'pp') { await useCare(it, m); hideTb(); continue; }
