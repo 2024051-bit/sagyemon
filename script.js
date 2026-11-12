@@ -5271,7 +5271,8 @@ async function doMove(user, target, mv, side, { fast }) {
   await setHP(target, target.hp - dmg);
   if (fast) await say('급소에 맞았다!');
   await effMsg(eff);
-  if (mv.struggle || mv.recoil) { await say(`${jo(nameOf(user, side), '은는')} 반동으로 피해를 입었다!`, { wait: false }); await setHP(user, user.hp - Math.max(1, Math.floor(dmg / 4))); }
+  if (mv.recoil) { await say(`${jo(nameOf(user, side), '은는')} 반동으로 피해를 입었다!`, { wait: false }); await setHP(user, user.hp - Math.max(1, Math.floor(dmg / 2))); }
+  else if (mv.struggle) { await say(`${jo(nameOf(user, side), '은는')} 반동으로 피해를 입었다!`, { wait: false }); await setHP(user, user.hp - Math.max(1, Math.floor(dmg / 4))); }
   if (mv.sec && target.hp > 0 && Math.random() < mv.sec[1]) await inflict(target, tside, mv.sec[0]);
 }
 async function playerMove(mv) {
