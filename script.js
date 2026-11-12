@@ -349,6 +349,8 @@ for (const id of ['bird', 'bird2', 'owl', 'owl2', 'firefly1', 'firefly2']) if (S
 // 전설·특별 사계몬
 if (SP.beastI) SP.beastI.ability = '정밀 조준';
 if (SP.phi) SP.phi.ability = '황금 시야';
+// 수박거북: 거북의 단단한 등껍질을 반영한 옹골참
+if (SP.subak) SP.subak.ability = '옹골참';
 // 도감 순서: 계열끼리 붙여서 정렬 (전설은 맨 뒤)
 const LEGENDS = ['beastO', 'beastI', 'beastG', 'dragon', 'whale', 'phi', 'euler', 'zeroking'];
 function evolveFor(sp, lv) { let s = sp, g = 0; while (SP[s].evo && lv >= SP[s].evo[0] && g++ < 3) s = SP[s].evo[1]; return s; }
@@ -2788,7 +2790,7 @@ function migrateNatures(o) {
     list.forEach((m, i) => {
       if (!m || typeof m !== 'object') return;
       if (!NATURE_BY_NAME[m.nature]) m.nature = legacyNature(m, `${group}:${i}`);
-      m.ability = (SP[m.sp] && SP[m.sp].ability) || (['맹공', '집중력', '강철피부', '정신장벽', '질주', '재생력', '역전투혼', '복안', '예리한 눈', '정밀 조준', '황금 시야'].includes(m.ability) ? m.ability : '맹공');
+      m.ability = (SP[m.sp] && SP[m.sp].ability) || (['맹공', '집중력', '강철피부', '정신장벽', '질주', '재생력', '역전투혼', '복안', '예리한 눈', '정밀 조준', '황금 시야', '옹골참'].includes(m.ability) ? m.ability : '맹공');
     });
   }
   return o;
@@ -2802,7 +2804,7 @@ function calcStats(m) {
   m.spa = Math.floor((b.spa == null ? b.atk : b.spa) * m.lvl / 40) + 5;
   m.spd = Math.floor((b.spd == null ? b.def : b.spd) * m.lvl / 40) + 5;
   m.spe = Math.floor((b.spe == null ? (b.atk + b.def) / 2 : b.spe) * m.lvl / 40) + 5;
-  m.ability = ['맹공', '집중력', '강철피부', '정신장벽', '질주', '재생력', '역전투혼', '복안', '예리한 눈', '정밀 조준', '황금 시야'].includes(m.ability) ? m.ability : (b.ability || '맹공');
+  m.ability = ['맹공', '집중력', '강철피부', '정신장벽', '질주', '재생력', '역전투혼', '복안', '예리한 눈', '정밀 조준', '황금 시야', '옹골참'].includes(m.ability) ? m.ability : (b.ability || '맹공');
   if (m.ability === '질주') m.spe = Math.round(m.spe * 1.1);
   for (const stat of ['atk', 'def', 'spa', 'spd', 'spe']) m[stat] = Math.max(1, Math.round(m[stat] * natureRate(m, stat)));
   const hb = m.held && ITEMS[m.held] && ITEMS[m.held].boost;
@@ -2928,7 +2930,8 @@ const ABILITY_INFO = {
   '복안': '궁극기를 제외한 기술의 명중률이 5%p 증가한다. (최대 100%)',
   '정밀 조준': '궁극기를 제외한 기술의 명중률이 5%p 증가한다. (최대 100%)',
   '예리한 눈': '상대의 효과로 명중 랭크가 떨어지지 않는다.',
-  '황금 시야': '상대의 효과로 명중 랭크가 떨어지지 않는다.'
+  '황금 시야': '상대의 효과로 명중 랭크가 떨어지지 않는다.',
+  '옹골참': 'HP가 가득 찼을 때 일격으로 기절할 피해를 받으면 HP 1로 버틴다.'
 };
 const ACCURACY_TRAIT_EXEMPT = new Set(['천뢰폭발', '대지뿌리 폭주', '태양충각', '만추멸섬', '빙하붕괴']);
 const ACCURACY_BOOST_ABILITIES = new Set(['복안', '정밀 조준']);
@@ -3563,7 +3566,12 @@ function onlineBattleApplyMove(room, side, move) {
   const level = attacker.lvl || attacker.level || 1;
   if (attacker.status && attacker.status.type === 'brn' && move.category === 'physical') bonus *= .9;
   const base = (level * .2 + 2) * move.power * (A / Math.max(1, D)) / 10;
-  const damage = Math.max(1, Math.round(base * mult * bonus * (.85 + onlineBattleRandom(room) * .15)));
+  let damage = Math.max(1, Math.round(base * mult * bonus * (.85 + onlineBattleRandom(room) * .15)));
+  let sturdyActivated = false;
+  if (defender.ability === '옹골참' && defender.hp === defender.maxhp && damage >= defender.hp) {
+    damage = Math.max(0, defender.hp - 1);
+    sturdyActivated = true;
+  }
   defender.hp = Math.max(0, defender.hp - damage);
   let recoilDamage = 0;
   if (move.recoil) {
@@ -3574,7 +3582,7 @@ function onlineBattleApplyMove(room, side, move) {
     const kind = move.sec[0];
     if (['sleep', 'par', 'burn', 'conf'].includes(kind)) defender.status = { type: kind === 'sleep' ? 'slp' : kind, turns: kind === 'sleep' ? 2 + Math.floor(onlineBattleRandom(room) * 2) : kind === 'conf' ? 3 : 0 };
   }
-  return { damage, recoilDamage, typeMult: mult, inflicted: defender.status && defender.status.type };
+  return { damage, recoilDamage, sturdyActivated, typeMult: mult, inflicted: defender.status && defender.status.type };
 }
 function onlineBattleApplyTurn(room, payload, ownId) {
   if (!Number.isInteger(payload.seed) || payload.seed <= 0 || payload.seed > 2147483647) throw new Error('battle_protocol_mismatch');
@@ -4926,8 +4934,14 @@ async function doMove(user, target, mv, side, { fast }) {
   if (tside === 'e') { B.a.eBlink = true; await tween(380, k => B.a.eX = Math.sin(k * Math.PI * 4) * 4); B.a.eBlink = false; B.a.eX = 0; }
   else { B.a.pBlink = true; await tween(380, k => B.a.pX = Math.sin(k * Math.PI * 4) * 4); B.a.pBlink = false; B.a.pX = 0; }
   const mult = (side === 'p' ? PDMG : (EDMG[B.o.kind] || 1)) * eff * stab(user.sp, mv.type) * (fast ? 1.5 : 1);
-  const dmg = dmgCalc(user, target, mv.power, mult, mv.category, mv.type);
+  let dmg = dmgCalc(user, target, mv.power, mult, mv.category, mv.type);
+  let sturdyActivated = false;
+  if (target.ability === '옹골참' && target.hp === target.maxhp && dmg >= target.hp) {
+    dmg = Math.max(0, target.hp - 1);
+    sturdyActivated = true;
+  }
   await setHP(target, target.hp - dmg);
+  if (sturdyActivated) await say(`${nameOf(target, tside)}의 옹골참! HP 1로 버텼다!`);
   if (fast) await say('급소에 맞았다!');
   await effMsg(eff);
   if (mv.recoil) { await say(`${jo(nameOf(user, side), '은는')} 반동으로 피해를 입었다!`, { wait: false }); await setHP(user, user.hp - Math.max(1, Math.floor(dmg / 2))); }
