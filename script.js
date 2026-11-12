@@ -4325,11 +4325,6 @@ function drawBall(x, y, top) {
   ctx.fillStyle = '#2a3a8a'; ctx.beginPath(); ctx.arc(x, y, 4.5, 0, Math.PI); ctx.fill();
   ctx.fillStyle = '#fff'; ctx.fillRect(x - 1, y - 1, 2, 2);
 }
-function drawQdoor(sx, sy) {
-  ctx.fillStyle = '#5a4a7a'; ctx.fillRect(sx, sy, 16, 16); ctx.fillStyle = '#8a7ab8'; for (let i = 1; i < 16; i += 4) ctx.fillRect(sx + i, sy + 1, 2, 14);
-  ctx.fillStyle = '#f0c040'; ctx.fillRect(sx + 4, sy + 5, 8, 7); ctx.fillStyle = '#202028'; ctx.fillRect(sx + 7, sy + 7, 2, 3);
-}
-
 // 자전거: 옆모습은 바퀴 두 개, 앞·뒷모습은 바퀴 하나가 몸 가운데 아래로 보이고 핸들이 양옆으로 뻗는다
 function drawBike(sx, sy, dir, front) {
   const R = (x, y, w, h, c) => { ctx.fillStyle = c; ctx.fillRect(sx + x, sy + y, w, h); };
@@ -4656,20 +4651,11 @@ function hud() {
   else { e.classList.remove('pb'); e.hidden = !a.eVis; if (B.e) e.innerHTML = `<div class="nm"><span>${monName(B.e)}${stTag(B.e)}${S.caught[B.e.sp] && (B.o.kind === 'wild' || B.o.kind === 'legend') ? ' <span style="color:#d79a18">●</span>' : ''}</span><span>Lv.${B.e.lvl}</span></div><div class="tys">${typeTags(B.e.sp)}</div>${bar(B.e)}`; }
   if (a.pTr) { p.hidden = false; p.classList.add('pb'); p.innerHTML = `<div class="pballs">${balls(S.party)}</div>`; }
   else { p.classList.remove('pb'); p.hidden = !a.pVis; if (B.p) p.innerHTML = `<div class="nm"><span>${monName(B.p)}${stTag(B.p)}</span><span>Lv.${B.p.lvl}</span></div>${bar(B.p)}<div class="num">${B.p.hp} / ${B.p.maxhp}</div><div class="xp"><i style="width:${Math.min(100, B.p.xp / need(B.p.lvl, B.p) * 100)}%"></i></div>`; }
-  // 연속 정답 콤보 표시 (미리보기 ⑫): 내 HP 창 왼쪽 아래
-  let c = $('#combo');
-  if (!c) { c = document.createElement('div'); c.id = 'combo'; c.className = 'combo'; ui.appendChild(c); }
-  c.hidden = a.pTr || !a.pVis || !B.p;
-  const k = B.combo || 0;
-  c.classList.toggle('ready', k >= COMBO_N); c.classList.remove('go');
-  c.innerHTML = k >= COMBO_N ? `콤보 준비! <b>${'●'.repeat(COMBO_N)}</b>` : `콤보 <b>${'●'.repeat(k)}</b>${'○'.repeat(COMBO_N - k)}`;
+
 }
 const stTag = m => (m.status ? ` <b class="stt st-${m.status}">${ST_NAME[m.status]}</b>` : '') + (m.conf ? ' <b class="stt st-conf">혼란</b>' : '');
 function typeTags(sp) { return spTypes(sp).map(t => `<b class="ty" style="background:${TYPE_COL[t]}">${t}</b>`).join(''); }
-function killHud() { ['#ehp', '#php', '#combo'].forEach(s => { const el = $(s); if (el) el.remove(); }); }
-// 연속 정답 콤보: 한 배틀 안에서 COMBO_N문제 연속으로 맞히면 다음 기술 한 번은 문제 없이 나간다 (보통 피해)
-const COMBO_N = 2;
-function comboAdd(ok) { if (!B) return; B.combo = ok ? Math.min(COMBO_N, (B.combo || 0) + 1) : 0; hud(); }
+function killHud() { ['#ehp', '#php'].forEach(s => { const el = $(s); if (el) el.remove(); }); }
 async function flashTrans() {
   for (let i = 0; i < 3; i++) { fx = { kind: 'white' }; await sleep(70); fx = null; await sleep(70); }
   fx = { kind: 'bars', k: 0 }; await tween(450, k => fx.k = k); await sleep(80); fx = null;
@@ -4711,7 +4697,7 @@ const isWildKind = k => k === 'wild' || k === 'legend' || k === 'roam';
 async function battle(o) {
   const wild = isWildKind(o.kind);
   o.team.forEach(m => S.seen[m.sp] = 1);
-  B = { o, idx: 0, e: o.team[0], p: firstAlive(), part: new Set(), combo: 0, theme: CUR.indoor ? (CUR.theme === 'indoor' ? 'indoor' : CUR.theme) : CUR.theme, weather: null, a: { eX: 0, eY: 0, pX: 0, pY: 0, eVis: false, pVis: false, eAlpha: 1, pAlpha: 1, eScale: 1, pScale: 1, flash: 0, eTr: false, pTr: true, eTrX: 0, pTrX: 160 } };
+  B = { o, idx: 0, e: o.team[0], p: firstAlive(), part: new Set(), theme: CUR.indoor ? (CUR.theme === 'indoor' ? 'indoor' : CUR.theme) : CUR.theme, weather: null, a: { eX: 0, eY: 0, pX: 0, pY: 0, eVis: false, pVis: false, eAlpha: 1, pAlpha: 1, eScale: 1, pScale: 1, flash: 0, eTr: false, pTr: true, eTrX: 0, pTrX: 160 } };
   const a = B.a;
   B.weather = chooseBattleWeather(B.theme);
   await flashTrans();
@@ -4750,7 +4736,7 @@ async function battle(o) {
       const ms = movesOf(B.p);
       if (ms.every(m => ppLeft(B.p, m) <= 0)) { await say(`${jo(monName(B.p), '은는')} 쓸 수 있는 기술이 없다!`); await playerMove(MOVES['발버둥']); }
       else {
-        const i = await choose(ms.map(m => `${m.name}<span class="sub"><b class="ty" style="background:${TYPE_COL[m.type]}">${m.type}</b> ${m.eff ? `<i class="efx">${EFF_INFO[m.eff][0]}</i> ` : ''}명중 ${m.accuracy}% · ${ppLeft(B.p, m)}/${m.pp}</span>`), { cls: B.combo >= COMBO_N ? 'moves comboon' : 'moves', cols: 2, cancel: true, start: Math.max(0, ms.findIndex(m => ppLeft(B.p, m) > 0)) });
+        const i = await choose(ms.map(m => `${m.name}<span class="sub"><b class="ty" style="background:${TYPE_COL[m.type]}">${m.type}</b> ${m.eff ? `<i class="efx">${EFF_INFO[m.eff][0]}</i> ` : ''}명중 ${m.accuracy}% · ${ppLeft(B.p, m)}/${m.pp}</span>`), { cls: 'moves', cols: 2, cancel: true, start: Math.max(0, ms.findIndex(m => ppLeft(B.p, m) > 0)) });
         if (i < 0) continue;
         if (ppLeft(B.p, ms[i]) <= 0) { toast('이 기술은 더 이상 쓸 수 없어요! (보건실에서 회복)'); continue; }
         await playerMove(ms[i]);
