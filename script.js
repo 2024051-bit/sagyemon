@@ -4662,6 +4662,7 @@ function drawFx() {
 }
 const firstAlive = () => (B && B.partyTeam ? B.partyTeam : S.party).find(m => m.hp > 0);
 async function chooseBattleTeam() {
+  if (!S.party.some(m => m.hp > 0)) return [];
   const count = Math.min(3, S.party.length);
   if (!count) return [];
   if (S.party.length <= 3) return S.party.slice();
