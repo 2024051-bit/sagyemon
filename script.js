@@ -737,7 +737,9 @@ function secOf(n, type) {
   const PHYSICAL_TYPES = new Set(['노말', '격투', '비행', '독', '땅', '바위', '벌레', '고스트', '강철']);
   for (const mv of Object.values(MOVES)) {
     mv.category = mv.eff ? 'status' : (PHYSICAL_TYPES.has(mv.type) ? 'physical' : 'special');
-    if (mv.accuracy == null) mv.accuracy = 100;
+    if (mv.accuracy == null) {
+      mv.accuracy = !mv.power ? 100 : mv.power >= 120 ? 75 : mv.power >= 90 ? 85 : mv.power >= 80 ? 90 : mv.power >= 60 ? 95 : 100;
+    }
     if (mv.priority == null) mv.priority = 0;
   }
 }
@@ -3077,13 +3079,11 @@ function clearVolatile(m) { delete m.stg; delete m.conf; delete m.charging; dele
 const stgMul = s => s >= 0 ? (2 + s) / 2 : 2 / (2 - s);
 
 
-// ---------- 포획 확률표 (기획서 4.2): 정답일 때 상대 체력에 따라 60/80/95%, 특별 몬스터는 40/60/80% ----------
-// 정답인데 놓치면 그 몬스터는 다음 정답에서 반드시 잡힌다 (e.pity)
+// ---------- 포획 확률표: 상대 체력과 사계몬의 희귀도에 따라 포획 확률 결정 ----------
 const RARE = new Set(['xdragon', 'zero', 'fishr', 'rainbow', 'deer', 'sunlion']); // 희귀한 계열 (특별 몬스터 포획률)
 const isSpecialMon = sp => LEGENDS.includes(sp) || RARE.has(lineInfo(sp).root);
 const CATCH_LABEL = sp => isSpecialMon(sp) ? '어려움' : '보통';
 function catchChance(e) {
-  if (e.pity) return 1;
   const r = e.hp / e.maxhp, k = r <= .25 ? 2 : r <= .5 ? 1 : 0;
   return (isSpecialMon(e.sp) ? [.4, .6, .8] : [.6, .8, .95])[k];
 }
@@ -5431,8 +5431,7 @@ async function throwBall(it, id) {
   await sleep(300);
   if (!success) { a.ball = null; a.eVis = true; await tween(200, k => a.flash = .6 * (1 - k)); hud();
     await say(['앗! 사계몬이 볼에서 바로 나와 버렸다!', '아앗! 잡았다고 생각했는데!', '아까워! 조금만 더 하면 잡을 수 있었는데!', '으아~! 거의 잡을 뻔했는데!'][shakes]);
-    e.pity = true;
-    await say('(다음에 같은 사계몬에게 볼을 던지면 반드시 잡을 수 있어요!)');
+    await say('(사계몬의 체력을 더 줄이거나 더 좋은 사계볼을 사용하면 포획 확률이 올라가요!)');
     if (ratio > .5) await say('(체력을 더 깎으면 잡힐 확률이 올라가요!)');
     return 'used'; }
   a.stars = true; SFX.catch(); await say(`신난다! ${jo(monName(e), '을를')} 잡았다!`); a.stars = false;
