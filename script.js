@@ -3224,7 +3224,7 @@ H.tutor = async () => {
   if (mode < 0) return say('기술 떠올리기 선생님: 언제든 다시 오렴.');
   const i = await chooseList({ title: mode === 0 ? '누구의 기술을 떠올릴까?' : '누구의 기술 순서를 바꿀까?', sub: '사계몬을 선택해 주세요', rows: S.party.map(m => monRow(m)) });
   if (i < 0) return say('기술 떠올리기 선생님: 언제든 다시 오렴.');
-  const m = S.party[i]; movesOf(m);
+  const m = B.partyTeam[i]; movesOf(m);
   if (mode === 1) {
     if (m.moves.length < 2) return say(`${jo(monName(m), '은는')} 기술이 2개 이상 있어야 순서를 바꿀 수 있단다.`);
     const fromIndex = await chooseList({ title: '순서를 바꿀 기술', rows: m.moves.map((n, k) => `<span class="grow">${k + 1}. ${n}</span>`) });
@@ -4642,7 +4642,7 @@ function hud() {
   const a = B.a;
   if (a.eTr && B.o.trainer) { e.hidden = false; e.classList.add('pb'); e.innerHTML = `<div class="pballs">${balls(B.o.team)}</div>`; }
   else { e.classList.remove('pb'); e.hidden = !a.eVis; if (B.e) e.innerHTML = `<div class="nm"><span>${monName(B.e)}${stTag(B.e)}${S.caught[B.e.sp] && (B.o.kind === 'wild' || B.o.kind === 'legend') ? ' <span style="color:#d79a18">●</span>' : ''}</span><span>Lv.${B.e.lvl}</span></div><div class="tys">${typeTags(B.e.sp)}</div>${bar(B.e)}`; }
-  if (a.pTr) { p.hidden = false; p.classList.add('pb'); p.innerHTML = `<div class="pballs">${balls(S.party)}</div>`; }
+  if (a.pTr) { p.hidden = false; p.classList.add('pb'); p.innerHTML = `<div class="pballs">${balls(B.partyTeam)}</div>`; }
   else { p.classList.remove('pb'); p.hidden = !a.pVis; if (B.p) p.innerHTML = `<div class="nm"><span>${monName(B.p)}${stTag(B.p)}</span><span>Lv.${B.p.lvl}</span></div>${bar(B.p)}<div class="num">${B.p.hp} / ${B.p.maxhp}</div><div class="xp"><i style="width:${Math.min(100, B.p.xp / need(B.p.lvl, B.p) * 100)}%"></i></div>`; }
 
 }
@@ -4660,7 +4660,30 @@ function drawFx() {
   if (fx.kind === 'bars') { ctx.fillStyle = '#111'; for (let i = 0; i < 10; i++) { const w = 240 * fx.k; if (i % 2) ctx.fillRect(240 - w, i * 16, w, 16); else ctx.fillRect(0, i * 16, w, 16); } }
   if (fx.kind === 'black') { ctx.fillStyle = `rgba(0,0,0,${fx.k})`; ctx.fillRect(0, 0, 240, 160); }
 }
-const firstAlive = () => S.party.find(m => m.hp > 0);
+const firstAlive = () => (B && B.partyTeam ? B.partyTeam : S.party).find(m => m.hp > 0);
+async function chooseBattleTeam() {
+  const count = Math.min(3, S.party.length);
+  if (!count) return [];
+  if (S.party.length <= 3) return S.party.slice();
+  while (true) {
+    const selected = [];
+    for (let n = 0; n < count; n++) {
+      const available = S.party.filter(m => !selected.includes(m));
+      const i = await chooseList({
+        title: '출전 사계몬 선택',
+        sub: `${n + 1} / ${count}마리 선택`,
+        rows: available.map(m => monRow(m, m.hp <= 0 ? ' · 기절' : '')),
+        cancel: false,
+        start: 0,
+        foot: '선택한 순서대로 출전합니다.'
+      });
+      if (i < 0 || !available[i]) return [];
+      selected.push(available[i]);
+    }
+    if (selected.some(m => m.hp > 0)) return selected;
+    await say('최소 한 마리는 HP가 남아 있어야 전투할 수 있어요.');
+  }
+}
 async function wildBattle(w) {
   SFX.enc();
   // 떠도는 전설: 배지 5개부터, 아주 가끔(2%), 언제나 Lv.40. 한 번 쓰러뜨리거나 잡으면 다시는 나타나지 않는다
@@ -4688,9 +4711,11 @@ async function popMon(side) {
 }
 const isWildKind = k => k === 'wild' || k === 'legend' || k === 'roam';
 async function battle(o) {
+  const partyTeam = await chooseBattleTeam();
+  if (!partyTeam.length || !partyTeam.some(m => m.hp > 0)) { await say('전투에 나갈 수 있는 사계몬이 없어요.'); return 'lose'; }
   const wild = isWildKind(o.kind);
   o.team.forEach(m => S.seen[m.sp] = 1);
-  B = { o, idx: 0, e: o.team[0], p: firstAlive(), part: new Set(), theme: CUR.indoor ? (CUR.theme === 'indoor' ? 'indoor' : CUR.theme) : CUR.theme, weather: null, a: { eX: 0, eY: 0, pX: 0, pY: 0, eVis: false, pVis: false, eAlpha: 1, pAlpha: 1, eScale: 1, pScale: 1, flash: 0, eTr: false, pTr: true, eTrX: 0, pTrX: 160 } };
+  B = { o, partyTeam, idx: 0, e: o.team[0], p: partyTeam.find(m => m.hp > 0), part: new Set(), theme: CUR.indoor ? (CUR.theme === 'indoor' ? 'indoor' : CUR.theme) : CUR.theme, weather: null, a: { eX: 0, eY: 0, pX: 0, pY: 0, eVis: false, pVis: false, eAlpha: 1, pAlpha: 1, eScale: 1, pScale: 1, flash: 0, eTr: false, pTr: true, eTrX: 0, pTrX: 160 } };
   const a = B.a;
   B.weather = chooseBattleWeather(B.theme);
   await flashTrans();
@@ -4920,7 +4945,7 @@ async function enemyFainted() {
     B.a.eTr = true; B.a.eTrX = 120; hud(); await tween(250, k => B.a.eTrX = 120 * (1 - k));
     await say(`${B.o.trainer.title} ${jo(B.o.trainer.name, '은는')}\n${jo(monName(B.e), '을를')} 내보내려 한다!`);
     // 상대가 다음 사계몬을 내보내기 전에 교체 여부를 묻는다
-    if (S.party.some(m => m.hp > 0 && m !== B.p)) {
+    if (B.partyTeam.some(m => m.hp > 0 && m !== B.p)) {
       await say(`${jo(S.name, '은는')} 사계몬을 교체할까?`, { wait: false });
       const yes = await yesno(); hideTb();
       if (yes) await switchMon(false);
@@ -4990,7 +5015,7 @@ async function playerFainted() {
 }
 async function switchMon(forced) {
   while (true) {
-    const i = await chooseList({ title: '사계몬', sub: forced ? '나갈 사계몬을 골라요' : '교체할 사계몬', rows: S.party.map(m => monRow(m, m === B.p ? ' · 싸우는 중' : '')), cancel: !forced, start: Math.max(0, S.party.findIndex(m => m.hp > 0 && m !== B.p)) });
+    const i = await chooseList({ title: '사계몬', sub: forced ? '나갈 사계몬을 골라요' : '교체할 사계몬', rows: B.partyTeam.map(m => monRow(m, m === B.p ? ' · 싸우는 중' : '')), cancel: !forced, start: Math.max(0, B.partyTeam.findIndex(m => m.hp > 0 && m !== B.p)) });
     if (i < 0) return false;
     const m = S.party[i];
     if (m.hp <= 0) { toast('기절해서 싸울 수 없어요!'); continue; }
@@ -5014,7 +5039,7 @@ async function battleBag() {
       await say(`${jo(S.name, '은는')} ${jo(it.name, '을를')} 던졌다!`, { wait: false });
       return await throwBall(it, id);
     }
-    const targets = S.party.filter(m => itemTarget(it, m));
+    const targets = B.partyTeam.filter(m => itemTarget(it, m));
     if (!targets.length) { toast(it.kind === 'revive' ? '기절한 사계몬이 없어요' : it.kind === 'cure' ? '이 약이 필요한 사계몬이 없어요' : it.kind === 'pp' ? 'PP가 줄어든 사계몬이 없어요' : 'HP가 다 찬 상태예요'); continue; }
     const t = await chooseList({ title: `${it.name} 사용`, sub: '누구에게 쓸까요?', rows: targets.map(m => monRow(m)) });
     if (t < 0) continue;
