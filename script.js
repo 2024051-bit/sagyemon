@@ -5106,25 +5106,64 @@ const DEX_ORDER = (() => {
   return out.concat(LEGENDS);
 })();
 const dexNo = sp => String(DEX_ORDER.indexOf(sp) + 1).padStart(3, '0');
-function overlay(html, cls, acts) { // acts: 닫지 않고 실행할 단추 { 키 동작: 함수 }
+function overlay(html, cls, acts) { // acts: 닫지 않고 실행할 단추와 화면 전환 동작
   return new Promise(res => {
     const el = document.createElement('div'); el.className = cls; el.innerHTML = html; ui.appendChild(el);
-    const off = pushHandler(a => { if (acts && acts[a]) acts[a](); else if (a === 'a' || a === 'b') { off(); el.remove(); SFX.sel(); res(); } });
-    el.addEventListener('click', e => { const b = e.target.closest('[data-act]'); if (b && acts && acts[b.dataset.act]) { acts[b.dataset.act](); return; } off(); el.remove(); res(); });
+    let closed = false;
+    const close = () => { if (closed) return; closed = true; off(); el.remove(); SFX.sel(); res(); };
+    const run = key => { if (acts && acts[key]) acts[key](el, close); else if (key === 'a' || key === 'b') close(); };
+    const off = pushHandler(run);
+    el.addEventListener('click', e => { const b = e.target.closest('[data-act]'); if (b && acts && acts[b.dataset.act]) { acts[b.dataset.act](el, close); return; } close(); });
   });
 }
 function dexCard(sp) {
   const d = SP[sp], [cls, h, w, desc] = d.dex || ['사계몬', '?', '?', ''];
   return overlay(`<div class="dk-top"><div class="dk-pic"><img src="${icon(sp)}" alt=""><span>No.${dexNo(sp)}</span></div><div class="dk-info"><b>${d.name}</b><span>${cls}</span><span>키 <em>${h} m</em></span><span>무게 <em>${w} kg</em></span><span>잡기 <em>${CATCH_LABEL(sp)}</em></span><span class="dk-ty">${typeTags(sp)}</span></div></div><div class="dk-desc">${desc}</div><div class="dk-go">▶</div>`, 'dexcard');
 }
-function statusCard(m) {
+async function statusCard(m) {
   const mv = movesOf(m), r = m.hp / m.maxhp;
-  return overlay(`<div class="st-l"><span class="st-no">No.${dexNo(m.sp)}</span><img src="${icon(m.sp)}" alt=""><b>Lv.${m.lvl}</b><b class="st-nm">${monName(m)}</b>${m.nick ? `<span>${SP[m.sp].name}</span>` : ''}</div>
-  <div class="st-r"><div class="hpb"><span>HP</span><span class="bar"><i class="${r > .5 ? '' : r > .2 ? 'mid' : 'low'}" style="width:${r * 100}%"></i></span></div><div class="st-hp">${m.hp} / ${m.maxhp}</div>
-  <div>상태 / <em>${m.hp <= 0 ? '기절' : m.status ? ST_NAME[m.status] : '보통'}</em></div><div>타입 / ${typeTags(m.sp)}</div>
-  <div class="st-box"><div>경험치 <em>${totalXP(m.lvl) + m.xp}</em></div><div>앞으로 <em>${need(m.lvl, m) - m.xp}</em></div><div>에서 <em>Lv.${m.lvl + 1}</em></div></div>
-  <div class="st-st">${natureText(m)}<br>공격 ${m.atk} · 방어 ${m.def} · 특공 ${m.spa} · 특방 ${m.spd} · 스피드 ${m.spe}${SP[m.sp].evo ? ` · Lv.${SP[m.sp].evo[0]} 진화` : ''}</div>
-  <div class="st-mv">${mv.map(x => `<div title="${x.type}${x.eff ? ' · ' + EFF_INFO[x.eff][0] : ''}"><i class="tdot" style="background:${TYPE_COL[x.type]}"></i>${x.name}${x.eff ? '<sup>✦</sup>' : ''} <em>${ppLeft(m, x)}/${x.pp}</em></div>`).join('')}</div></div>`, 'statcard');
+  const labels = { atk: '공격', def: '방어', spa: '특공', spd: '특방', spe: '스피드' };
+  const statRows = [['HP', m.hp + ' / ' + m.maxhp], ['공격', m.atk], ['방어', m.def], ['특공', m.spa], ['특방', m.spd], ['스피드', m.spe]];
+  const nature = NATURE_BY_NAME[m.nature], natureDesc = nature && nature.up ? '+' + labels[nature.up] + ' 10% · −' + labels[nature.down] + ' 10%' : '능력치 보정 없음';
+  const ability = m.ability || (SP[m.sp] && SP[m.sp].ability) || '특성 미정';
+  const trait = typeTraitFor(m.sp);
+  let page = 'main', selected = 0;
+  const mainHtml = () => `<div class="st-l"><span class="st-no">No.${dexNo(m.sp)}</span><img src="${icon(m.sp)}" alt=""><b>Lv.${m.lvl}</b><b class="st-nm">${monName(m)}</b>${m.nick ? `<span>${SP[m.sp].name}</span>` : ''}</div>
+    <div class="st-r"><div class="st-pagehead">기본 정보 <small>1 / 2</small></div><div class="hpb"><span>HP</span><span class="bar"><i class="${r > .5 ? '' : r > .2 ? 'mid' : 'low'}" style="width:${r * 100}%"></i></span></div><div class="st-hp">${m.hp} / ${m.maxhp}</div>
+    <div>상태 / <em>${m.hp <= 0 ? '기절' : m.status ? ST_NAME[m.status] : '보통'}</em></div><div>타입 / ${typeTags(m.sp)}</div>
+    <div class="st-box"><div>경험치 <em>${totalXP(m.lvl) + m.xp}</em></div><div>앞으로 <em>${need(m.lvl, m) - m.xp}</em></div><div>에서 <em>Lv.${m.lvl + 1}</em></div></div>
+    <div class="st-st">${natureText(m)}<br>공격 ${m.atk} · 방어 ${m.def} · 특공 ${m.spa} · 특방 ${m.spd} · 스피드 ${m.spe}${SP[m.sp].evo ? ` · Lv.${SP[m.sp].evo[0]} 진화` : ''}</div>
+    <div class="st-mv">${mv.map(x => `<div><i class="tdot" style="background:${TYPE_COL[x.type]}"></i>${x.name}${x.eff ? '<sup>✦</sup>' : ''} <em>${ppLeft(m, x)}/${x.pp}</em></div>`).join('')}</div>
+    <button class="st-next" data-act="details">상세 정보 보기 ▶</button></div>`;
+  const detailHtml = () => `<div class="st-detail"><div class="st-pagehead">상세 정보 <small>2 / 2</small></div>
+    <section class="st-section"><b>특성 · ${ability}</b><p>${ABILITY_INFO[ability] || '특성 효과 정보가 등록되지 않았어요.'}</p>${trait ? `<p><b>${trait.name}</b> · ${trait.desc}</p>` : ''}</section>
+    <section class="st-section"><b>성격 · ${nature ? nature.name : '미정'}</b><p>${natureDesc}</p></section>
+    <section class="st-section"><b>능력치</b><div class="st-stats">${statRows.map(([n,v]) => `<div><span>${n}</span><b>${v}</b></div>`).join('')}</div></section>
+    <section class="st-section"><b>기술 목록</b><div class="st-move-list">${mv.map((x,i) => `<button data-act="move-${i}" class="${i === selected ? 'on' : ''}"><span><i class="tdot" style="background:${TYPE_COL[x.type]}"></i>${x.name}</span><em>${ppLeft(m,x)} / ${x.pp}</em></button>`).join('')}</div><small>기술을 선택하면 설명을 볼 수 있어요.</small></section>
+    <button class="st-next" data-act="back">◀ 기본 정보</button></div>`;
+  const moveHtml = x => {
+    const category = x.category === 'physical' ? '물리' : x.category === 'special' ? '특수' : '변화';
+    const effect = x.eff && EFF_INFO[x.eff] ? EFF_INFO[x.eff][0] : '';
+    const extra = x.sec ? (EFF_INFO[x.sec[0]] ? EFF_INFO[x.sec[0]][0] + ' (' + Math.round(x.sec[1] * 100) + '%)' : '') : '';
+    const desc = x.desc || (x.eff ? effect + ' 효과를 사용한다.' : category + ' 공격 기술이다.');
+    return `<div class="st-detail"><div class="st-pagehead">기술 설명 <small>${x.name}</small></div>
+      <section class="st-section st-move-title"><b><i class="tdot" style="background:${TYPE_COL[x.type]}"></i>${x.name}</b><span>${x.type} · ${category}</span></section>
+      <section class="st-section"><b>기술 설명</b><p>${desc}</p>${effect ? `<p>주요 효과: ${effect}</p>` : ''}${extra ? `<p>추가 효과: ${extra}</p>` : ''}${x.charge ? '<p>한 턴 준비한 뒤 공격한다.</p>' : ''}${x.recoil ? '<p>반동: 준 피해의 절반만큼 사용자도 피해를 입는다.</p>' : ''}</section>
+      <section class="st-section"><div class="st-move-stats"><div><span>위력</span><b>${x.power || '—'}</b></div><div><span>명중률</span><b>${x.accuracy == null ? '—' : x.accuracy + '%'}</b></div><div><span>PP</span><b>${ppLeft(m,x)} / ${x.pp}</b></div><div><span>우선도</span><b>${x.priority || 0}</b></div></div></section>
+      <button class="st-next" data-act="moveBack">◀ 기술 목록</button></div>`;
+  };
+  const render = el => { el.dataset.page = page; el.innerHTML = page === 'main' ? mainHtml() : page === 'detail' ? detailHtml() : moveHtml(mv[selected]); };
+  const actions = {
+    details: el => { page = 'detail'; render(el); },
+    back: el => { page = 'main'; render(el); },
+    moveBack: el => { page = 'detail'; render(el); },
+    a: el => { if (page === 'main') { page = 'detail'; render(el); } else if (page === 'detail') { page = 'move'; render(el); } else { page = 'detail'; render(el); } },
+    b: (el, close) => { if (page === 'move') { page = 'detail'; render(el); } else if (page === 'detail') { page = 'main'; render(el); } else close(); },
+    up: el => { if (page === 'detail' && mv.length) { selected = (selected - 1 + mv.length) % mv.length; render(el); } },
+    down: el => { if (page === 'detail' && mv.length) { selected = (selected + 1) % mv.length; render(el); } }
+  };
+  mv.forEach((x,i) => { actions['move-' + i] = el => { selected = i; page = 'move'; render(el); }; });
+  return overlay(mainHtml(), 'statcard st-window', actions);
 }
 // ---------- 메뉴 ----------
 // ---------- 좌표 종이비행기: 가 본 마을로만 날아갈 수 있다 ----------
