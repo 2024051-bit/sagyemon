@@ -2370,7 +2370,7 @@ tower('hide1', '찍기단 아지트 B1', { w: 16, h: 12, floor: '#b8b0c8', unit:
   { x: 13, y: 9, dir: 'up', title: '찍기단 과학자', name: '오류', pal: 'prof', team: [['ghost', 27], ['mouse2', 28]], line: '실험을 방해하지 마라!', lose: '계산이 틀렸나…' }],
   ents: [], items: [[14, 2, ['hball', 2]], [1, 10, ['revive', 1]]] });
 API.hide1.rect(11, 4, 15, 4, 'f').warp(14, 1, 'hide2', 14, 3, { stairs: true });
-tower('hide2', '찍기단 아지트 B2', { w: 16, h: 10, floor: '#a8a0b8', unit: '5b', down: [14, 8, 'hide1', 13, 2], pillars: [[3, 7], [12, 3]], ents: [{ id: 'hadmin', kind: 'hadmin', x: 7, y: 3, dir: 'down', pal: 'boss' }, { id: 'hadmin', kind: 'hadmin', x: 7, y: 3, dir: 'down', pal: 'boss' }], trainers: [{ x: 2, y: 8, dir: 'right', title: '찍기단 조무래기', name: '6호', pal: 'grunt', team: [['ghost2', 28], ['dog', 28]], line: '간부님은 이 문 너머에 계신다!', lose: '자물쇠 문제를 풀어 봐라… 못 풀걸?' }] });
+tower('hide2', '찍기단 아지트 B2', { w: 16, h: 10, floor: '#a8a0b8', unit: '5b', down: [14, 8, 'hide1', 13, 2], pillars: [[3, 7], [12, 3]], ents: [{ id: 'hadmin', kind: 'hadmin', x: 7, y: 3, dir: 'down', pal: 'boss' }], trainers: [{ x: 2, y: 8, dir: 'right', title: '찍기단 조무래기', name: '6호', pal: 'grunt', team: [['ghost2', 28], ['dog', 28]], line: '간부님은 이 문 너머에 계신다!', lose: '문이 열렸다고 방심하지 마라…!'  }] });
 API.hide2.rect(0, 5, 15, 5, 'f');
 API.hide1.rect(10, 2, 10, 4, 'q');
 API.hide1.m.warps[API.hide1.get(14, 1)].x = 13; API.hide1.m.warps[API.hide1.get(14, 1)].y = 8;
