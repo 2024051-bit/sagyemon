@@ -3766,7 +3766,7 @@ function onlineBattleApplyMove(room, side, move) {
   }
   if (defender.hp > 0 && !defender.status && Array.isArray(move.sec) && onlineBattleRandom(room) < move.sec[1]) {
     const kind = move.sec[0];
-    if (['sleep', 'par', 'burn', 'conf'].includes(kind)) defender.status = { type: kind === 'sleep' ? 'slp' : kind, turns: kind === 'sleep' ? 2 + Math.floor(onlineBattleRandom(room) * 2) : kind === 'conf' ? 3 : 0 };
+    if (['sleep', 'par', 'burn', 'conf'].includes(kind) && !abilityStatusImmune(defender, kind)) defender.status = { type: kind === 'sleep' ? 'slp' : kind, turns: kind === 'sleep' ? 2 + Math.floor(onlineBattleRandom(room) * 2) : kind === 'conf' ? 3 : 0 };
   }
   return { damage, recoilDamage, sturdyActivated, typeMult: mult, inflicted: defender.status && defender.status.type };
 }
