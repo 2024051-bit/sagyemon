@@ -434,8 +434,8 @@ const EXTRA_ABILITY = {
   phi: '황금 시야', euler: '집중력', zeroking: '역전투혼',
   snake3: '강철피부', bat3: '복안', rock3: '강철피부',
   croc3: '맹공', dino3: '맹공', octo3: '맹공', dice3: '집중력',
-  owl2: '예리한 눈', top2: '정신장벽', treeb: '강철피부',
-  pandab: '재생력', turtleb: '강철피부'
+  owl2: '예리한 눈', top2: '정신장벽', treeb: '정신장벽',
+  pandab: '재생력', turtleb: '정신장벽'
 };
 for (const [id, ability] of Object.entries(EXTRA_ABILITY)) if (SP[id] && !SP[id].ability) SP[id].ability = ability;
 
@@ -3761,6 +3761,17 @@ function onlineBattleApplyTurn(room, payload, ownId) {
 async function onlineRunBattleTurn(turn) {
   const room = ONLINE_ROOM;
   if (!room || !Array.isArray(room.localTeam) || !room.opponentRoster) throw new Error('battle_protocol_mismatch');
+  // 온라인 전투에서도 양쪽의 특성을 첫 턴 시작에 한 번씩 알린다.
+  if (!room.abilitiesAnnounced) {
+    room.abilitiesAnnounced = true;
+    const local = room.localTeam[room.activeLocal || 0];
+    const enemy = room.opponentRoster.party[room.activeOpponent || 0];
+    for (const [mon, label] of [[local, '내'], [enemy, '상대']]) {
+      if (!mon || !mon.ability) continue;
+      const name = mon.nickname || mon.species || '사계몬';
+      await say(label + ' ' + name + '의 ' + mon.ability + '!');
+    }
+  }
   if (!Number.isInteger(room.activeLocal)) room.activeLocal = 0;
   if (!Number.isInteger(room.activeOpponent)) room.activeOpponent = 0;
   const active = room.localTeam[room.activeLocal];
