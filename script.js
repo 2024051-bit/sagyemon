@@ -3181,7 +3181,7 @@ const ABILITY_INFO = {
 function abilityText(m) { const a = m && m.ability; return (a ? a + ' · ' + (ABILITY_INFO[a] || '특성 효과') : '특성 미정') + ' · ' + typeTraitText(m); }
 async function announceBattleAbility(mon) {
   if (!mon || !mon.ability) return;
-  await say(monName(mon) + '의 특성은 [' + String(mon.ability) + ']!');
+  await say(monName(mon) + '의 ' + String(mon.ability) + '!');
 }
 function monRow(m, extra = '') { return `<img src="${icon(m.sp)}" alt=""><span class="grow">${monName(m)} <span class="sm">Lv.${m.lvl} · ${natureText(m)} · ${abilityText(m)}${m.hp <= 0 ? ' · 기절' : m.status ? ' · ' + ST_NAME[m.status] : ''}${m.held && ITEMS[m.held] ? ' · ' + ITEMS[m.held].name : ''}${extra}</span></span>${hpRow(m)}`; }
 
