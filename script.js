@@ -5128,7 +5128,6 @@ async function battle(o) {
   B.part.add(B.p);
   say(`가랏! ${monName(B.p)}!`, { wait: false });
   await popMon('p'); hud(); await sleep(450);
-  await announceBattleAbility(B.p);
   let result;
   while (true) {
     hud();
@@ -5420,7 +5419,6 @@ async function switchMon(forced) {
     if (!forced) { await say(`돌아와, ${monName(B.p)}!`, { wait: false }); await tween(250, k => B.a.pScale = 1 - k); B.a.pVis = false; }
     clearVolatile(B.p); B.p = m; B.part.add(m); hud();
     say(`가랏! ${monName(m)}!`, { wait: false }); await popMon('p'); hud(); await sleep(400);
-    await announceBattleAbility(m);
     return true;
   }
 }
