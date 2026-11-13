@@ -3046,7 +3046,7 @@ const ABILITY_EXTRA = [
   ['격투 방어','격투 타입 기술 피해 -15%.'], ['풀잎 갑옷','풀 타입 기술 피해 -15%.'],
   ['노말 내성','노말 타입 기술 피해 -10%.'], ['급소 회피','상대의 급소 확률을 낮춘다.'],
   ['충격 흡수','위력 60 이하 기술 피해 -15%.'], ['민첩한 몸놀림','스피드 +10%.'],
-  ['순풍','전투 시작 시 스피드 랭크 +1.'], ['선제 대응','상대보다 느릴 때 첫 공격 피해 +10%.'],
+  ['순풍','전투 시작 시 스피드 랭크 +1.'], ['선제 대응','스피드가 상대보다 낮으면 주는 피해 +10%.'],
   ['그림자 발걸음','전투 시작 시 명중 랭크 +1.'], ['도약','교체 직후 첫 공격 피해 +10%.'],
   ['추적자','상대가 교체한 직후 다음 공격 피해 +10%.'], ['매의 눈','비행 타입 기술 명중률 +5%p.'],
   ['물속 시야','물 타입 기술 명중률 +5%p.'], ['정밀 타격','위력 60 이하 기술 피해 +10%.'],
@@ -3797,7 +3797,15 @@ function onlineBattleApplyTurn(room, payload, ownId) {
   room.turnSeed = payload.seed | 0;
   if (!room.weather) room.weather = BATTLE_WEATHER[Math.floor(onlineBattleRandom(room) * BATTLE_WEATHER.length)];
   if (!room.abilityBattleInitialized) {
-    for (const mon of [...(room.localTeam || []), ...((room.opponentRoster && room.opponentRoster.party) || [])]) if (mon) delete mon._abilityCrisisUsed;
+    for (const [side, team] of [['local', room.localTeam || []], ['opponent', (room.opponentRoster && room.opponentRoster.party) || []]]) {
+      for (let i = 0; i < team.length; i++) {
+        const mon = team[i];
+        if (mon) delete mon._abilityCrisisUsed;
+        const stage = room.battleStages[side][i];
+        if (mon && mon.ability === '순풍') stage.spe = Math.min(4, (stage.spe || 0) + 1);
+        if (mon && mon.ability === '그림자 발걸음') stage.acc = Math.min(4, (stage.acc || 0) + 1);
+      }
+    }
     room.abilityBattleInitialized = true;
   }
   room.battleStages = room.battleStages || {
@@ -5001,6 +5009,7 @@ async function battle(o) {
   const a = B.a;
   B.weather = chooseBattleWeather(B.theme);
   for (const mon of [...partyTeam, ...o.team]) if (mon) delete mon._abilityCrisisUsed;
+  for (const mon of [B.p, B.e]) if (mon) { delete mon._abilityCrisisUsed; mon.stg = mon.stg || { atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0 }; if (mon.ability === '순풍') mon.stg.spe = Math.min(4, (mon.stg.spe || 0) + 1); if (mon.ability === '그림자 발걸음') mon.stg.acc = Math.min(4, (mon.stg.acc || 0) + 1); }
   await flashTrans();
   scene = 'battle';
   if (wild) { a.eVis = true; a.eX = -170; await tween(650, k => { a.eX = (1 - k) * -170; a.pTrX = (1 - k) * 160; }); }
