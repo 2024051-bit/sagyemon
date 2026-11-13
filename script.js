@@ -3099,6 +3099,7 @@ function abilityDamageMultiplier(att, def, move, attackerFirst = false) {
   if (a === '정밀 타격' && move && move.power <= 60) mult *= 1.1;
   if (a === '마지막 발악' && att && att.hp <= att.maxhp / 4) mult *= 1.15;
   if (a === '기습 본능' && attackerFirst) mult *= 1.05;
+  if (a === '선제 대응' && !attackerFirst) mult *= 1.1;
   if (a === '완벽주의' && move && move.accuracy === 100) mult *= 1.05;
   if (a === '포위 본능' && def && def.status) mult *= 1.1;
   if (d === '불굴의 의지' && def && def.hp <= def.maxhp / 2) mult *= .95;
@@ -3708,8 +3709,10 @@ function onlineBattleMoves(mon, local) {
   return [{ move: { name: '발버둥', type: '노말', power: 30, category: 'physical', accuracy: 100, priority: 0, struggle: true, pp: 0 }, index: 0, pp: 0 }];
 }
 function battleSpeed(mon) {
-  // calcStats()에서 질주의 +10%가 이미 반영되므로 여기서 중복 적용하지 않는다.
-  return Number(mon && (mon.spe || mon.stats && mon.stats.spe)) || 1;
+  // 질주·민첩한 몸놀림은 calcStats()에서 이미 반영한다.
+  let speed = Number(mon && (mon.spe || mon.stats && mon.stats.spe)) || 1;
+  if (mon && mon.ability === '마지막 질주' && mon.hp > 0 && mon.hp <= mon.maxhp / 3) speed *= 1.15;
+  return speed;
 }
 function onlineBattleMonTypes(mon) {
   return Array.isArray(mon.types) ? mon.types : (mon.sp != null ? spTypes(mon.sp) : []);
