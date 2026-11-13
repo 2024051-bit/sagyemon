@@ -3095,12 +3095,13 @@ function abilityDamageMultiplier(att, def, move, attackerFirst = false) {
   if (a === '발차기 달인' && /킥|발차기/.test(name)) mult *= 1.15;
   if (ABILITY_ATTACK_TYPE[a] === type) mult *= 1.1;
   if (a === '마무리 일격' && def && def.hp <= def.maxhp / 2) mult *= 1.1;
+  if (a === '연속 공격' && /연속|연타|난타|콤보/.test(name)) mult *= 1.1;
   if (a === '정밀 타격' && move && move.power <= 60) mult *= 1.1;
   if (a === '마지막 발악' && att && att.hp <= att.maxhp / 4) mult *= 1.15;
   if (a === '기습 본능' && attackerFirst) mult *= 1.05;
   if (a === '완벽주의' && move && move.accuracy === 100) mult *= 1.05;
   if (a === '포위 본능' && def && def.status) mult *= 1.1;
-  if (a === '불굴의 의지' && att && att.hp <= att.maxhp / 2) mult *= .95;
+  if (d === '불굴의 의지' && def && def.hp <= def.maxhp / 2) mult *= .95;
   if (d === '두꺼운 지방' && ['불','얼음'].includes(type)) mult *= .9;
   if (d === '충격 흡수' && move && move.power <= 60) mult *= .85;
   if (d === '불굴 방패' && def && def._abilityShield) mult *= .9;
@@ -3110,11 +3111,24 @@ function abilityDamageMultiplier(att, def, move, attackerFirst = false) {
 }
 function abilityStatusImmune(mon, status) {
   if (!mon) return false;
-  if (mon.ability === '독 면역' && status === 'poison') return true;
-  if (mon.ability === '둔감' && ['sleep','slp','conf'].includes(status)) return true;
-  if (mon.ability === '방진' && status === 'powder') return true;
-  if (mon.ability === '정신력' && status === 'flinch') return true;
+  const key = ({ poison: 'poison', psn: 'poison', toxic: 'poison', sleep: 'sleep', slp: 'sleep', burn: 'burn', brn: 'burn', par: 'par', paralysis: 'par', conf: 'conf', flinch: 'flinch', powder: 'powder' })[status] || status;
+  if (mon.ability === '독 면역' && key === 'poison') return true;
+  if (mon.ability === '둔감' && ['sleep', 'conf'].includes(key)) return true;
+  if (mon.ability === '방진' && key === 'powder') return true;
+  if (mon.ability === '정신력' && key === 'flinch') return true;
   return false;
+}
+function abilityEndTurnHeal(mon, weather, roll = Math.random()) {
+  if (!mon || mon.hp <= 0 || mon.hp >= mon.maxhp) return 0;
+  let amount = 0;
+  if (mon.ability === '마른 피부' && weather && weather.id === 'rain') amount = Math.max(amount, Math.floor(mon.maxhp / 32));
+  if (mon.ability === '햇살 적응' && weather && weather.id === 'clear') amount = Math.max(amount, Math.floor(mon.maxhp / 32));
+  if (mon.ability === '꽃가루 수집' && roll < .1) amount = Math.max(amount, Math.floor(mon.maxhp / 16));
+  if (mon.ability === '위기 회복' && !mon._abilityCrisisUsed && mon.hp <= mon.maxhp / 4) {
+    amount = Math.max(amount, Math.floor(mon.maxhp / 8));
+    mon._abilityCrisisUsed = true;
+  }
+  return Math.min(mon.maxhp - mon.hp, Math.max(0, amount));
 }
 const ACCURACY_TRAIT_EXEMPT = new Set(['천뢰폭발', '대지뿌리 폭주', '태양충각', '만추멸섬', '빙하붕괴']);
 const ACCURACY_BOOST_ABILITIES = new Set(['복안', '정밀 조준']);
@@ -3788,7 +3802,11 @@ function onlineBattleApplyTurn(room, payload, ownId) {
     const c = choices.find(x => x.playerId === step.playerId);
     if (!c || c.action !== step.action) throw new Error('battle_protocol_mismatch');
     if (c.action === 'switch_mon') {
-      if (c.playerId === ownId) room.activeLocal = c.teamIndex;
+      const local = c.playerId === ownId, team = local ? room.localTeam : room.opponentRoster.party;
+      const activeIndex = local ? room.activeLocal : room.activeOpponent;
+      const outgoing = team && team[activeIndex];
+      if (outgoing && outgoing.ability === '자연 치유') outgoing.status = null;
+      if (local) room.activeLocal = c.teamIndex;
       else room.activeOpponent = c.teamIndex;
     }
   }
@@ -3850,6 +3868,8 @@ function onlineBattleApplyTurn(room, payload, ownId) {
       mon.hp += healed;
       logs.push((mon.nickname || mon.species || '사계몬') + ' · 재생력으로 HP ' + healed + ' 회복');
     }
+    const abilityHeal = abilityEndTurnHeal(mon, room.weather, onlineBattleRandom(room));
+    if (abilityHeal > 0) { mon.hp = Math.min(mon.maxhp, mon.hp + abilityHeal); logs.push((mon.nickname || mon.species || '사계몬') + ' · ' + mon.ability + '으로 HP ' + abilityHeal + ' 회복'); }
   }
   room.localTeam.forEach((m,i) => { if (m.hp !== before[i]) onlineSendHpUpdate(i,m); });
   return { logs, localOut: room.localTeam.every(m => m.hp <= 0), opponentOut: room.opponentRoster.party.every(m => m.hp <= 0) };
@@ -5023,7 +5043,12 @@ async function battle(o) {
     // 턴 끝: 화상 피해
     for (const [m, side] of [[B.p, 'p'], [B.e, 'e']]) if (m.hp > 0 && m.status === 'brn') { await playFx('burn', side, side, 500); await say(`${jo(nameOf(m, side), '은는')} 화상 때문에 아파한다!`, { wait: false }); await setHP(m, m.hp - Math.max(1, Math.floor(m.maxhp / 16))); }
     // 재생력: 턴 종료 시 최대 HP의 1/16 회복
-    for (const [m, side] of [[B.p, 'p'], [B.e, 'e']]) if (m.hp > 0 && m.ability === '재생력' && m.hp < m.maxhp) { const heal = Math.min(m.maxhp - m.hp, Math.max(1, Math.floor(m.maxhp / 16))); await playFx('heal', side, side, 450); await say(`${nameOf(m, side)}의 재생력! HP를 회복했다!`, { wait: false }); await setHP(m, m.hp + heal); }
+    for (const [m, side] of [[B.p, 'p'], [B.e, 'e']]) {
+      if (m.hp <= 0) continue;
+      if (m.ability === '재생력' && m.hp < m.maxhp) { const heal = Math.min(m.maxhp - m.hp, Math.max(1, Math.floor(m.maxhp / 16))); await playFx('heal', side, side, 450); await say(nameOf(m, side) + '의 재생력! HP를 회복했다!', { wait: false }); await setHP(m, m.hp + heal); }
+      const abilityHeal = abilityEndTurnHeal(m, B.weather);
+      if (abilityHeal > 0) { await playFx('heal', side, side, 450); await say(nameOf(m, side) + '의 ' + m.ability + '! HP를 회복했다!', { wait: false }); await setHP(m, m.hp + abilityHeal); }
+    }
     if (B.p.hp <= 0) { if (await playerFainted() === 'lose') { result = 'lose'; break; } continue; }
     if (B.e.hp <= 0) { if (await enemyFainted() === 'win') { result = 'win'; break; } continue; }
   }
@@ -5081,8 +5106,8 @@ async function canAct(m, side) {
 // 상태 이상 걸기
 async function inflict(t, side, st) {
   const nm = nameOf(t, side);
-  if (st === 'conf') { if (t.conf) return say(`${jo(nm, '은는')} 이미 혼란에 빠져 있다!`); t.conf = R(2, 4); hud(); await playFx('conf', side, side, 600); return say(`${jo(nm, '은는')} 혼란에 빠졌다!`); }
   if (abilityStatusImmune(t, st)) return say(`${nm}의 ${t.ability}! 상태이상에 걸리지 않는다!`);
+  if (st === 'conf') { if (t.conf) return say(`${jo(nm, '은는')} 이미 혼란에 빠져 있다!`); t.conf = R(2, 4); hud(); await playFx('conf', side, side, 600); return say(`${jo(nm, '은는')} 혼란에 빠졌다!`); }
   if (t.status) return say(`하지만 ${jo(nm, '은는')} 이미 ${ST_NAME[t.status]} 상태다!`);
   const key = { sleep: 'slp', par: 'par', burn: 'brn' }[st]; t.status = key; if (key === 'slp') t.slp = R(1, 3); hud();
   await playFx(st, side, side, 600);
@@ -5279,7 +5304,8 @@ async function switchMon(forced) {
     if (m.hp <= 0) { toast('기절해서 싸울 수 없어요!'); continue; }
     if (m === B.p) { toast('이미 싸우고 있어요!'); continue; }
     if (!forced) { await say(`돌아와, ${monName(B.p)}!`, { wait: false }); await tween(250, k => B.a.pScale = 1 - k); B.a.pVis = false; }
-    clearVolatile(B.p); B.p = m; B.part.add(m); hud();
+    if (B.p.ability === '자연 치유' && B.p.status) { B.p.status = null; await say(monName(B.p) + '의 자연 치유! 상태이상이 회복됐다!'); }
+    clearVolatile(B.p); B.p = m; B.part.add(m);
     say(`가랏! ${monName(m)}!`, { wait: false }); await popMon('p'); hud(); await sleep(400);
     await announceBattleAbility(m);
     return true;
