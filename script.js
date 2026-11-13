@@ -3713,7 +3713,16 @@ function battleSpeed(mon) {
   // 질주·민첩한 몸놀림은 calcStats()에서 이미 반영한다.
   let speed = Number(mon && (mon.spe || mon.stats && mon.stats.spe)) || 1;
   if (mon && mon.ability === '마지막 질주' && mon.hp > 0 && mon.hp <= mon.maxhp / 3) speed *= 1.15;
+  if (mon && mon.stg) speed *= stgMul(mon.stg.spe || 0);
   return speed;
+}
+function onlineBattleSpeed(room, local, mon) {
+  const side = local ? 'local' : 'opponent';
+  const index = local ? room.activeLocal : room.activeOpponent;
+  const stage = room.battleStages && room.battleStages[side] && room.battleStages[side][index];
+  let speed = Number(mon && (mon.spe || mon.stats && mon.stats.spe)) || 1;
+  if (mon && mon.ability === '마지막 질주' && mon.hp > 0 && mon.hp <= mon.maxhp / 3) speed *= 1.15;
+  return speed * stgMul(stage && stage.spe || 0);
 }
 function onlineBattleMonTypes(mon) {
   return Array.isArray(mon.types) ? mon.types : (mon.sp != null ? spTypes(mon.sp) : []);
@@ -3845,7 +3854,7 @@ function onlineBattleApplyTurn(room, payload, ownId) {
     }
     return { c, local, mon, move: selected.move };
   }).sort((a,b) => (b.move.priority || 0) - (a.move.priority || 0) ||
-    battleSpeed(b.mon) * (b.mon.status && b.mon.status.type === 'par' ? .75 : 1) - battleSpeed(a.mon) * (a.mon.status && a.mon.status.type === 'par' ? .75 : 1) ||
+    onlineBattleSpeed(room, b.local, b.mon) * (b.mon.status && b.mon.status.type === 'par' ? .75 : 1) - onlineBattleSpeed(room, a.local, a.mon) * (a.mon.status && a.mon.status.type === 'par' ? .75 : 1) ||
     String(a.c.playerId).localeCompare(String(b.c.playerId)));
   const logs = [];
   for (const a of attacks) {
