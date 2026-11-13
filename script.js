@@ -5106,7 +5106,7 @@ async function battle(o) {
   return result;
 }
 async function setHP(m, v) { m.hp = clamp(Math.round(v), 0, m.maxhp); hud(); await sleep(400); }
-function dmgCalc(att, def, power, mult, category = 'physical', moveType = null) {
+function dmgCalc(att, def, power, mult, category = 'physical', moveType = null, moveName = '') {
   const atkKey = category === 'special' ? 'spa' : 'atk', defKey = category === 'special' ? 'spd' : 'def';
   const atkStage = (att.stg || {})[atkKey] ?? 0, defStage = (def.stg || {})[defKey] ?? 0;
   const A = (att[atkKey] || att.atk) * stgMul(atkStage) * (att.status === 'brn' && category === 'physical' ? .75 : 1);
@@ -5117,7 +5117,7 @@ function dmgCalc(att, def, power, mult, category = 'physical', moveType = null) 
   if (att.ability === '역전투혼' && att.hp > 0 && att.hp <= att.maxhp / 3) abilityMult *= 1.2;
   if (def.ability === '강철피부' && category === 'physical') abilityMult *= .9;
   if (def.ability === '정신장벽' && category === 'special') abilityMult *= .9;
-  abilityMult *= abilityDamageMultiplier(att, def, { type: moveType, power, category }, (att.spe || 0) >= (def.spe || 0));
+  abilityMult *= abilityDamageMultiplier(att, def, { type: moveType, power, category, name: moveName, accuracy: 100 }, (att.spe || 0) >= (def.spe || 0));
   const atkTrait = typeTraitFor(att.sp), defTrait = typeTraitFor(def.sp);
   if (moveType && atkTrait.atk === moveType) abilityMult *= atkTrait.bonus;
   if (moveType && defTrait.resist === moveType) abilityMult *= .95;
@@ -5203,7 +5203,7 @@ async function doMove(user, target, mv, side, { fast }) {
   if (tside === 'e') { B.a.eBlink = true; await tween(380, k => B.a.eX = Math.sin(k * Math.PI * 4) * 4); B.a.eBlink = false; B.a.eX = 0; }
   else { B.a.pBlink = true; await tween(380, k => B.a.pX = Math.sin(k * Math.PI * 4) * 4); B.a.pBlink = false; B.a.pX = 0; }
   const mult = (side === 'p' ? PDMG : (EDMG[B.o.kind] || 1)) * eff * stab(user.sp, mv.type) * (fast ? 1.5 : 1);
-  let dmg = dmgCalc(user, target, mv.power, mult, mv.category, mv.type);
+  let dmg = dmgCalc(user, target, mv.power, mult, mv.category, mv.type, mv.name);
   user._lastMoveName = mv.name;
   let sturdyActivated = false;
   if (target.ability === '옹골참' && target.hp === target.maxhp && dmg >= target.hp) {
