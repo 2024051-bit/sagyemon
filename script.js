@@ -3766,7 +3766,8 @@ function onlineBattleApplyMove(room, side, move) {
   const atTrait = TYPE_TRAITS[at[0]] || TYPE_TRAITS.노말, dtTrait = TYPE_TRAITS[dt[0]] || TYPE_TRAITS.노말;
   if (atTrait.atk === move.type) bonus *= atTrait.bonus;
   if (dtTrait.resist === move.type) bonus *= .95;
-  const mult = effect(move.type, dt) * (at.includes(move.type) ? 1.5 : 1);
+  const typeEffect = effect(move.type, dt);
+  const mult = typeEffect * (at.includes(move.type) ? 1.5 : 1);
   const level = attacker.lvl || attacker.level || 1;
   if (attacker.status && attacker.status.type === 'brn' && move.category === 'physical') bonus *= .75;
   const base = (level * .2 + 2) * move.power * (A / Math.max(1, D)) / 10;
@@ -3777,8 +3778,9 @@ function onlineBattleApplyMove(room, side, move) {
     sturdyActivated = true;
   }
   defender.hp = Math.max(0, defender.hp - damage);
-  if (defender.hp > 0 && mult > 1 && attacker.ability === '흡수 본능' && attacker.hp > 0) { const heal = Math.min(attacker.maxhp - attacker.hp, Math.max(1, Math.floor(attacker.maxhp / 16))); attacker.hp += heal; }
-  if (defender.hp <= 0 && attacker.ability === '포식' && attacker.hp > 0) attacker.hp = Math.min(attacker.maxhp, attacker.hp + Math.max(1, Math.floor(attacker.maxhp / 8)));
+  if (defender.hp > 0 && typeEffect > 1 && attacker.ability === '흡수 본능' && attacker.hp > 0) { const heal = Math.min(attacker.maxhp - attacker.hp, Math.max(1, Math.floor(attacker.maxhp / 16))); attacker.hp += heal; }
+  let predatorHeal = 0;
+  if (defender.hp <= 0 && attacker.ability === '포식' && attacker.hp > 0) { predatorHeal = Math.min(attacker.maxhp - attacker.hp, Math.max(1, Math.floor(attacker.maxhp / 8))); attacker.hp += predatorHeal; }
   let recoilDamage = 0;
   if (move.recoil) {
     recoilDamage = Math.max(1, Math.floor(damage / 2));
@@ -3788,7 +3790,7 @@ function onlineBattleApplyMove(room, side, move) {
     const kind = move.sec[0];
     if (['sleep', 'par', 'burn', 'conf'].includes(kind) && !abilityStatusImmune(defender, kind)) defender.status = { type: kind === 'sleep' ? 'slp' : kind, turns: kind === 'sleep' ? 2 + Math.floor(onlineBattleRandom(room) * 2) : kind === 'conf' ? 3 : 0 };
   }
-  return { damage, recoilDamage, sturdyActivated, typeMult: mult, inflicted: defender.status && defender.status.type };
+  return { damage, recoilDamage, predatorHeal, sturdyActivated, typeMult: mult, inflicted: defender.status && defender.status.type };
 }
 function onlineBattleApplyTurn(room, payload, ownId) {
   if (!Number.isInteger(payload.seed) || payload.seed <= 0 || payload.seed > 2147483647) throw new Error('battle_protocol_mismatch');
@@ -3863,6 +3865,7 @@ function onlineBattleApplyTurn(room, payload, ownId) {
     else if (r && r.damage != null) {
       logs.push(a.move.name + ' · ' + r.damage + ' 피해');
       if (r.recoilDamage > 0) logs.push(a.move.name + ' · 반동으로 자신에게 ' + r.recoilDamage + ' 피해');
+      if (r.predatorHeal > 0) logs.push(a.mon.species + '의 포식! HP ' + r.predatorHeal + ' 회복');
     }
     else if (r && r.healed != null) logs.push(a.move.name + ' · HP ' + r.healed + ' 회복');
     else if (r && r.status) logs.push(a.move.name + ' · ' + r.status);
