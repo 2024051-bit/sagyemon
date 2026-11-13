@@ -3770,7 +3770,8 @@ function onlineBattleApplyMove(room, side, move) {
   if (attacker.ability === '역전투혼' && attacker.hp <= attacker.maxhp / 3) bonus *= 1.2;
   if (defender.ability === '강철피부' && move.category === 'physical') bonus *= .9;
   if (defender.ability === '정신장벽' && move.category === 'special') bonus *= .9;
-  bonus *= abilityDamageMultiplier(attacker, defender, move, (attacker.spe || 0) >= (defender.spe || 0));
+  bonus *= abilityDamageMultiplier(attacker, defender, move, onlineBattleSpeed(room, own, attacker) >= onlineBattleSpeed(room, !own, defender));
+  bonus *= weatherDamageMult(room.weather, move.type);
   const at = onlineBattleMonTypes(attacker), dt = onlineBattleMonTypes(defender);
   const atTrait = TYPE_TRAITS[at[0]] || TYPE_TRAITS.노말, dtTrait = TYPE_TRAITS[dt[0]] || TYPE_TRAITS.노말;
   if (atTrait.atk === move.type) bonus *= atTrait.bonus;
@@ -3805,6 +3806,14 @@ function onlineBattleApplyTurn(room, payload, ownId) {
   if (!Number.isInteger(payload.seed) || payload.seed <= 0 || payload.seed > 2147483647) throw new Error('battle_protocol_mismatch');
   room.turnSeed = payload.seed | 0;
   if (!room.weather) room.weather = BATTLE_WEATHER[Math.floor(onlineBattleRandom(room) * BATTLE_WEATHER.length)];
+  room.battleStages = room.battleStages || {
+    local: room.localTeam.map(() => ({ atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0 })),
+    opponent: room.opponentRoster.party.map(() => ({ atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0 }))
+  };
+  for (const side of ['local', 'opponent']) for (const st of room.battleStages[side] || []) {
+    for (const key of ['atk', 'def', 'spa', 'spd', 'spe', 'acc']) if (st[key] == null) st[key] = 0;
+  }
+  for (const side of ['local', 'opponent']) for (const st of room.battleStages[side] || []) if (st.acc == null) st.acc = 0;
   if (!room.abilityBattleInitialized) {
     for (const [side, team] of [['local', room.localTeam || []], ['opponent', (room.opponentRoster && room.opponentRoster.party) || []]]) {
       for (let i = 0; i < team.length; i++) {
@@ -3817,14 +3826,6 @@ function onlineBattleApplyTurn(room, payload, ownId) {
     }
     room.abilityBattleInitialized = true;
   }
-  room.battleStages = room.battleStages || {
-    local: room.localTeam.map(() => ({ atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0 })),
-    opponent: room.opponentRoster.party.map(() => ({ atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0 }))
-  };
-  for (const side of ['local', 'opponent']) for (const st of room.battleStages[side] || []) {
-    for (const key of ['atk', 'def', 'spa', 'spd', 'spe', 'acc']) if (st[key] == null) st[key] = 0;
-  }
-  for (const side of ['local', 'opponent']) for (const st of room.battleStages[side] || []) if (st.acc == null) st.acc = 0;
   const choices = payload.choices, ownChoice = choices.find(c => c.playerId === ownId);
   if (!ownChoice || !choices.some(c => c.playerId !== ownId)) throw new Error('battle_protocol_mismatch');
   const before = room.localTeam.map(m => m.hp);
