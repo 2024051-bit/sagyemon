@@ -3106,6 +3106,7 @@ function abilityDamageMultiplier(att, def, move, attackerFirst = false) {
   if (d === '두꺼운 지방' && ['불','얼음'].includes(type)) mult *= .9;
   if (d === '충격 흡수' && move && move.power <= 60) mult *= .85;
   if (d === '불굴 방패' && def && def._abilityShield) mult *= .9;
+  if (d === '수호 본능' && def && !def._abilityGuardUsed) { mult *= .9; def._abilityGuardUsed = true; }
   const dr = ABILITY_DEFENSE_TYPE[d];
   if (dr && dr[0] === type) mult *= dr[1];
   return mult;
@@ -3776,6 +3777,8 @@ function onlineBattleApplyMove(room, side, move) {
     sturdyActivated = true;
   }
   defender.hp = Math.max(0, defender.hp - damage);
+  if (defender.hp > 0 && mult > 1 && attacker.ability === '흡수 본능' && attacker.hp > 0) { const heal = Math.min(attacker.maxhp - attacker.hp, Math.max(1, Math.floor(attacker.maxhp / 16))); attacker.hp += heal; }
+  if (defender.hp <= 0 && attacker.ability === '포식' && attacker.hp > 0) attacker.hp = Math.min(attacker.maxhp, attacker.hp + Math.max(1, Math.floor(attacker.maxhp / 8)));
   let recoilDamage = 0;
   if (move.recoil) {
     recoilDamage = Math.max(1, Math.floor(damage / 2));
@@ -3814,6 +3817,8 @@ function onlineBattleApplyTurn(room, payload, ownId) {
       const activeIndex = local ? room.activeLocal : room.activeOpponent;
       const outgoing = team && team[activeIndex];
       if (outgoing && outgoing.ability === '자연 치유') outgoing.status = null;
+      const incoming = team && team[c.teamIndex];
+      if (incoming) delete incoming._abilityGuardUsed;
       if (local) room.activeLocal = c.teamIndex;
       else room.activeOpponent = c.teamIndex;
     }
@@ -5177,6 +5182,8 @@ async function doMove(user, target, mv, side, { fast }) {
     sturdyActivated = true;
   }
   await setHP(target, target.hp - dmg);
+  if (target.hp > 0 && eff > 1 && user.ability === '흡수 본능' && user.hp > 0) { const heal = Math.min(user.maxhp - user.hp, Math.max(1, Math.floor(user.maxhp / 16))); await say(nameOf(user, side) + '의 흡수 본능! HP를 회복했다!'); await setHP(user, user.hp + heal); }
+  if (target.hp <= 0 && user.ability === '포식' && user.hp > 0) { const heal = Math.min(user.maxhp - user.hp, Math.max(1, Math.floor(user.maxhp / 8))); await say(nameOf(user, side) + '의 포식! HP를 회복했다!'); await setHP(user, user.hp + heal); }
   if (sturdyActivated) await say(`${nameOf(target, tside)}의 옹골참! HP 1로 버텼다!`);
   if (fast) await say('급소에 맞았다!');
   await effMsg(eff);
@@ -5314,6 +5321,7 @@ async function switchMon(forced) {
     if (m === B.p) { toast('이미 싸우고 있어요!'); continue; }
     if (!forced) { await say(`돌아와, ${monName(B.p)}!`, { wait: false }); await tween(250, k => B.a.pScale = 1 - k); B.a.pVis = false; }
     if (B.p.ability === '자연 치유' && B.p.status) { B.p.status = null; await say(monName(B.p) + '의 자연 치유! 상태이상이 회복됐다!'); }
+    delete m._abilityGuardUsed;
     clearVolatile(B.p); B.p = m; B.part.add(m);
     say(`가랏! ${monName(m)}!`, { wait: false }); await popMon('p'); hud(); await sleep(400);
     await announceBattleAbility(m);
