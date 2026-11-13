@@ -3100,6 +3100,7 @@ function abilityDamageMultiplier(att, def, move, attackerFirst = false) {
   if (a === '마지막 발악' && att && att.hp <= att.maxhp / 4) mult *= 1.15;
   if (a === '기습 본능' && attackerFirst) mult *= 1.05;
   if (a === '선제 대응' && !attackerFirst) mult *= 1.1;
+  if (a === '전투 학습' && att && att._lastMoveName === name) mult *= 1.05;
   if (a === '완벽주의' && move && move.accuracy === 100) mult *= 1.05;
   if (a === '포위 본능' && def && def.status) mult *= 1.1;
   if (d === '불굴의 의지' && def && def.hp <= def.maxhp / 2) mult *= .95;
@@ -3137,7 +3138,11 @@ const ACCURACY_BOOST_ABILITIES = new Set(['복안', '정밀 조준']);
 const ACCURACY_GUARD_ABILITIES = new Set(['예리한 눈', '황금 시야']);
 function effectiveMoveAccuracy(mon, move) {
   const base = Math.max(1, Math.min(100, Number(move && move.accuracy) || 100));
-  return Math.min(100, base + (mon && ACCURACY_BOOST_ABILITIES.has(mon.ability) && !ACCURACY_TRAIT_EXEMPT.has(move.name) ? 5 : 0));
+  let bonus = 0;
+  if (mon && ACCURACY_BOOST_ABILITIES.has(mon.ability) && !ACCURACY_TRAIT_EXEMPT.has(move.name)) bonus += 5;
+  if (mon && mon.ability === '매의 눈' && move.type === '비행') bonus += 5;
+  if (mon && mon.ability === '물속 시야' && move.type === '물') bonus += 5;
+  return Math.min(100, base + bonus);
 }
 function abilityText(m) { const a = m && m.ability; return (a ? a + ' · ' + (ABILITY_INFO[a] || '특성 효과') : '특성 미정') + ' · ' + typeTraitText(m); }
 async function announceBattleAbility(mon) {
@@ -3796,6 +3801,7 @@ function onlineBattleApplyMove(room, side, move) {
     recoilDamage = Math.max(1, Math.floor(damage / 2));
     attacker.hp = Math.max(0, attacker.hp - recoilDamage);
   }
+  attacker._lastMoveName = move.name;
   if (defender.hp > 0 && !defender.status && Array.isArray(move.sec) && onlineBattleRandom(room) < move.sec[1]) {
     const kind = move.sec[0];
     if (['sleep', 'par', 'burn', 'conf'].includes(kind) && !abilityStatusImmune(defender, kind)) defender.status = { type: kind === 'sleep' ? 'slp' : kind, turns: kind === 'sleep' ? 2 + Math.floor(onlineBattleRandom(room) * 2) : kind === 'conf' ? 3 : 0 };
@@ -5198,6 +5204,7 @@ async function doMove(user, target, mv, side, { fast }) {
   else { B.a.pBlink = true; await tween(380, k => B.a.pX = Math.sin(k * Math.PI * 4) * 4); B.a.pBlink = false; B.a.pX = 0; }
   const mult = (side === 'p' ? PDMG : (EDMG[B.o.kind] || 1)) * eff * stab(user.sp, mv.type) * (fast ? 1.5 : 1);
   let dmg = dmgCalc(user, target, mv.power, mult, mv.category, mv.type);
+  user._lastMoveName = mv.name;
   let sturdyActivated = false;
   if (target.ability === '옹골참' && target.hp === target.maxhp && dmg >= target.hp) {
     dmg = Math.max(0, target.hp - 1);
