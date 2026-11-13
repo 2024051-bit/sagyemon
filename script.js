@@ -3787,6 +3787,11 @@ function onlineBattleApplyMove(room, side, move) {
 function onlineBattleApplyTurn(room, payload, ownId) {
   if (!Number.isInteger(payload.seed) || payload.seed <= 0 || payload.seed > 2147483647) throw new Error('battle_protocol_mismatch');
   room.turnSeed = payload.seed | 0;
+  if (!room.weather) room.weather = BATTLE_WEATHER[Math.floor(onlineBattleRandom(room) * BATTLE_WEATHER.length)];
+  if (!room.abilityBattleInitialized) {
+    for (const mon of [...(room.localTeam || []), ...((room.opponentRoster && room.opponentRoster.party) || [])]) if (mon) delete mon._abilityCrisisUsed;
+    room.abilityBattleInitialized = true;
+  }
   room.battleStages = room.battleStages || {
     local: room.localTeam.map(() => ({ atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0 })),
     opponent: room.opponentRoster.party.map(() => ({ atk: 0, def: 0, spa: 0, spd: 0, spe: 0, acc: 0 }))
@@ -4984,6 +4989,7 @@ async function battle(o) {
   B = { o, partyTeam, idx: 0, e: o.team[0], p: partyTeam.find(m => m.hp > 0), part: new Set(), theme: CUR.indoor ? (CUR.theme === 'indoor' ? 'indoor' : CUR.theme) : CUR.theme, weather: null, a: { eX: 0, eY: 0, pX: 0, pY: 0, eVis: false, pVis: false, eAlpha: 1, pAlpha: 1, eScale: 1, pScale: 1, flash: 0, eTr: false, pTr: true, eTrX: 0, pTrX: 160 } };
   const a = B.a;
   B.weather = chooseBattleWeather(B.theme);
+  for (const mon of [...partyTeam, ...o.team]) if (mon) delete mon._abilityCrisisUsed;
   await flashTrans();
   scene = 'battle';
   if (wild) { a.eVis = true; a.eX = -170; await tween(650, k => { a.eX = (1 - k) * -170; a.pTrX = (1 - k) * 160; }); }
